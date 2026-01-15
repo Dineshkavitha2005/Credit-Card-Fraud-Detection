@@ -170,10 +170,6 @@ All tests pass successfully ✅
 
 This project is developed for educational purposes.
 
-## Contributors
-
-- Lohith (Developer)
-
 ## Support
 
 For issues or questions, please open an issue on GitHub.
