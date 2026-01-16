@@ -1,0 +1,872 @@
+2025-11-10 19:43:33,955 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-10 19:43:33,956 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-10 19:43:33,959 - INFO -  * Restarting with stat
+2025-11-10 19:43:36,825 - WARNING -  * Debugger is active!
+2025-11-10 19:43:36,849 - INFO -  * Debugger PIN: 126-212-659
+2025-11-10 22:24:36,434 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-10 22:24:36,434 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-10 22:24:36,438 - INFO -  * Restarting with stat
+2025-11-10 22:24:39,239 - WARNING -  * Debugger is active!
+2025-11-10 22:24:39,243 - INFO -  * Debugger PIN: 139-057-469
+2025-11-10 22:24:42,615 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-10 22:24:42,615 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-10 22:24:42,617 - INFO -  * Restarting with stat
+2025-11-10 22:24:45,592 - WARNING -  * Debugger is active!
+2025-11-10 22:24:45,600 - INFO -  * Debugger PIN: 126-212-659
+2025-11-10 22:24:52,628 - INFO - 127.0.0.1 - - [10/Nov/2025 22:24:52] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-11-10 22:24:53,320 - INFO - 127.0.0.1 - - [10/Nov/2025 22:24:53] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-11-10 22:24:53,425 - INFO - 127.0.0.1 - - [10/Nov/2025 22:24:53] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-11-10 22:24:53,591 - INFO - 127.0.0.1 - - [10/Nov/2025 22:24:53] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=sMv45afiHrrpqChrSxzw HTTP/1.1" 200 -
+2025-11-10 22:24:53,604 - INFO - 127.0.0.1 - - [10/Nov/2025 22:24:53] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-11-10 22:25:16,532 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-10 22:25:16,864 - INFO -  * Restarting with stat
+2025-11-10 22:25:19,648 - WARNING -  * Debugger is active!
+2025-11-10 22:25:19,652 - INFO -  * Debugger PIN: 139-057-469
+2025-11-10 22:25:29,137 - INFO - 127.0.0.1 - - [10/Nov/2025 22:25:29] "GET / HTTP/1.1" 200 -
+2025-11-10 22:25:29,378 - INFO - 127.0.0.1 - - [10/Nov/2025 22:25:29] "GET /static/bootstrap.min.css HTTP/1.1" 200 -
+2025-11-10 22:25:29,439 - INFO - 127.0.0.1 - - [10/Nov/2025 22:25:29] "GET /static/bootstrap.min.js HTTP/1.1" 200 -
+2025-11-10 22:25:29,469 - INFO - 127.0.0.1 - - [10/Nov/2025 22:25:29] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-10 22:25:48,175 - INFO - 127.0.0.1 - - [10/Nov/2025 22:25:48] "GET /insights HTTP/1.1" 200 -
+2025-11-10 22:26:17,035 - INFO - 127.0.0.1 - - [10/Nov/2025 22:26:17] "GET /api/live_feed HTTP/1.1" 200 -
+2025-11-10 22:26:27,581 - INFO - 127.0.0.1 - - [10/Nov/2025 22:26:27] "GET / HTTP/1.1" 200 -
+2025-11-10 22:26:51,903 - INFO - 127.0.0.1 - - [10/Nov/2025 22:26:51] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-11-10 22:26:51,944 - INFO - 127.0.0.1 - - [10/Nov/2025 22:26:51] "GET /transactions?merchant_id=999 HTTP/1.1" 200 -
+2025-11-10 22:27:03,379 - INFO - 127.0.0.1 - - [10/Nov/2025 22:27:03] "GET /transactions?merchant_id=999 HTTP/1.1" 200 -
+2025-11-10 22:27:17,369 - INFO - 127.0.0.1 - - [10/Nov/2025 22:27:17] "GET /insights HTTP/1.1" 200 -
+2025-11-10 22:27:35,173 - INFO - 127.0.0.1 - - [10/Nov/2025 22:27:35] "GET /live HTTP/1.1" 200 -
+2025-11-10 22:27:46,830 - INFO - 127.0.0.1 - - [10/Nov/2025 22:27:46] "GET /admin HTTP/1.1" 200 -
+2025-11-10 22:27:56,017 - INFO - 127.0.0.1 - - [10/Nov/2025 22:27:56] "[33mGET /transaction_details?transaction_id=1 HTTP/1.1[0m" 404 -
+2025-11-10 22:28:07,713 - INFO - 127.0.0.1 - - [10/Nov/2025 22:28:07] "GET /fraud_transactions?merchant_id=999 HTTP/1.1" 200 -
+2025-11-10 22:28:42,208 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-10 22:28:42,553 - INFO -  * Restarting with stat
+2025-11-10 22:28:45,488 - WARNING -  * Debugger is active!
+2025-11-10 22:28:45,492 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 18:26:39,321 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-11 18:26:39,322 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-11 18:26:39,327 - INFO -  * Restarting with stat
+2025-11-11 18:26:43,103 - WARNING -  * Debugger is active!
+2025-11-11 18:26:43,109 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 18:28:43,173 - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:43] "GET / HTTP/1.1" 200 -
+2025-11-11 18:28:43,341 - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:43] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 18:28:43,441 - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:43] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 18:28:43,457 - INFO - 127.0.0.1 - - [11/Nov/2025 18:28:43] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-11 18:29:06,725 - INFO - 127.0.0.1 - - [11/Nov/2025 18:29:06] "POST / HTTP/1.1" 200 -
+2025-11-11 18:29:06,764 - INFO - 127.0.0.1 - - [11/Nov/2025 18:29:06] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 18:29:06,768 - INFO - 127.0.0.1 - - [11/Nov/2025 18:29:06] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 18:29:47,321 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 18:29:47,735 - INFO -  * Restarting with stat
+2025-11-11 18:29:50,937 - WARNING -  * Debugger is active!
+2025-11-11 18:29:50,940 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 18:29:59,966 - INFO - 127.0.0.1 - - [11/Nov/2025 18:29:59] "POST / HTTP/1.1" 200 -
+2025-11-11 18:30:00,115 - INFO - 127.0.0.1 - - [11/Nov/2025 18:30:00] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 18:30:00,116 - INFO - 127.0.0.1 - - [11/Nov/2025 18:30:00] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 18:30:03,361 - INFO - 127.0.0.1 - - [11/Nov/2025 18:30:03] "POST / HTTP/1.1" 200 -
+2025-11-11 18:30:03,404 - INFO - 127.0.0.1 - - [11/Nov/2025 18:30:03] "GET /static/bootstrap.min.css HTTP/1.1" 200 -
+2025-11-11 18:30:03,404 - INFO - 127.0.0.1 - - [11/Nov/2025 18:30:03] "GET /static/bootstrap.min.js HTTP/1.1" 200 -
+2025-11-11 18:30:03,431 - INFO - 127.0.0.1 - - [11/Nov/2025 18:30:03] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-11 18:42:18,423 - INFO - 127.0.0.1 - - [11/Nov/2025 18:42:18] "POST / HTTP/1.1" 200 -
+2025-11-11 18:42:18,471 - INFO - 127.0.0.1 - - [11/Nov/2025 18:42:18] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 18:42:18,472 - INFO - 127.0.0.1 - - [11/Nov/2025 18:42:18] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 18:42:20,370 - INFO - 127.0.0.1 - - [11/Nov/2025 18:42:20] "GET /signup HTTP/1.1" 200 -
+2025-11-11 18:42:48,334 - INFO - 127.0.0.1 - - [11/Nov/2025 18:42:48] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:11:22,378 - ERROR - Input Error: MerchantID is required and must be a number.
+2025-11-11 19:11:22,388 - INFO - 127.0.0.1 - - [11/Nov/2025 19:11:22] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:11:22,558 - INFO - 127.0.0.1 - - [11/Nov/2025 19:11:22] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-11 19:11:40,414 - ERROR - Input Error: MerchantID is required and must be a number.
+2025-11-11 19:11:40,415 - INFO - 127.0.0.1 - - [11/Nov/2025 19:11:40] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:11:40,944 - INFO - 127.0.0.1 - - [11/Nov/2025 19:11:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-11 19:12:41,171 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:12:41,730 - INFO -  * Restarting with stat
+2025-11-11 19:12:44,936 - WARNING -  * Debugger is active!
+2025-11-11 19:12:44,941 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:13:26,915 - ERROR - Input Error: MerchantID is required.
+2025-11-11 19:13:26,927 - INFO - 127.0.0.1 - - [11/Nov/2025 19:13:26] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:14:12,420 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:14:12,851 - INFO -  * Restarting with stat
+2025-11-11 19:14:16,520 - WARNING -  * Debugger is active!
+2025-11-11 19:14:16,525 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:15:36,842 - ERROR - Input Error: MerchantID must be at least 6 characters long and contain letters, numbers, and at least one special character (!@#$%^&*).
+2025-11-11 19:15:36,852 - INFO - 127.0.0.1 - - [11/Nov/2025 19:15:36] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:15:54,805 - ERROR - Input Error: MerchantID must be at least 6 characters long and contain letters, numbers, and at least one special character (!@#$%^&*).
+2025-11-11 19:15:54,807 - INFO - 127.0.0.1 - - [11/Nov/2025 19:15:54] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:17:15,626 - ERROR - Input Error: invalid literal for int() with base 10: 'ABC123!'
+2025-11-11 19:17:15,627 - INFO - 127.0.0.1 - - [11/Nov/2025 19:17:15] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:17:51,178 - ERROR - Input Error: invalid literal for int() with base 10: 'Loh123@'
+2025-11-11 19:17:51,179 - INFO - 127.0.0.1 - - [11/Nov/2025 19:17:51] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:18:41,014 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\models.py', reloading
+2025-11-11 19:18:41,374 - INFO -  * Restarting with stat
+2025-11-11 19:18:44,660 - WARNING -  * Debugger is active!
+2025-11-11 19:18:44,663 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:19:19,332 - ERROR - Input Error: Passwords do not match.
+2025-11-11 19:19:19,346 - INFO - 127.0.0.1 - - [11/Nov/2025 19:19:19] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:19:33,640 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:19:34,087 - INFO -  * Restarting with stat
+2025-11-11 19:19:38,006 - WARNING -  * Debugger is active!
+2025-11-11 19:19:38,011 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:19:44,147 - INFO - 127.0.0.1 - - [11/Nov/2025 19:19:44] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-11-11 19:19:44,158 - INFO - 127.0.0.1 - - [11/Nov/2025 19:19:44] "GET / HTTP/1.1" 200 -
+2025-11-11 19:19:44,297 - INFO - 127.0.0.1 - - [11/Nov/2025 19:19:44] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 19:19:44,302 - INFO - 127.0.0.1 - - [11/Nov/2025 19:19:44] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 19:20:09,394 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-11 19:20:09,394 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-11 19:20:09,396 - INFO -  * Restarting with stat
+2025-11-11 19:20:13,232 - WARNING -  * Debugger is active!
+2025-11-11 19:20:13,237 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:22:34,206 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:22:34,684 - INFO -  * Restarting with stat
+2025-11-11 19:22:34,764 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:22:35,201 - INFO -  * Restarting with stat
+2025-11-11 19:22:38,633 - WARNING -  * Debugger is active!
+2025-11-11 19:22:38,641 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:22:39,064 - WARNING -  * Debugger is active!
+2025-11-11 19:22:39,068 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:22:49,680 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:22:50,151 - INFO -  * Restarting with stat
+2025-11-11 19:22:50,338 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:22:50,777 - INFO -  * Restarting with stat
+2025-11-11 19:22:54,176 - WARNING -  * Debugger is active!
+2025-11-11 19:22:54,181 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:22:54,892 - WARNING -  * Debugger is active!
+2025-11-11 19:22:54,897 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:23:37,806 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:23:38,061 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:23:38,319 - INFO -  * Restarting with stat
+2025-11-11 19:23:38,610 - INFO -  * Restarting with stat
+2025-11-11 19:23:42,183 - WARNING -  * Debugger is active!
+2025-11-11 19:23:42,187 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:23:42,363 - WARNING -  * Debugger is active!
+2025-11-11 19:23:42,368 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:24:30,429 - INFO - 127.0.0.1 - - [11/Nov/2025 19:24:30] "GET / HTTP/1.1" 200 -
+2025-11-11 19:24:30,569 - INFO - 127.0.0.1 - - [11/Nov/2025 19:24:30] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 19:24:30,572 - INFO - 127.0.0.1 - - [11/Nov/2025 19:24:30] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 19:25:06,485 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:25:06,864 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 19:25:07,015 - INFO -  * Restarting with stat
+2025-11-11 19:25:07,311 - INFO -  * Restarting with stat
+2025-11-11 19:25:11,039 - WARNING -  * Debugger is active!
+2025-11-11 19:25:11,043 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:25:11,145 - WARNING -  * Debugger is active!
+2025-11-11 19:25:11,150 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 19:25:53,782 - INFO - 127.0.0.1 - - [11/Nov/2025 19:25:53] "GET / HTTP/1.1" 200 -
+2025-11-11 19:25:53,917 - INFO - 127.0.0.1 - - [11/Nov/2025 19:25:53] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 19:25:53,924 - INFO - 127.0.0.1 - - [11/Nov/2025 19:25:53] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 19:26:01,241 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:01] "GET / HTTP/1.1" 200 -
+2025-11-11 19:26:01,295 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:01] "GET /static/bootstrap.min.css HTTP/1.1" 200 -
+2025-11-11 19:26:01,295 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:01] "GET /static/bootstrap.min.js HTTP/1.1" 200 -
+2025-11-11 19:26:01,445 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:01] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-11 19:26:04,292 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:04] "GET / HTTP/1.1" 200 -
+2025-11-11 19:26:04,338 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:04] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 19:26:04,338 - INFO - 127.0.0.1 - - [11/Nov/2025 19:26:04] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 19:27:26,698 - ERROR - Exception Occurred: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] No connection could be made because the target machine actively refused it)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-11 19:27:26,706 - INFO - 127.0.0.1 - - [11/Nov/2025 19:27:26] "POST /signup HTTP/1.1" 200 -
+2025-11-11 19:27:45,499 - ERROR - Exception Occurred: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] No connection could be made because the target machine actively refused it)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-11 19:27:45,500 - INFO - 127.0.0.1 - - [11/Nov/2025 19:27:45] "POST / HTTP/1.1" 200 -
+2025-11-11 19:27:59,467 - INFO - 127.0.0.1 - - [11/Nov/2025 19:27:59] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-11 19:27:59,513 - INFO - 127.0.0.1 - - [11/Nov/2025 19:27:59] "GET / HTTP/1.1" 200 -
+2025-11-11 19:28:34,485 - ERROR - Exception Occurred: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] No connection could be made because the target machine actively refused it)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-11 19:28:34,486 - INFO - 127.0.0.1 - - [11/Nov/2025 19:28:34] "POST / HTTP/1.1" 200 -
+2025-11-11 19:28:48,528 - INFO - 127.0.0.1 - - [11/Nov/2025 19:28:48] "GET /api/live_feed HTTP/1.1" 200 -
+2025-11-11 19:28:59,918 - INFO - 127.0.0.1 - - [11/Nov/2025 19:28:59] "GET /insights HTTP/1.1" 200 -
+2025-11-11 19:29:12,527 - INFO - 127.0.0.1 - - [11/Nov/2025 19:29:12] "GET /live HTTP/1.1" 200 -
+2025-11-11 19:29:25,303 - INFO - 127.0.0.1 - - [11/Nov/2025 19:29:25] "GET /admin HTTP/1.1" 200 -
+2025-11-11 19:29:38,036 - INFO - 127.0.0.1 - - [11/Nov/2025 19:29:38] "[32mGET /transactions HTTP/1.1[0m" 302 -
+2025-11-11 19:29:38,039 - INFO - 127.0.0.1 - - [11/Nov/2025 19:29:38] "GET / HTTP/1.1" 200 -
+2025-11-11 19:29:49,193 - INFO - 127.0.0.1 - - [11/Nov/2025 19:29:49] "[32mGET /fraud_transactions HTTP/1.1[0m" 302 -
+2025-11-11 19:29:49,197 - INFO - 127.0.0.1 - - [11/Nov/2025 19:29:49] "GET / HTTP/1.1" 200 -
+2025-11-11 19:30:02,894 - INFO - 127.0.0.1 - - [11/Nov/2025 19:30:02] "[32mGET /transaction_details?transaction_id=1 HTTP/1.1[0m" 302 -
+2025-11-11 19:30:02,898 - INFO - 127.0.0.1 - - [11/Nov/2025 19:30:02] "GET / HTTP/1.1" 200 -
+2025-11-11 19:30:14,980 - INFO - 127.0.0.1 - - [11/Nov/2025 19:30:14] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-11-11 19:30:14,984 - INFO - 127.0.0.1 - - [11/Nov/2025 19:30:14] "GET / HTTP/1.1" 200 -
+2025-11-11 20:47:53,843 - INFO - 127.0.0.1 - - [11/Nov/2025 20:47:53] "POST / HTTP/1.1" 200 -
+2025-11-11 20:48:13,855 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:13] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-11 20:48:13,859 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:13] "GET / HTTP/1.1" 200 -
+2025-11-11 20:48:32,565 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:32] "POST /signup HTTP/1.1" 200 -
+2025-11-11 20:48:53,321 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:53] "GET / HTTP/1.1" 200 -
+2025-11-11 20:48:53,360 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:53] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:48:53,361 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:53] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 20:48:55,584 - INFO - 127.0.0.1 - - [11/Nov/2025 20:48:55] "POST /signup HTTP/1.1" 200 -
+2025-11-11 20:49:09,074 - INFO - 127.0.0.1 - - [11/Nov/2025 20:49:09] "POST / HTTP/1.1" 200 -
+2025-11-11 20:49:22,767 - INFO - 127.0.0.1 - - [11/Nov/2025 20:49:22] "POST / HTTP/1.1" 200 -
+2025-11-11 20:49:36,129 - INFO - 127.0.0.1 - - [11/Nov/2025 20:49:36] "POST / HTTP/1.1" 200 -
+2025-11-11 20:49:50,515 - INFO - 127.0.0.1 - - [11/Nov/2025 20:49:50] "POST / HTTP/1.1" 200 -
+2025-11-11 20:50:05,226 - INFO - 127.0.0.1 - - [11/Nov/2025 20:50:05] "POST / HTTP/1.1" 200 -
+2025-11-11 20:50:15,207 - INFO - 127.0.0.1 - - [11/Nov/2025 20:50:15] "POST / HTTP/1.1" 200 -
+2025-11-11 20:50:25,196 - INFO - 127.0.0.1 - - [11/Nov/2025 20:50:25] "POST / HTTP/1.1" 200 -
+2025-11-11 20:50:35,753 - INFO - 127.0.0.1 - - [11/Nov/2025 20:50:35] "POST / HTTP/1.1" 200 -
+2025-11-11 20:50:47,428 - INFO - 127.0.0.1 - - [11/Nov/2025 20:50:47] "POST / HTTP/1.1" 200 -
+2025-11-11 20:50:56,894 - INFO - 127.0.0.1 - - [11/Nov/2025 20:50:56] "POST / HTTP/1.1" 200 -
+2025-11-11 20:51:06,740 - INFO - 127.0.0.1 - - [11/Nov/2025 20:51:06] "POST / HTTP/1.1" 200 -
+2025-11-11 20:51:22,186 - INFO - 127.0.0.1 - - [11/Nov/2025 20:51:22] "POST / HTTP/1.1" 200 -
+2025-11-11 20:53:29,010 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:29] "GET / HTTP/1.1" 200 -
+2025-11-11 20:53:29,051 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:29] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:53:29,056 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:29] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 20:53:37,829 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:37] "POST / HTTP/1.1" 200 -
+2025-11-11 20:53:37,865 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:37] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 20:53:37,866 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:37] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:53:42,585 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:42] "GET /signup HTTP/1.1" 200 -
+2025-11-11 20:53:53,139 - INFO - 127.0.0.1 - - [11/Nov/2025 20:53:53] "POST / HTTP/1.1" 200 -
+2025-11-11 20:54:04,196 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:04] "GET / HTTP/1.1" 200 -
+2025-11-11 20:54:04,255 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:04] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:54:04,258 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:04] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 20:54:06,014 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:06] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-11 20:54:06,018 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:06] "GET / HTTP/1.1" 200 -
+2025-11-11 20:54:11,601 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:11] "POST / HTTP/1.1" 200 -
+2025-11-11 20:54:11,638 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:11] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:54:11,640 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:11] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 20:54:20,272 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:20] "POST /signup HTTP/1.1" 200 -
+2025-11-11 20:54:21,371 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:21] "POST / HTTP/1.1" 200 -
+2025-11-11 20:54:21,405 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:21] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:54:21,405 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:21] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 20:54:25,957 - INFO - 127.0.0.1 - - [11/Nov/2025 20:54:25] "GET /signup HTTP/1.1" 200 -
+2025-11-11 20:56:30,617 - ERROR - Input Error: MerchantID must be at least 6 characters long and contain letters, numbers, and at least one special character (!@#$%^&*).
+2025-11-11 20:56:30,618 - INFO - 127.0.0.1 - - [11/Nov/2025 20:56:30] "POST /signup HTTP/1.1" 200 -
+2025-11-11 20:58:13,533 - INFO - 127.0.0.1 - - [11/Nov/2025 20:58:13] "POST /signup HTTP/1.1" 200 -
+2025-11-11 20:58:25,755 - INFO - 127.0.0.1 - - [11/Nov/2025 20:58:25] "POST /signup HTTP/1.1" 200 -
+2025-11-11 20:58:30,852 - INFO - 127.0.0.1 - - [11/Nov/2025 20:58:30] "GET / HTTP/1.1" 200 -
+2025-11-11 20:58:30,899 - INFO - 127.0.0.1 - - [11/Nov/2025 20:58:30] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 20:58:30,904 - INFO - 127.0.0.1 - - [11/Nov/2025 20:58:30] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 21:00:43,130 - INFO - 127.0.0.1 - - [11/Nov/2025 21:00:43] "POST / HTTP/1.1" 200 -
+2025-11-11 21:00:43,167 - INFO - 127.0.0.1 - - [11/Nov/2025 21:00:43] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 21:00:43,168 - INFO - 127.0.0.1 - - [11/Nov/2025 21:00:43] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 21:01:27,622 - INFO - 127.0.0.1 - - [11/Nov/2025 21:01:27] "POST / HTTP/1.1" 200 -
+2025-11-11 21:01:27,659 - INFO - 127.0.0.1 - - [11/Nov/2025 21:01:27] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 21:01:27,659 - INFO - 127.0.0.1 - - [11/Nov/2025 21:01:27] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 21:02:07,372 - INFO - 127.0.0.1 - - [11/Nov/2025 21:02:07] "POST / HTTP/1.1" 200 -
+2025-11-11 21:02:07,413 - INFO - 127.0.0.1 - - [11/Nov/2025 21:02:07] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 21:02:07,413 - INFO - 127.0.0.1 - - [11/Nov/2025 21:02:07] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 21:02:31,035 - INFO - 127.0.0.1 - - [11/Nov/2025 21:02:31] "POST / HTTP/1.1" 200 -
+2025-11-11 21:02:31,077 - INFO - 127.0.0.1 - - [11/Nov/2025 21:02:31] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-11 21:02:31,078 - INFO - 127.0.0.1 - - [11/Nov/2025 21:02:31] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-11 21:07:23,750 - INFO - 127.0.0.1 - - [11/Nov/2025 21:07:23] "POST / HTTP/1.1" 200 -
+2025-11-11 21:07:28,638 - INFO - 127.0.0.1 - - [11/Nov/2025 21:07:28] "GET /signup HTTP/1.1" 200 -
+2025-11-11 21:07:36,115 - INFO - 127.0.0.1 - - [11/Nov/2025 21:07:36] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-11 21:07:36,123 - INFO - 127.0.0.1 - - [11/Nov/2025 21:07:36] "GET / HTTP/1.1" 200 -
+2025-11-11 21:07:40,622 - INFO - 127.0.0.1 - - [11/Nov/2025 21:07:40] "POST /signup HTTP/1.1" 200 -
+2025-11-11 21:08:55,153 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 21:08:55,179 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 21:08:55,712 - INFO -  * Restarting with stat
+2025-11-11 21:08:55,754 - INFO -  * Restarting with stat
+2025-11-11 21:08:58,574 - WARNING -  * Debugger is active!
+2025-11-11 21:08:58,578 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 21:08:58,615 - WARNING -  * Debugger is active!
+2025-11-11 21:08:58,619 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 21:09:48,133 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-11 21:09:48,133 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-11 21:09:48,135 - INFO -  * Restarting with stat
+2025-11-11 21:09:51,118 - WARNING -  * Debugger is active!
+2025-11-11 21:09:51,120 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 21:10:14,256 - INFO - 127.0.0.1 - - [11/Nov/2025 21:10:14] "POST /signup HTTP/1.1" 200 -
+2025-11-11 21:10:26,138 - INFO - 127.0.0.1 - - [11/Nov/2025 21:10:26] "POST / HTTP/1.1" 200 -
+2025-11-11 21:10:37,594 - INFO - 127.0.0.1 - - [11/Nov/2025 21:10:37] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-11 21:10:37,597 - INFO - 127.0.0.1 - - [11/Nov/2025 21:10:37] "GET / HTTP/1.1" 200 -
+2025-11-11 21:13:54,584 - INFO - 127.0.0.1 - - [11/Nov/2025 21:13:54] "POST /signup HTTP/1.1" 200 -
+2025-11-11 21:19:01,528 - INFO - 127.0.0.1 - - [11/Nov/2025 21:19:01] "POST /signup HTTP/1.1" 200 -
+2025-11-11 21:19:22,365 - INFO - 127.0.0.1 - - [11/Nov/2025 21:19:22] "POST /signup HTTP/1.1" 200 -
+2025-11-11 21:39:07,528 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 21:39:07,536 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 21:39:07,564 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-11-11 21:39:08,268 - INFO -  * Restarting with stat
+2025-11-11 21:39:08,295 - INFO -  * Restarting with stat
+2025-11-11 21:39:08,317 - INFO -  * Restarting with stat
+2025-11-11 21:39:11,692 - WARNING -  * Debugger is active!
+2025-11-11 21:39:11,695 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 21:39:30,971 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-11 21:39:30,971 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-11 21:39:30,974 - INFO -  * Restarting with stat
+2025-11-11 21:39:34,296 - WARNING -  * Debugger is active!
+2025-11-11 21:39:34,299 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 21:40:06,129 - ERROR - Exception Occurred: (sqlite3.OperationalError) database is locked
+[SQL: SELECT merchants.id AS merchants_id, merchants.merchant_id AS merchants_merchant_id, merchants.password AS merchants_password, merchants.created_at AS merchants_created_at 
+FROM merchants 
+WHERE merchants.merchant_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('NewMerchant123!', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-11 21:40:06,137 - INFO - 127.0.0.1 - - [11/Nov/2025 21:40:06] "POST /signup HTTP/1.1" 200 -
+2025-11-11 21:40:26,047 - ERROR - Exception Occurred: (sqlite3.OperationalError) database is locked
+[SQL: SELECT merchants.id AS merchants_id, merchants.merchant_id AS merchants_merchant_id, merchants.password AS merchants_password, merchants.created_at AS merchants_created_at 
+FROM merchants 
+WHERE merchants.merchant_id = ? AND merchants.password = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('NewMerchant123!', 'testpass', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-11 21:40:26,052 - INFO - 127.0.0.1 - - [11/Nov/2025 21:40:26] "POST / HTTP/1.1" 200 -
+2025-11-11 21:40:37,587 - INFO - 127.0.0.1 - - [11/Nov/2025 21:40:37] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-11 21:40:37,593 - INFO - 127.0.0.1 - - [11/Nov/2025 21:40:37] "GET / HTTP/1.1" 200 -
+2025-11-11 21:50:07,230 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\dump_merchants.py', reloading
+2025-11-11 21:50:07,277 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\dump_merchants.py', reloading
+2025-11-11 21:50:07,986 - INFO -  * Restarting with stat
+2025-11-11 21:50:07,986 - INFO -  * Restarting with stat
+2025-11-11 21:50:11,199 - WARNING -  * Debugger is active!
+2025-11-11 21:50:11,199 - WARNING -  * Debugger is active!
+2025-11-11 21:50:11,202 - INFO -  * Debugger PIN: 139-057-469
+2025-11-11 21:50:11,202 - INFO -  * Debugger PIN: 139-057-469
+2025-11-12 18:01:55,481 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-12 18:01:55,482 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-12 18:01:55,484 - INFO -  * Restarting with stat
+2025-11-12 18:01:58,957 - WARNING -  * Debugger is active!
+2025-11-12 18:01:58,963 - INFO -  * Debugger PIN: 139-057-469
+2025-11-12 18:05:16,623 - ERROR - Input Error: MerchantID is required.
+2025-11-12 18:05:16,759 - INFO - 127.0.0.1 - - [12/Nov/2025 18:05:16] "POST /signup HTTP/1.1" 200 -
+2025-11-12 18:05:17,116 - INFO - 127.0.0.1 - - [12/Nov/2025 18:05:17] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 18:30:24,903 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-11-13 18:30:24,904 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-13 18:30:24,907 - INFO -  * Restarting with stat
+2025-11-13 18:30:28,436 - WARNING -  * Debugger is active!
+2025-11-13 18:30:28,442 - INFO -  * Debugger PIN: 483-019-071
+2025-11-13 18:30:29,682 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:29] "GET / HTTP/1.1" 200 -
+2025-11-13 18:30:30,392 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:30] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-13 18:30:30,431 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:30] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-13 18:30:30,968 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:30] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-11-13 18:30:41,222 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:41] "POST / HTTP/1.1" 200 -
+2025-11-13 18:30:41,269 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:41] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-11-13 18:30:41,272 - INFO - 127.0.0.1 - - [13/Nov/2025 18:30:41] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-11-13 18:32:39,064 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\check_merchant.py', reloading
+2025-11-13 18:32:39,688 - INFO -  * Restarting with stat
+2025-11-13 18:32:43,098 - WARNING -  * Debugger is active!
+2025-11-13 18:32:43,102 - INFO -  * Debugger PIN: 483-019-071
+2025-11-13 18:34:12,392 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\init_db.py', reloading
+2025-11-13 18:34:12,771 - INFO -  * Restarting with stat
+2025-11-13 18:34:16,153 - WARNING -  * Debugger is active!
+2025-11-13 18:34:16,158 - INFO -  * Debugger PIN: 483-019-071
+2025-11-13 18:34:44,091 - INFO - 127.0.0.1 - - [13/Nov/2025 18:34:44] "GET / HTTP/1.1" 200 -
+2025-11-13 18:34:51,558 - INFO - 127.0.0.1 - - [13/Nov/2025 18:34:51] "GET /api/live_feed HTTP/1.1" 200 -
+2025-11-13 18:34:58,003 - INFO - 127.0.0.1 - - [13/Nov/2025 18:34:58] "GET /insights HTTP/1.1" 200 -
+2025-11-13 18:35:05,195 - INFO - 127.0.0.1 - - [13/Nov/2025 18:35:05] "GET /insights HTTP/1.1" 200 -
+2025-11-13 18:35:11,072 - INFO - 127.0.0.1 - - [13/Nov/2025 18:35:11] "GET /live HTTP/1.1" 200 -
+2025-11-13 18:35:17,254 - INFO - 127.0.0.1 - - [13/Nov/2025 18:35:17] "GET /signup HTTP/1.1" 200 -
+2025-11-13 18:35:23,145 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\init_db.py', reloading
+2025-11-13 18:35:24,045 - INFO -  * Restarting with stat
+2025-11-13 18:35:27,475 - WARNING -  * Debugger is active!
+2025-11-13 18:35:27,479 - INFO -  * Debugger PIN: 483-019-071
+2025-11-13 18:35:27,716 - INFO - 127.0.0.1 - - [13/Nov/2025 18:35:27] "GET /admin HTTP/1.1" 200 -
+2025-11-13 18:35:34,993 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\init_db.py', reloading
+2025-11-13 18:35:35,829 - INFO -  * Restarting with stat
+2025-11-13 18:35:39,225 - WARNING -  * Debugger is active!
+2025-11-13 18:35:39,229 - INFO -  * Debugger PIN: 483-019-071
+2025-11-13 18:35:51,031 - INFO - 127.0.0.1 - - [13/Nov/2025 18:35:51] "[31m[1mPOST /api/live_feed HTTP/1.1[0m" 405 -
+2025-11-13 18:36:00,896 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:00] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-13 18:36:00,945 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:00] "GET / HTTP/1.1" 200 -
+2025-11-13 18:36:06,810 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:06] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-13 18:36:06,830 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:06] "GET / HTTP/1.1" 200 -
+2025-11-13 18:36:12,676 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:12] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-11-13 18:36:12,680 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:12] "GET / HTTP/1.1" 200 -
+2025-11-13 18:36:20,202 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:20] "[32mGET /transactions HTTP/1.1[0m" 302 -
+2025-11-13 18:36:20,207 - INFO - 127.0.0.1 - - [13/Nov/2025 18:36:20] "GET / HTTP/1.1" 200 -
+2025-12-04 09:29:41,737 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-04 09:29:41,738 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-04 09:29:41,742 - INFO -  * Restarting with stat
+2025-12-04 09:29:45,372 - WARNING -  * Debugger is active!
+2025-12-04 09:29:45,376 - INFO -  * Debugger PIN: 483-019-071
+2025-12-04 09:29:48,180 - INFO - 127.0.0.1 - - [04/Dec/2025 09:29:48] "GET / HTTP/1.1" 200 -
+2025-12-04 09:29:49,018 - INFO - 127.0.0.1 - - [04/Dec/2025 09:29:49] "GET /static/bootstrap.min.css HTTP/1.1" 200 -
+2025-12-04 09:29:49,083 - INFO - 127.0.0.1 - - [04/Dec/2025 09:29:49] "GET /static/bootstrap.min.js HTTP/1.1" 200 -
+2025-12-04 09:29:49,113 - INFO - 127.0.0.1 - - [04/Dec/2025 09:29:49] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-12-04 09:32:33,567 - INFO - 127.0.0.1 - - [04/Dec/2025 09:32:33] "GET / HTTP/1.1" 200 -
+2025-12-04 09:32:33,589 - INFO - 127.0.0.1 - - [04/Dec/2025 09:32:33] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-04 09:32:33,595 - INFO - 127.0.0.1 - - [04/Dec/2025 09:32:33] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-04 09:32:33,781 - INFO - 127.0.0.1 - - [04/Dec/2025 09:32:33] "GET / HTTP/1.1" 200 -
+2025-12-04 09:32:33,802 - INFO - 127.0.0.1 - - [04/Dec/2025 09:32:33] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-04 09:32:33,803 - INFO - 127.0.0.1 - - [04/Dec/2025 09:32:33] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-04 09:33:20,571 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\create_sample_merchant.py', reloading
+2025-12-04 09:33:21,050 - INFO -  * Restarting with stat
+2025-12-04 09:33:24,349 - WARNING -  * Debugger is active!
+2025-12-04 09:33:24,353 - INFO -  * Debugger PIN: 483-019-071
+2025-12-04 09:36:31,006 - INFO - 127.0.0.1 - - [04/Dec/2025 09:36:31] "POST / HTTP/1.1" 200 -
+2025-12-04 09:36:31,131 - INFO - 127.0.0.1 - - [04/Dec/2025 09:36:31] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-04 09:36:31,132 - INFO - 127.0.0.1 - - [04/Dec/2025 09:36:31] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-04 09:45:47,400 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\dump_merchants.py', reloading
+2025-12-04 09:45:47,763 - INFO -  * Restarting with stat
+2025-12-04 09:45:51,031 - WARNING -  * Debugger is active!
+2025-12-04 09:45:51,035 - INFO -  * Debugger PIN: 483-019-071
+2025-12-12 08:58:11,088 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 08:58:11,088 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 08:58:11,091 - INFO -  * Restarting with stat
+2025-12-12 08:58:14,294 - WARNING -  * Debugger is active!
+2025-12-12 08:58:14,308 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:07:51,519 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\init_db.py', reloading
+2025-12-12 09:07:51,950 - INFO -  * Restarting with stat
+2025-12-12 09:07:55,974 - WARNING -  * Debugger is active!
+2025-12-12 09:07:55,977 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:08:07,803 - INFO - 127.0.0.1 - - [12/Dec/2025 09:08:07] "GET / HTTP/1.1" 200 -
+2025-12-12 09:08:08,735 - INFO - 127.0.0.1 - - [12/Dec/2025 09:08:08] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:08:08,839 - INFO - 127.0.0.1 - - [12/Dec/2025 09:08:08] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:08:08,877 - INFO - 127.0.0.1 - - [12/Dec/2025 09:08:08] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-12-12 09:08:50,539 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 09:08:50,540 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 09:08:50,542 - INFO -  * Restarting with stat
+2025-12-12 09:08:53,554 - WARNING -  * Debugger is active!
+2025-12-12 09:08:53,559 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:09:04,839 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:09:05,276 - INFO -  * Restarting with stat
+2025-12-12 09:09:05,482 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:09:05,869 - INFO -  * Restarting with stat
+2025-12-12 09:09:08,519 - WARNING -  * Debugger is active!
+2025-12-12 09:09:08,523 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:09:18,173 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:18] "GET / HTTP/1.1" 200 -
+2025-12-12 09:09:18,186 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:18] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:09:18,409 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:18] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:09:18,415 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:18] "GET / HTTP/1.1" 200 -
+2025-12-12 09:09:18,614 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:18] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:09:18,777 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:18] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:09:23,407 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 09:09:23,407 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 09:09:23,409 - INFO -  * Restarting with stat
+2025-12-12 09:09:26,531 - WARNING -  * Debugger is active!
+2025-12-12 09:09:26,535 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:09:51,837 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:51] "GET / HTTP/1.1" 200 -
+2025-12-12 09:09:51,842 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:51] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:09:51,849 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:51] "POST /signup HTTP/1.1" 200 -
+2025-12-12 09:09:52,041 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:52] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:09:52,097 - INFO - 127.0.0.1 - - [12/Dec/2025 09:09:52] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:10:04,228 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:10:04,626 - INFO -  * Restarting with stat
+2025-12-12 09:10:04,825 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:10:05,213 - INFO -  * Restarting with stat
+2025-12-12 09:10:07,865 - WARNING -  * Debugger is active!
+2025-12-12 09:10:07,869 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:10:08,362 - WARNING -  * Debugger is active!
+2025-12-12 09:10:08,367 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:10:18,539 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "GET / HTTP/1.1" 200 -
+2025-12-12 09:10:18,548 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:10:18,564 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "POST /signup HTTP/1.1" 200 -
+2025-12-12 09:10:18,774 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:10:18,832 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:10:18,876 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:10:18,904 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:10:18,927 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:18] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:10:19,055 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:19] "GET /api/live_feed HTTP/1.1" 200 -
+2025-12-12 09:10:19,067 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:19] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:10:19,076 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:19] "GET /admin HTTP/1.1" 200 -
+2025-12-12 09:10:19,109 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:19] "GET /fraud_transactions HTTP/1.1" 200 -
+2025-12-12 09:10:19,115 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:19] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:10:19,119 - INFO - 127.0.0.1 - - [12/Dec/2025 09:10:19] "GET / HTTP/1.1" 200 -
+2025-12-12 09:10:43,270 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:10:43,443 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:10:43,696 - INFO -  * Restarting with stat
+2025-12-12 09:10:43,833 - INFO -  * Restarting with stat
+2025-12-12 09:10:46,883 - WARNING -  * Debugger is active!
+2025-12-12 09:10:46,887 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:10:47,016 - WARNING -  * Debugger is active!
+2025-12-12 09:10:47,019 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:11:18,317 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:11:18,708 - INFO -  * Restarting with stat
+2025-12-12 09:11:18,721 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:11:19,119 - INFO -  * Restarting with stat
+2025-12-12 09:11:21,830 - WARNING -  * Debugger is active!
+2025-12-12 09:11:21,834 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:11:22,181 - WARNING -  * Debugger is active!
+2025-12-12 09:11:22,184 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:18:13,133 - INFO - 127.0.0.1 - - [12/Dec/2025 09:18:13] "GET / HTTP/1.1" 200 -
+2025-12-12 09:18:13,260 - INFO - 127.0.0.1 - - [12/Dec/2025 09:18:13] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:18:13,261 - INFO - 127.0.0.1 - - [12/Dec/2025 09:18:13] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:18:23,497 - INFO - 127.0.0.1 - - [12/Dec/2025 09:18:23] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:18:35,615 - INFO - 127.0.0.1 - - [12/Dec/2025 09:18:35] "POST /signup HTTP/1.1" 200 -
+2025-12-12 09:18:55,991 - ERROR - Input Error: Passwords do not match.
+2025-12-12 09:18:55,992 - INFO - 127.0.0.1 - - [12/Dec/2025 09:18:55] "POST /signup HTTP/1.1" 200 -
+2025-12-12 09:19:25,290 - INFO - 127.0.0.1 - - [12/Dec/2025 09:19:25] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:19:25,298 - INFO - 127.0.0.1 - - [12/Dec/2025 09:19:25] "GET / HTTP/1.1" 200 -
+2025-12-12 09:19:25,319 - INFO - 127.0.0.1 - - [12/Dec/2025 09:19:25] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:19:25,321 - INFO - 127.0.0.1 - - [12/Dec/2025 09:19:25] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:20:34,868 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:20:35,285 - INFO -  * Restarting with stat
+2025-12-12 09:20:38,524 - WARNING -  * Debugger is active!
+2025-12-12 09:20:38,528 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:21:02,140 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:21:02,533 - INFO -  * Restarting with stat
+2025-12-12 09:21:05,723 - WARNING -  * Debugger is active!
+2025-12-12 09:21:05,727 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:21:17,223 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:17] "GET / HTTP/1.1" 200 -
+2025-12-12 09:21:17,236 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:17] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:21:17,251 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:17] "POST /signup HTTP/1.1" 200 -
+2025-12-12 09:21:38,148 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:21:38,507 - INFO -  * Restarting with stat
+2025-12-12 09:21:41,539 - WARNING -  * Debugger is active!
+2025-12-12 09:21:41,542 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:21:50,897 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:50] "GET / HTTP/1.1" 200 -
+2025-12-12 09:21:50,905 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:50] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:21:51,088 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:21:51,277 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:21:51,326 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:21:51,365 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:21:51,396 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:21:51,416 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:21:51,498 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /api/live_feed HTTP/1.1" 200 -
+2025-12-12 09:21:51,506 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:21:51,513 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /admin HTTP/1.1" 200 -
+2025-12-12 09:21:51,538 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET /fraud_transactions HTTP/1.1" 200 -
+2025-12-12 09:21:51,544 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:21:51,552 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "POST / HTTP/1.1" 200 -
+2025-12-12 09:21:51,557 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-12-12 09:21:51,561 - INFO - 127.0.0.1 - - [12/Dec/2025 09:21:51] "GET / HTTP/1.1" 200 -
+2025-12-12 09:22:09,518 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:22:09,912 - INFO -  * Restarting with stat
+2025-12-12 09:22:12,973 - WARNING -  * Debugger is active!
+2025-12-12 09:22:12,977 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:22:23,523 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:23] "GET / HTTP/1.1" 200 -
+2025-12-12 09:22:23,533 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:23] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:22:23,777 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:23] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:22:23,947 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:23] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:22:24,010 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:22:24,057 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:22:24,089 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:22:24,108 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:22:24,190 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /api/live_feed HTTP/1.1" 200 -
+2025-12-12 09:22:24,198 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:22:24,205 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /admin HTTP/1.1" 200 -
+2025-12-12 09:22:24,231 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /fraud_transactions HTTP/1.1" 200 -
+2025-12-12 09:22:24,236 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:22:24,243 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "POST / HTTP/1.1" 200 -
+2025-12-12 09:22:24,247 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-12-12 09:22:24,426 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:22:24,465 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:22:24,489 - INFO - 127.0.0.1 - - [12/Dec/2025 09:22:24] "[33mGET /transaction_details?transaction_id=999999 HTTP/1.1[0m" 404 -
+2025-12-12 09:24:50,372 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\init_new_db.py', reloading
+2025-12-12 09:24:50,748 - INFO -  * Restarting with stat
+2025-12-12 09:24:53,792 - WARNING -  * Debugger is active!
+2025-12-12 09:24:53,795 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:26:20,620 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\init_new_db.py', reloading
+2025-12-12 09:26:20,982 - INFO -  * Restarting with stat
+2025-12-12 09:26:24,460 - WARNING -  * Debugger is active!
+2025-12-12 09:26:24,464 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:26:50,452 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:26:50,835 - INFO -  * Restarting with stat
+2025-12-12 09:26:53,985 - WARNING -  * Debugger is active!
+2025-12-12 09:26:53,988 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:27:17,413 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\init_new_db.py', reloading
+2025-12-12 09:27:17,704 - INFO -  * Restarting with stat
+2025-12-12 09:27:20,801 - WARNING -  * Debugger is active!
+2025-12-12 09:27:20,804 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:27:57,683 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:27:58,015 - INFO -  * Restarting with stat
+2025-12-12 09:28:01,174 - WARNING -  * Debugger is active!
+2025-12-12 09:28:01,177 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:28:05,808 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:28:06,132 - INFO -  * Restarting with stat
+2025-12-12 09:28:09,281 - WARNING -  * Debugger is active!
+2025-12-12 09:28:09,285 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:28:16,179 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\init_new_db.py', reloading
+2025-12-12 09:28:16,493 - INFO -  * Restarting with stat
+2025-12-12 09:28:19,543 - WARNING -  * Debugger is active!
+2025-12-12 09:28:19,546 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:28:27,545 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\scripts\\init_db.py', reloading
+2025-12-12 09:28:27,893 - INFO -  * Restarting with stat
+2025-12-12 09:28:30,968 - WARNING -  * Debugger is active!
+2025-12-12 09:28:30,973 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:28:41,249 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\test_app.py', reloading
+2025-12-12 09:28:41,564 - INFO -  * Restarting with stat
+2025-12-12 09:28:44,636 - WARNING -  * Debugger is active!
+2025-12-12 09:28:44,640 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:28:56,467 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:56] "GET / HTTP/1.1" 200 -
+2025-12-12 09:28:56,476 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:56] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:28:56,664 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:56] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:28:56,826 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:56] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:28:57,401 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:57] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:28:58,006 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:58] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:28:58,594 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:58] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:28:58,613 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:58] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:28:58,707 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:58] "GET /api/live_feed HTTP/1.1" 200 -
+2025-12-12 09:28:58,715 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:58] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:28:58,722 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:58] "GET /admin HTTP/1.1" 200 -
+2025-12-12 09:28:59,294 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:59] "GET /fraud_transactions HTTP/1.1" 200 -
+2025-12-12 09:28:59,300 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:59] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:28:59,306 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:59] "POST / HTTP/1.1" 200 -
+2025-12-12 09:28:59,310 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:59] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-12-12 09:28:59,473 - INFO - 127.0.0.1 - - [12/Dec/2025 09:28:59] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:29:00,042 - INFO - 127.0.0.1 - - [12/Dec/2025 09:29:00] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:29:00,047 - INFO - 127.0.0.1 - - [12/Dec/2025 09:29:00] "[33mGET /transaction_details?transaction_id=999999 HTTP/1.1[0m" 404 -
+2025-12-12 09:30:40,236 - INFO - 127.0.0.1 - - [12/Dec/2025 09:30:40] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:31:00,654 - INFO - 127.0.0.1 - - [12/Dec/2025 09:31:00] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:31:00,663 - INFO - 127.0.0.1 - - [12/Dec/2025 09:31:00] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:32:15,644 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:15] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:32:15,752 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:15] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:32:15,762 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:15] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:32:19,810 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:19] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:32:19,850 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:19] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:32:19,852 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:19] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:32:20,015 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:20] "GET /static/chart.min.js HTTP/1.1" 200 -
+2025-12-12 09:32:35,157 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:35] "GET / HTTP/1.1" 200 -
+2025-12-12 09:32:35,192 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:35] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:32:35,195 - INFO - 127.0.0.1 - - [12/Dec/2025 09:32:35] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:32:59,260 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:32:59,666 - INFO -  * Restarting with stat
+2025-12-12 09:37:02,112 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 09:37:02,113 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 09:37:02,115 - INFO -  * Restarting with stat
+2025-12-12 09:37:05,242 - WARNING -  * Debugger is active!
+2025-12-12 09:37:05,245 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:37:06,959 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:06] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:37:07,083 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:07] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:37:07,084 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:07] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:37:12,435 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:12] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:37:12,460 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:12] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:37:12,461 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:12] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:37:36,115 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:36] "GET / HTTP/1.1" 200 -
+2025-12-12 09:37:36,124 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:36] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:37:36,341 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:36] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:37:36,507 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:36] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:37:37,096 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:37:37,680 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:37:37,700 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:37:37,735 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:37:37,830 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /api/live_feed HTTP/1.1" 200 -
+2025-12-12 09:37:37,838 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:37:37,845 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:37] "GET /admin HTTP/1.1" 200 -
+2025-12-12 09:37:38,465 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:38] "GET /fraud_transactions HTTP/1.1" 200 -
+2025-12-12 09:37:38,469 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:38] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:37:38,477 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:38] "POST / HTTP/1.1" 200 -
+2025-12-12 09:37:38,481 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:38] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-12-12 09:37:38,661 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:38] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:37:39,259 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:39] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:37:39,282 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:39] "[33mGET /transaction_details?transaction_id=999999 HTTP/1.1[0m" 404 -
+2025-12-12 09:37:54,660 - INFO - 127.0.0.1 - - [12/Dec/2025 09:37:54] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:38:17,373 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:38:17,731 - INFO -  * Restarting with stat
+2025-12-12 09:38:20,928 - WARNING -  * Debugger is active!
+2025-12-12 09:38:20,931 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:39:18,282 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:18] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:39:38,528 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:38] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:39:38,542 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:38] "GET / HTTP/1.1" 200 -
+2025-12-12 09:39:38,670 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:38] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 09:39:38,675 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:38] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 09:39:49,628 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:49] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:39:49,650 - INFO - 127.0.0.1 - - [12/Dec/2025 09:39:49] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:41:07,900 - INFO - 127.0.0.1 - - [12/Dec/2025 09:41:07] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-12-12 09:41:30,999 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:41:31,354 - INFO -  * Restarting with stat
+2025-12-12 09:41:34,387 - WARNING -  * Debugger is active!
+2025-12-12 09:41:34,390 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:41:39,603 - INFO - 127.0.0.1 - - [12/Dec/2025 09:41:39] "[32mPOST /forgot_password HTTP/1.1[0m" 302 -
+2025-12-12 09:41:52,790 - INFO - 127.0.0.1 - - [12/Dec/2025 09:41:52] "POST /reset_password HTTP/1.1" 200 -
+2025-12-12 09:42:02,986 - INFO - 127.0.0.1 - - [12/Dec/2025 09:42:02] "POST / HTTP/1.1" 200 -
+2025-12-12 09:43:37,069 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:37] "GET / HTTP/1.1" 200 -
+2025-12-12 09:43:52,993 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:52] "GET / HTTP/1.1" 200 -
+2025-12-12 09:43:53,001 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:43:53,187 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "[32mPOST /signup HTTP/1.1[0m" 302 -
+2025-12-12 09:43:53,192 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:43:53,207 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:43:53,213 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:43:53,229 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /transactions HTTP/1.1" 200 -
+2025-12-12 09:43:53,247 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /insights HTTP/1.1" 200 -
+2025-12-12 09:43:53,337 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /api/live_feed HTTP/1.1" 200 -
+2025-12-12 09:43:53,345 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /live HTTP/1.1" 200 -
+2025-12-12 09:43:53,351 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /admin HTTP/1.1" 200 -
+2025-12-12 09:43:53,360 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "GET /fraud_transactions HTTP/1.1" 200 -
+2025-12-12 09:43:53,365 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 09:43:53,371 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "POST / HTTP/1.1" 200 -
+2025-12-12 09:43:53,375 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "[32mGET /dashboard HTTP/1.1[0m" 302 -
+2025-12-12 09:43:53,536 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:53] "[32mPOST / HTTP/1.1[0m" 302 -
+2025-12-12 09:43:54,101 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:54] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 09:43:54,107 - INFO - 127.0.0.1 - - [12/Dec/2025 09:43:54] "[33mGET /transaction_details?transaction_id=999999 HTTP/1.1[0m" 404 -
+2025-12-12 09:47:20,806 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 09:47:21,222 - INFO -  * Restarting with stat
+2025-12-12 09:47:24,368 - WARNING -  * Debugger is active!
+2025-12-12 09:47:24,373 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:47:32,520 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\models.py', reloading
+2025-12-12 09:47:32,839 - INFO -  * Restarting with stat
+2025-12-12 09:47:35,791 - WARNING -  * Debugger is active!
+2025-12-12 09:47:35,794 - INFO -  * Debugger PIN: 126-212-659
+2025-12-12 09:52:25,695 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:25] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:25,831 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:25] "GET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2025-12-12 09:52:25,848 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:25] "GET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2025-12-12 09:52:25,927 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:25] "GET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1" 200 -
+2025-12-12 09:52:25,942 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:25] "GET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2025-12-12 09:52:27,676 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:27] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:27,701 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:27] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:27,702 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:27] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:27,733 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:27] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:27,747 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:27] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:28,665 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:28] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:28,693 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:28,695 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:28,711 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:28,725 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:29,341 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:29] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:29,367 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:29] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:29,368 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:29] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:29,384 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:29] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:29,397 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:29] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:29,985 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:29] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:30,026 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,028 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,047 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,061 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,318 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:30,344 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,346 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,364 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,380 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,549 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:30,569 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,570 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,589 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,602 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,822 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:30,847 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,849 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,871 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:30,882 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:30] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,057 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:31,082 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,084 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,101 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,114 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,310 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:31,331 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,331 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,348 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,369 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,534 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:31,553 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,554 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,574 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,585 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,781 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:31,811 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,813 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,829 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:31,843 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:31] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,033 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:32,052 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,053 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,073 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,086 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,268 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:32,294 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,295 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,314 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,329 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,531 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:32,551 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,552 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,572 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,586 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,793 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:32,820 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,821 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,839 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:32,852 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:32] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,016 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:33,037 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,038 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,056 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,069 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,269 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:33,294 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,296 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,315 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,328 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,519 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:33,546 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,548 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,570 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,591 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,804 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:33,833 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,834 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,852 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:33,866 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:33] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,031 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:34,052 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,053 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,071 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,085 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,278 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:34,301 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,302 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,324 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,340 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,502 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:52:34,525 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,527 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,544 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:52:34,558 - INFO - 127.0.0.1 - - [12/Dec/2025 09:52:34] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:53:16,151 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:16] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:53:16,176 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:16] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:53:16,177 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:16] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:53:16,215 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:16] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:53:16,232 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:16] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2025-12-12 09:53:21,583 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:21] "[32mGET / HTTP/1.1[0m" 302 -
+2025-12-12 09:53:21,638 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:21] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:53:21,671 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:21] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:53:21,673 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:21] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:53:21,690 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:21] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:53:28,202 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:28] "[32mGET / HTTP/1.1[0m" 302 -
+2025-12-12 09:53:28,252 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:28] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:53:28,282 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:53:28,283 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:53:28,301 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:28] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:53:36,310 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:36] "GET /signup HTTP/1.1" 200 -
+2025-12-12 09:53:50,446 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:50] "[32mGET / HTTP/1.1[0m" 302 -
+2025-12-12 09:53:50,487 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:50] "[35m[1mGET /dashboard HTTP/1.1[0m" 500 -
+2025-12-12 09:53:50,521 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:50] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2025-12-12 09:53:50,523 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:50] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2025-12-12 09:53:50,543 - INFO - 127.0.0.1 - - [12/Dec/2025 09:53:50] "[36mGET /dashboard?__debugger__=yes&cmd=resource&f=console.png&s=n4x8VDvcyefxGR1IwwnI HTTP/1.1[0m" 304 -
+2025-12-12 09:54:52,235 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\models.py', reloading
+2025-12-12 09:54:52,787 - INFO -  * Restarting with stat
+2025-12-12 09:59:40,951 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 09:59:40,951 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 09:59:40,954 - INFO -  * Restarting with stat
+2025-12-12 09:59:43,922 - WARNING -  * Debugger is active!
+2025-12-12 09:59:43,927 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 09:59:50,027 - INFO - 127.0.0.1 - - [12/Dec/2025 09:59:50] "GET /signup HTTP/1.1" 200 -
+2025-12-12 10:01:01,990 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 10:01:01,990 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 10:01:01,992 - INFO -  * Restarting with stat
+2025-12-12 10:01:04,898 - WARNING -  * Debugger is active!
+2025-12-12 10:01:04,901 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 10:01:11,701 - INFO - 127.0.0.1 - - [12/Dec/2025 10:01:11] "[32mGET / HTTP/1.1[0m" 302 -
+2025-12-12 10:01:11,735 - INFO - 127.0.0.1 - - [12/Dec/2025 10:01:11] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:02:57,064 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-12-12 10:02:57,065 - INFO - [33mPress CTRL+C to quit[0m
+2025-12-12 10:02:57,067 - INFO -  * Restarting with stat
+2025-12-12 10:02:59,942 - WARNING -  * Debugger is active!
+2025-12-12 10:02:59,945 - INFO -  * Debugger PIN: 139-057-469
+2025-12-12 10:03:10,856 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:10] "[32mGET /signup HTTP/1.1[0m" 302 -
+2025-12-12 10:03:10,887 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:10] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:12,191 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:12] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:13,010 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:13] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:13,191 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:13] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:13,378 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:13] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:17,027 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:17] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:17,908 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:17] "GET /dashboard HTTP/1.1" 200 -
+2025-12-12 10:03:22,152 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:22] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-12-12 10:03:22,163 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:22] "GET / HTTP/1.1" 200 -
+2025-12-12 10:03:22,283 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:22] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 10:03:22,284 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:22] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 10:03:24,798 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:24] "GET /signup HTTP/1.1" 200 -
+2025-12-12 10:03:26,306 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:26] "GET / HTTP/1.1" 200 -
+2025-12-12 10:03:26,339 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:26] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 10:03:26,340 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:26] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 10:03:28,106 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:28] "GET /signup HTTP/1.1" 200 -
+2025-12-12 10:03:29,948 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:29] "GET / HTTP/1.1" 200 -
+2025-12-12 10:03:29,984 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:29] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 10:03:29,986 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:29] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 10:03:31,307 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:31] "GET /signup HTTP/1.1" 200 -
+2025-12-12 10:03:32,609 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:32] "GET / HTTP/1.1" 200 -
+2025-12-12 10:03:32,638 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:32] "[36mGET /static/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-12-12 10:03:32,640 - INFO - 127.0.0.1 - - [12/Dec/2025 10:03:32] "[36mGET /static/bootstrap.min.js HTTP/1.1[0m" 304 -
+2025-12-12 10:03:44,734 - INFO -  * Detected change in 'C:\\github-repo\\NM_Lohith_DS\\app.py', reloading
+2025-12-12 10:03:45,098 - INFO -  * Restarting with stat
+2025-12-12 10:03:48,285 - WARNING -  * Debugger is active!
+2025-12-12 10:03:48,288 - INFO -  * Debugger PIN: 139-057-469
