@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        body { background-color: #f8f9fa; }
+        .details-card { max-width: 800px; margin: 50px auto; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Transaction Details</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card details-card">
+            <div class="card-header">
+                <h3>Transaction ID: {{ transaction.TransactionID }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for key, value in transaction.items() %}
+                    <div class="col-md-6 mb-3">
+                        <strong>{{ key }}:</strong> {{ value }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+</body>
+</html>

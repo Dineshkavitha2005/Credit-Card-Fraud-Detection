@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Insights</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='chart.min.js') }}"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .chart-container { position: relative; height: 400px; width: 100%; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Fraud Detection Dashboard</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                <a class="nav-link" href="{{ url_for('live_detection') }}">Live Detection</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Model Insights</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Fraud Ratio</div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="fraudRatioChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Feature Importance</div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="featureImportanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="insights-data" type="application/json">
+        {{ {
+            "fraud_data": [ (fraud_ratio * 100) | round(2), ((1 - fraud_ratio) * 100) | round(2) ],
+            "feature_labels": feature_importance.keys() | list,
+            "feature_values": feature_importance.values() | list
+        } | tojson }}
+    </script>
+
+    <script>
+        // Parse rendered JSON data (pure JS, no Jinja here)
+        const insightsData = JSON.parse(document.getElementById('insights-data').textContent);
+
+        // Fraud Ratio Chart
+        const fraudRatioCtx = document.getElementById('fraudRatioChart').getContext('2d');
+        new Chart(fraudRatioCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Fraud', 'No Fraud'],
+                datasets: [{
+                    data: insightsData.fraud_data,
+                    backgroundColor: ['#dc3545', '#28a745']
+                }]
+            }
+        });
+
+        // Feature Importance Chart
+        const featureImportanceCtx = document.getElementById('featureImportanceChart').getContext('2d');
+        new Chart(featureImportanceCtx, {
+            type: 'bar',
+            data: {
+                labels: insightsData.feature_labels,
+                datasets: [{
+                    label: 'Importance',
+                    data: insightsData.feature_values,
+                    backgroundColor: '#007bff'
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+</body>
+</html>

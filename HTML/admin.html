@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        body { background-color: #f8f9fa; }
+        .upload-card { max-width: 600px; margin: 50px auto; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Admin Portal</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card upload-card">
+            <div class="card-header">
+                <h3>Upload Dataset and Retrain Model</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="dataset" class="form-label">Select Dataset File (CSV)</label>
+                        <input type="file" class="form-control" id="dataset" name="dataset" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Upload and Retrain</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - Merchant {{ merchant_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+        body { background-color: #f8f9fa; }
+        .table-responsive { margin-top: 20px; }
+        .btn-custom { margin: 5px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Fraud Detection Dashboard</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('insights') }}">Insights</a>
+                <a class="nav-link" href="{{ url_for('live_detection') }}">Live Detection</a>
+                <a class="nav-link" href="{{ url_for('fraud_transactions', merchant_id=merchant_id) }}">Fraud Transactions</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Transactions for Merchant {{ merchant_id }}</h2>
+
+        <!-- Filters -->
+        <form class="row g-2 align-items-end" method="get">
+            <div class="col-md-2">
+                <label class="form-label">Transaction ID</label>
+                <input type="text" class="form-control" name="transaction_id" value="{{ filters.transaction_id }}" placeholder="e.g. 1234">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Type</label>
+                <input type="text" class="form-control" name="transaction_type" value="{{ filters.transaction_type }}" placeholder="Purchase, ATM...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" name="location" value="{{ filters.location }}" placeholder="City">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fraud Status</label>
+                <select class="form-select" name="fraud_status">
+                    <option value="all" {% if filters.fraud_status == 'all' %}selected{% endif %}>All</option>
+                    <option value="fraud" {% if filters.fraud_status == 'fraud' %}selected{% endif %}>Fraud</option>
+                    <option value="no_fraud" {% if filters.fraud_status == 'no_fraud' %}selected{% endif %}>No Fraud</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Min Amount</label>
+                <input type="number" step="0.01" class="form-control" name="min_amount" value="{{ filters.min_amount }}" placeholder="0">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Max Amount</label>
+                <input type="number" step="0.01" class="form-control" name="max_amount" value="{{ filters.max_amount }}" placeholder="5000">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" name="start_date" value="{{ filters.start_date }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" name="end_date" value="{{ filters.end_date }}">
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+            <div class="col-md-2 d-grid">
+                <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="text-muted">Showing {{ total }} transactions (max 200)</span>
+            </div>
+        </form>
+
+        {% if error %}
+            <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+
+        {% if transactions %}
+            <div class="table-responsive mt-3">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Fraud Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.TransactionID }}</td>
+                            <td>${{ "%.2f"|format(transaction.Amount) }}</td>
+                            <td>{{ transaction.Date }}</td>
+                            <td>{{ transaction.TransactionType }}</td>
+                            <td>{{ transaction.Location }}</td>
+                            <td>
+                                {% if transaction.FraudStatus == 'Fraud' %}
+                                    <span class="badge bg-danger">Fraud</span>
+                                {% else %}
+                                    <span class="badge bg-success">No Fraud</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('transaction_details', transaction_id=transaction.TransactionID) }}" class="btn btn-sm btn-outline-primary">Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info mt-3">No transactions found for the selected filters.</div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+</body>
+</html>
