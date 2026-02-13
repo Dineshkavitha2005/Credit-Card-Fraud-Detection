@@ -176,4 +176,3 @@ For issues or questions, please open an issue on GitHub.
 
 ---
 
-**Note**: This is a demonstration project. For production use, implement additional security measures and testing.
