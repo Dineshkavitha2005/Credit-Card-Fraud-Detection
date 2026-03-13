@@ -166,13 +166,3 @@ All tests pass successfully ✅
 - [ ] API rate limiting
 - [ ] Automated fraud alerts via email/SMS
 
-## License
-
-This project is developed for educational purposes.
-
-## Support
-
-For issues or questions, please open an issue on GitHub.
-
----
-
