@@ -74,7 +74,6 @@ python test_app.py
 ## Project Structure
 
 ```
-NM_Lohith_DS/
 ├── app.py                          # Main Flask application
 ├── models.py                       # Database models
 ├── test_app.py                     # Test suite
