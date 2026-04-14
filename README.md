@@ -155,12 +155,4 @@ The application includes comprehensive tests:
 - Edge case handling
 
 
-## Future Enhancements
-
-- [ ] Email integration for password reset
-- [ ] Export transactions to CSV/PDF
-- [ ] Advanced analytics and reporting
-- [ ] Multi-factor authentication
-- [ ] API rate limiting
-- [ ] Automated fraud alerts via email/SMS
 
