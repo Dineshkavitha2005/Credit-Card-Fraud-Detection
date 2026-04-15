@@ -21,38 +21,6 @@ A Flask-based web application for real-time credit card fraud detection using ma
 - **Database**: SQLite
 - **Security**: Werkzeug password hashing
 
-## Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Lohithravi69/NM_Lohith_DS.git
-   cd NM_Lohith_DS
-   ```
-
-2. **Create virtual environment**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate  # Windows
-   source .venv/bin/activate  # Linux/Mac
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Initialize database**
-   ```bash
-   python init_db.py
-   ```
-
-5. **Run the application**
-   ```bash
-   python app.py
-   ```
-
-6. **Access the app**
-   Open your browser and navigate to: `http://127.0.0.1:5000`
 
 ## Usage
 
