@@ -111,8 +111,6 @@ Before deploying to production:
    app.run(debug=False)
    ```
 
-4. **Use WSGI Server**:
-   Deploy with Gunicorn or uWSGI instead of Flask's development server
 
 ## Testing
 
