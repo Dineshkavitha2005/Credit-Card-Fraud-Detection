@@ -34,10 +34,6 @@ A Flask-based web application for real-time credit card fraud detection using ma
 3. Confirm password
 4. Login with new credentials
 
-### Running Tests
-```bash
-python test_app.py
-```
 
 ## Project Structure
 
