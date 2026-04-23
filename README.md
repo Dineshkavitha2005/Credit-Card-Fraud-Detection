@@ -108,13 +108,5 @@ Before deploying to production:
    ```
 
 
-## Testing
-
-The application includes comprehensive tests:
-- Database integrity tests
-- Route accessibility tests
-- Authentication tests
-- Edge case handling
-
 
 
