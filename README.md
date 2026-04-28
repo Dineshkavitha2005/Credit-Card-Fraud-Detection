@@ -84,8 +84,3 @@ The system uses a Random Forest Classifier trained on historical transaction dat
 - Protected routes requiring login
 - CSRF protection (recommended for production)
 
-### API Endpoints
-- `/api/live_feed` - Real-time fraud detection data
-- `/api/fraud_ratio` - Fraud statistics
-- `/transaction_details?transaction_id=<id>` - Transaction details
-
