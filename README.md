@@ -22,12 +22,6 @@ A Flask-based web application for real-time credit card fraud detection using ma
 - **Security**: Werkzeug password hashing
 
 
-## Usage
-
-### Default Test Credentials
-- **Merchant ID**: `test123!`
-- **Password**: `password123`
-
 ### Creating New Merchant Account
 1. Click "Sign Up" on the homepage
 2. Enter Merchant ID and password
