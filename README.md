@@ -62,15 +62,7 @@ A Flask-based web application for real-time credit card fraud detection using ma
     └── dump_merchants.py
 ```
 
-## Key Features Explained
 
-### Fraud Detection
-The system uses a Random Forest Classifier trained on historical transaction data to predict fraud in real-time. Features analyzed include:
-- Transaction amount
-- Transaction type
-- Location
-- Merchant ID
-- Transaction timestamp
 
 ### Security
 - Passwords are hashed using Werkzeug's `generate_password_hash`
