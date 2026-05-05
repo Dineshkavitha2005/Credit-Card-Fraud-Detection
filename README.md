@@ -29,41 +29,6 @@ A Flask-based web application for real-time credit card fraud detection using ma
 4. Login with new credentials
 
 
-## Project Structure
-
-```
-├── app.py                          # Main Flask application
-├── models.py                       # Database models
-├── test_app.py                     # Test suite
-├── requirements.txt                # Python dependencies
-├── model.pkl                       # Trained ML model
-├── preprocessor.pkl                # Data preprocessor
-├── credit_card_fraud_dataset.csv   # Training dataset
-├── Html/                           # HTML templates
-│   ├── index.html                  # Login page
-│   ├── signup.html                 # Registration page
-│   ├── dashboard.html              # Main dashboard
-│   ├── transactions.html           # Transaction list
-│   ├── fraud_transactions.html     # Fraud alerts
-│   ├── insights.html               # Analytics
-│   ├── live.html                   # Real-time feed
-│   ├── admin.html                  # Admin panel
-│   ├── forgot_password.html        # Password recovery
-│   └── reset_password.html         # Password reset
-├── static/                         # Static assets
-│   ├── bootstrap.min.css
-│   ├── bootstrap.min.js
-│   └── chart.min.js
-├── instance/                       # Database files
-│   └── fraud_detection.db
-└── scripts/                        # Utility scripts
-    ├── init_db.py
-    ├── check_merchant.py
-    └── dump_merchants.py
-```
-
-
-
 ### Security
 - Passwords are hashed using Werkzeug's `generate_password_hash`
 - Session-based authentication
