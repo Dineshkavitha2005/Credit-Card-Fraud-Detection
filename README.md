@@ -13,14 +13,6 @@ A Flask-based web application for real-time credit card fraud detection using ma
 - 👨‍💼 **Admin Portal**: Manage merchants and view fraud logs
 - 🔑 **Password Recovery**: Forgot password functionality with email verification
 
-## Tech Stack
-
-- **Backend**: Flask, SQLAlchemy
-- **Frontend**: HTML, Bootstrap, Chart.js
-- **ML**: Scikit-learn, Random Forest Classifier
-- **Database**: SQLite
-- **Security**: Werkzeug password hashing
-
 
 ### Creating New Merchant Account
 1. Click "Sign Up" on the homepage
