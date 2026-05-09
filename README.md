@@ -14,13 +14,6 @@ A Flask-based web application for real-time credit card fraud detection using ma
 - 🔑 **Password Recovery**: Forgot password functionality with email verification
 
 
-### Creating New Merchant Account
-1. Click "Sign Up" on the homepage
-2. Enter Merchant ID and password
-3. Confirm password
-4. Login with new credentials
-
-
 ### Security
 - Passwords are hashed using Werkzeug's `generate_password_hash`
 - Session-based authentication
