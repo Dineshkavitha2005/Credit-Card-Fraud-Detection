@@ -1,5 +1,4 @@
 # Credit Card Fraud Detection System
-
 A Flask-based web application for real-time credit card fraud detection using machine learning.
 
 ## Features
