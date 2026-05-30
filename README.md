@@ -14,4 +14,3 @@ A Flask-based web application for real-time credit card fraud detection using ma
 - Session-based authentication
 - Protected routes requiring login
 - CSRF protection (recommended for production)
-
