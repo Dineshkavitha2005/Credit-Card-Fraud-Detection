@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid" id="stats-grid">
+    <div class="stat-card purple">
+        <div class="stat-header">
+            <div class="stat-icon"><i class="fas fa-exchange-alt"></i></div>
+        </div>
+        <div class="stat-label">Today's Transactions</div>
+        <div class="stat-value" id="stat-total-txn">-</div>
+        <div class="stat-change up"><i class="fas fa-arrow-up"></i> Real-time</div>
+    </div>
+
+    <div class="stat-card red">
+        <div class="stat-header">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        </div>
+        <div class="stat-label">Fraud Detected</div>
+        <div class="stat-value" id="stat-fraud">-</div>
+        <div class="stat-change" id="stat-fraud-rate">-</div>
+    </div>
+
+    <div class="stat-card green">
+        <div class="stat-header">
+            <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+        </div>
+        <div class="stat-label">Fraud Amount Blocked</div>
+        <div class="stat-value" id="stat-saved">-</div>
+        <div class="stat-change up"><i class="fas fa-shield-halved"></i> Protected</div>
+    </div>
+
+    <div class="stat-card blue">
+        <div class="stat-header">
+            <div class="stat-icon"><i class="fas fa-credit-card"></i></div>
+        </div>
+        <div class="stat-label">Blocked Cards</div>
+        <div class="stat-value" id="stat-blocked-cards">-</div>
+    </div>
+
+    <div class="stat-card yellow">
+        <div class="stat-header">
+            <div class="stat-icon"><i class="fas fa-bell"></i></div>
+        </div>
+        <div class="stat-label">Unread Alerts</div>
+        <div class="stat-value" id="stat-alerts">-</div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="openProcessModal()">
+        <i class="fas fa-plus"></i> Process Transaction
+    </button>
+    <button class="btn btn-outline" onclick="simulateTransactions(10)">
+        <i class="fas fa-play"></i> Simulate 10 Transactions
+    </button>
+    <button class="btn btn-outline" onclick="simulateTransactions(50)">
+        <i class="fas fa-bolt"></i> Simulate 50 Transactions
+    </button>
+</div>
+
+<!-- Grid: Chart + Recent Alerts -->
+<div class="grid-2">
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-chart-line" style="color:var(--primary-light);margin-right:8px;"></i> Weekly Fraud Trend</h3>
+        </div>
+        <div class="panel-body">
+            <div class="chart-container">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-bell" style="color:var(--warning);margin-right:8px;"></i> Recent Alerts</h3>
+            <a href="/alerts" class="btn btn-xs btn-outline">View All</a>
+        </div>
+        <div class="panel-body no-padding" id="recent-alerts">
+            <div class="spinner"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="panel" style="margin-top:24px;">
+    <div class="panel-header">
+        <h3><i class="fas fa-list" style="color:var(--info);margin-right:8px;"></i> Recent Transactions</h3>
+        <a href="/transactions" class="btn btn-xs btn-outline">View All</a>
+    </div>
+    <div class="panel-body no-padding">
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="recent-transactions-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Card Holder</th>
+                        <th>Amount</th>
+                        <th>Merchant</th>
+                        <th>Location</th>
+                        <th>Risk Score</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-transactions">
+                    <tr><td colspan="8"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Process Transaction Modal -->
+<div class="modal-overlay" id="process-modal">
+    <div class="modal">
+        <h3><i class="fas fa-credit-card" style="color:var(--primary-light);margin-right:10px;"></i>Process New Transaction</h3>
+        <form id="process-form" onsubmit="processTransaction(event)">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input class="form-control" name="card_number" placeholder="****-****-****-1234" required>
+                </div>
+                <div class="form-group">
+                    <label>Card Holder</label>
+                    <input class="form-control" name="card_holder" placeholder="John Smith" required>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Amount ($)</label>
+                    <input class="form-control" type="number" step="0.01" name="amount" placeholder="100.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Merchant</label>
+                    <input class="form-control" name="merchant" placeholder="Amazon" required>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="form-control" name="category" required>
+                        <option value="">Select category</option>
+                        <option value="Online Shopping">Online Shopping</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Restaurant">Restaurant</option>
+                        <option value="Gas Station">Gas Station</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Grocery">Grocery</option>
+                        <option value="Subscription">Subscription</option>
+                        <option value="Gift Cards">Gift Cards</option>
+                        <option value="Cryptocurrency">Cryptocurrency</option>
+                        <option value="Wire Transfer">Wire Transfer</option>
+                        <option value="Gaming">Gaming</option>
+                        <option value="Transportation">Transportation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input class="form-control" name="location" placeholder="New York, USA" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Device Type</label>
+                <select class="form-control" name="device_type">
+                    <option value="Desktop Chrome">Desktop Chrome</option>
+                    <option value="Mobile Safari">Mobile Safari</option>
+                    <option value="Mobile Android">Mobile Android</option>
+                    <option value="Desktop Firefox">Desktop Firefox</option>
+                    <option value="Tablet">Tablet</option>
+                    <option value="Unknown">Unknown</option>
+                    <option value="VPN">VPN</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeProcessModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Analyze & Process</button>
+            </div>
+        </form>
+
+        <!-- Result -->
+        <div id="process-result" style="display:none;margin-top:24px;padding:20px;border-radius:12px;border:1px solid var(--border);">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Utility function for API calls
+    async function apiCall(url, options = {}) {
+        try {
+            const response = await fetch(url, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                body: options.body || undefined,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('API Error:', error);
+            showToast(`Error: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+
+    let weeklyChart = null;
+
+    // Load dashboard data
+    async function loadDashboard() {
+        try {
+            const stats = await apiCall('/api/dashboard/stats');
+
+            document.getElementById('stat-total-txn').textContent = formatNumber(stats.total_transactions);
+            document.getElementById('stat-fraud').textContent = formatNumber(stats.total_fraud);
+            document.getElementById('stat-saved').textContent = formatCurrency(stats.fraud_amount_saved);
+            document.getElementById('stat-blocked-cards').textContent = formatNumber(stats.blocked_cards);
+            document.getElementById('stat-alerts').textContent = formatNumber(stats.unread_alerts);
+
+            const rateEl = document.getElementById('stat-fraud-rate');
+            rateEl.textContent = `${stats.fraud_rate}% fraud rate`;
+            rateEl.className = `stat-change ${stats.fraud_rate > 5 ? 'down' : 'up'}`;
+
+            // Weekly chart
+            renderWeeklyChart(stats.weekly_trend);
+        } catch (e) {}
+
+        // Recent transactions
+        try {
+            const txnData = await apiCall('/api/transactions?per_page=8');
+            renderRecentTransactions(txnData.transactions);
+        } catch (e) {}
+
+        // Recent alerts
+        try {
+            const alertData = await apiCall('/api/alerts');
+            renderRecentAlerts(alertData.alerts.slice(0, 5));
+        } catch (e) {}
+    }
+
+    function renderWeeklyChart(data) {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        if (weeklyChart) weeklyChart.destroy();
+
+        weeklyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.day),
+                datasets: [
+                    {
+                        label: 'Total',
+                        data: data.map(d => d.total),
+                        backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    },
+                    {
+                        label: 'Fraud',
+                        data: data.map(d => d.fraud),
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
+                    y: {
+                        ticks: { color: '#64748b', stepSize: 1, precision: 0 },
+                        grid: { color: 'rgba(51,65,85,0.3)' },
+                        beginAtZero: true,
+                        suggestedMax: 5
+                    }
+                }
+            }
+        });
+    }
+
+    function renderRecentTransactions(transactions) {
+        const tbody = document.getElementById('recent-transactions');
+        if (!transactions.length) {
+            tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions yet. Simulate some to get started!</p></div></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = transactions.map(t => {
+            const riskLevel = t.fraud_score >= 80 ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
+            return `
+                <tr>
+                    <td class="mono">${t.transaction_id}</td>
+                    <td>${t.card_holder}</td>
+                    <td style="font-weight:600;">${formatCurrency(t.amount)}</td>
+                    <td>${t.merchant}</td>
+                    <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;"></i>${t.location}</td>
+                    <td>
+                        <div class="score-meter">
+                            <span style="font-weight:600;color:${riskLevel === 'low' ? 'var(--success)' : riskLevel === 'medium' ? 'var(--warning)' : 'var(--danger)'};">
+                                ${t.fraud_score}%
+                            </span>
+                            <div class="score-bar">
+                                <div class="score-fill ${riskLevel}" style="width:${t.fraud_score}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="badge-status ${t.status}">${t.status}</span></td>
+                    <td style="color:var(--text-muted);font-size:12px;">${new Date(t.timestamp).toLocaleString()}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderRecentAlerts(alerts) {
+        const container = document.getElementById('recent-alerts');
+        if (!alerts.length) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No alerts - all clear!</p></div>';
+            return;
+        }
+
+        container.innerHTML = alerts.map(a => `
+            <div class="alert-item">
+                <div class="alert-icon ${a.severity}">
+                    <i class="fas fa-${a.severity === 'critical' ? 'skull-crossbones' : a.severity === 'high' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                </div>
+                <div class="alert-content">
+                    <div class="alert-title">${a.severity.toUpperCase()} - ${a.alert_type.replace('_', ' ').toUpperCase()}</div>
+                    <div class="alert-message">${a.message}</div>
+                    <div class="alert-time"><i class="far fa-clock"></i> ${new Date(a.created_at).toLocaleString()}</div>
+                </div>
+                <span class="badge-risk ${a.severity}">${a.severity}</span>
+            </div>
+        `).join('');
+    }
+
+    // Process Transaction
+    function openProcessModal() {
+        document.getElementById('process-modal').classList.add('active');
+        document.getElementById('process-result').style.display = 'none';
+    }
+
+    function closeProcessModal() {
+        document.getElementById('process-modal').classList.remove('active');
+    }
+
+    async function processTransaction(e) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnHtml = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        const data = Object.fromEntries(new FormData(form));
+        data.amount = parseFloat(data.amount);
+
+        const resultDiv = document.getElementById('process-result');
+
+        try {
+            const response = await fetch('/api/transactions/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = 'rgba(239,68,68,0.1)';
+                resultDiv.style.borderColor = 'rgba(239,68,68,0.3)';
+                const details = result.details ? result.details.join(', ') : (result.error || 'Unknown error');
+                resultDiv.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <i class="fas fa-times-circle" style="font-size:28px;color:var(--danger);"></i>
+                        <div>
+                            <div style="font-size:18px;font-weight:700;color:var(--danger);">Validation Error</div>
+                            <div style="font-size:13px;color:var(--text-muted);">${details}</div>
+                        </div>
+                    </div>
+                `;
+                showToast(details, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                return;
+            }
+
+            const isFraud = result.is_fraud;
+            const score = result.fraud_score;
+            let verdict, verdictColor, verdictBg, verdictIcon;
+
+            if (score >= 65) {
+                verdict = 'Fraudulent';
+                verdictColor = 'var(--danger)';
+                verdictBg = 'rgba(239,68,68,0.1)';
+                verdictIcon = 'times-circle';
+            } else if (score >= 40) {
+                verdict = 'Suspicious';
+                verdictColor = 'var(--warning)';
+                verdictBg = 'rgba(245,158,11,0.1)';
+                verdictIcon = 'exclamation-triangle';
+            } else {
+                verdict = 'Genuine';
+                verdictColor = 'var(--success)';
+                verdictBg = 'rgba(16,185,129,0.1)';
+                verdictIcon = 'check-circle';
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = verdictBg;
+            resultDiv.style.borderColor = verdictColor;
+
+            resultDiv.innerHTML = `
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                    <i class="fas fa-${verdictIcon}" style="font-size:28px;color:${verdictColor};"></i>
+                    <div>
+                        <div style="font-size:18px;font-weight:700;color:${verdictColor};">${verdict}</div>
+                        <div style="font-size:13px;color:var(--text-muted);">Transaction: ${result.transaction_id}</div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Fraud Score</div>
+                        <div style="font-size:24px;font-weight:800;color:${verdictColor};">${score}%</div>
+                    </div>
+                    <div style="padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Risk Level</div>
+                        <div style="font-size:24px;font-weight:800;">${result.risk_level.toUpperCase()}</div>
+                    </div>
+                </div>
+                ${result.risk_factors && result.risk_factors.length ? `
+                    <div style="margin-top:16px;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">RISK FACTORS:</div>
+                        ${result.risk_factors.map(f => `<div style="font-size:12px;padding:6px 0;color:${verdictColor};"><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>${f}</div>`).join('')}
+                    </div>
+                ` : ''}
+                <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">
+                    <i class="far fa-clock"></i> ${result.timestamp ? new Date(result.timestamp).toLocaleString() : new Date().toLocaleString()}
+                </div>
+            `;
+
+            showToast(`${verdict}: ${result.message}`, isFraud ? 'error' : 'success');
+            loadDashboard();
+        } catch (e) {
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'rgba(239,68,68,0.1)';
+            resultDiv.style.borderColor = 'rgba(239,68,68,0.3)';
+            resultDiv.innerHTML = `
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <i class="fas fa-times-circle" style="font-size:28px;color:var(--danger);"></i>
+                    <div>
+                        <div style="font-size:18px;font-weight:700;color:var(--danger);">Network Error</div>
+                        <div style="font-size:13px;color:var(--text-muted);">${e.message || 'Failed to connect to server'}</div>
+                    </div>
+                </div>
+            `;
+            showToast('Failed to process transaction', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
+    }
+
+    // Simulate Transactions
+    async function simulateTransactions(count) {
+        showToast(`Simulating ${count} transactions...`, 'info');
+        try {
+            const result = await apiCall('/api/simulate', {
+                method: 'POST',
+                body: JSON.stringify({ count })
+            });
+            showToast(`${count} transactions simulated! ${result.fraud_detected} fraud detected.`,
+                       result.fraud_detected > 0 ? 'warning' : 'success');
+            loadDashboard();
+        } catch (e) {}
+    }
+
+    // Close modal on overlay click
+    document.getElementById('process-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeProcessModal();
+    });
+
+    // Initialize
+    loadDashboard();
+    setInterval(loadDashboard, 15000);
+</script>
+{% endblock %}

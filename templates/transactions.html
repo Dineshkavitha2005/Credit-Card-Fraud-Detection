@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Transaction History{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="grid-4" style="margin-bottom:24px;">
+    <div class="stat-card" id="stat-total">
+        <div class="stat-icon" style="background:var(--info-light);color:var(--info);">
+            <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Total Transactions</div>
+        </div>
+    </div>
+    <div class="stat-card" id="stat-amount">
+        <div class="stat-icon" style="background:var(--success-light);color:var(--success);">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">$0</div>
+            <div class="stat-label">Total Amount</div>
+        </div>
+    </div>
+    <div class="stat-card" id="stat-fraud">
+        <div class="stat-icon" style="background:var(--danger-light);color:var(--danger);">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Fraud Cases</div>
+        </div>
+    </div>
+    <div class="stat-card" id="stat-rate">
+        <div class="stat-icon" style="background:var(--warning-light);color:var(--warning);">
+            <i class="fas fa-percent"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">0%</div>
+            <div class="stat-label">Fraud Rate</div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Filters Section -->
+<div class="panel" style="margin-bottom:24px;">
+    <div class="panel-header">
+        <h3><i class="fas fa-filter" style="color:var(--primary);margin-right:8px;"></i> Filters & Search</h3>
+        <button class="btn btn-sm btn-outline" id="toggle-filters" onclick="toggleFilters()" title="Toggle Filters">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+    <div class="panel-body" id="filters-container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+        <!-- Search Box -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Search</label>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input class="form-control" id="search-input" placeholder="Merchant, ID, holder..." onkeyup="debounceSearch()">
+            </div>
+        </div>
+
+        <!-- Date Range -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">From Date</label>
+            <input class="form-control" id="date-from" type="date" onchange="loadTransactions()">
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">To Date</label>
+            <input class="form-control" id="date-to" type="date" onchange="loadTransactions()">
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Status</label>
+            <select class="form-control" id="status-filter" onchange="loadTransactions()">
+                <option value="">All Status</option>
+                <option value="fraud">⚠️ Fraud Detected</option>
+                <option value="safe">✓ Safe</option>
+                <option value="approved">✓ Approved</option>
+                <option value="declined">✗ Declined</option>
+            </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Category</label>
+            <select class="form-control" id="category-filter" onchange="loadTransactions()">
+                <option value="">All Categories</option>
+                <option value="Online Shopping">Online Shopping</option>
+                <option value="Retail">Retail</option>
+                <option value="Restaurant">Restaurant</option>
+                <option value="Gas Station">Gas Station</option>
+                <option value="Travel">Travel</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Grocery">Grocery</option>
+                <option value="Subscription">Subscription</option>
+            </select>
+        </div>
+
+        <!-- Amount Range -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Min Amount ($)</label>
+            <input class="form-control" id="amount-min" type="number" placeholder="0" onchange="loadTransactions()">
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Max Amount ($)</label>
+            <input class="form-control" id="amount-max" type="number" placeholder="10000" onchange="loadTransactions()">
+        </div>
+
+        <!-- Sorting -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Sort By</label>
+            <select class="form-control" id="sort-by" onchange="loadTransactions()">
+                <option value="timestamp">Date (Latest)</option>
+                <option value="amount">Amount (High to Low)</option>
+                <option value="fraud_score">Risk Score (High to Low)</option>
+            </select>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+            <button class="btn btn-outline" onclick="resetFilters()" style="flex:1;">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+            <button class="btn btn-primary" onclick="exportTransactions()" style="flex:1;">
+                <i class="fas fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="panel">
+    <div class="panel-header">
+        <h3><i class="fas fa-list-alt" style="color:var(--info);margin-right:8px;"></i> Transaction Details</h3>
+        <span style="color:var(--text-muted);font-size:13px;" id="txn-count">Loading...</span>
+    </div>
+    <div class="panel-body no-padding">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Transaction ID</th>
+                        <th>Merchant</th>
+                        <th>Amount</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Risk Score</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="txn-tbody">
+                    <tr><td colspan="9"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Transaction Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+    <div class="modal" style="max-width:720px;">
+        <div id="detail-content"></div>
+        <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeDetailModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentPage = 1;
+    let searchTimeout;
+    const PAGE_SIZE = 20;
+
+    // Utility function for API calls
+    async function apiCall(url, options = {}) {
+        try {
+            const response = await fetch(url, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                body: options.body || undefined,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('API Error:', error);
+            showToast(`Error: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTransactions();
+        loadStatistics();
+    });
+
+    function toggleFilters() {
+        const container = document.getElementById('filters-container');
+        container.style.display = container.style.display === 'none' ? 'grid' : 'none';
+    }
+
+    function resetFilters() {
+        document.getElementById('search-input').value = '';
+        document.getElementById('date-from').value = '';
+        document.getElementById('date-to').value = '';
+        document.getElementById('status-filter').value = '';
+        document.getElementById('category-filter').value = '';
+        document.getElementById('amount-min').value = '';
+        document.getElementById('amount-max').value = '';
+        document.getElementById('sort-by').value = 'timestamp';
+        currentPage = 1;
+        loadTransactions();
+    }
+
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => { currentPage = 1; loadTransactions(); }, 300);
+    }
+
+    async function loadTransactions() {
+        const search = document.getElementById('search-input').value;
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
+        const status = document.getElementById('status-filter').value;
+        const category = document.getElementById('category-filter').value;
+        const amountMin = document.getElementById('amount-min').value;
+        const amountMax = document.getElementById('amount-max').value;
+        const sortBy = document.getElementById('sort-by').value;
+
+        const params = new URLSearchParams({
+            page: currentPage,
+            per_page: PAGE_SIZE,
+            search,
+            date_from: dateFrom,
+            date_to: dateTo,
+            status,
+            category,
+            amount_min: amountMin,
+            amount_max: amountMax,
+            sort_by: sortBy,
+            sort_order: 'DESC'
+        });
+
+        try {
+            const data = await apiCall(`/api/transactions/history?${params}`);
+            document.getElementById('txn-count').textContent = `${data.total} transactions found`;
+            renderTransactions(data.transactions);
+            renderPagination(data.page, data.total_pages);
+        } catch (e) {
+            console.error('Error loading transactions:', e);
+        }
+    }
+
+    async function loadStatistics() {
+        try {
+            const data = await apiCall('/api/transactions/statistics');
+            
+            // Update stat cards
+            document.getElementById('stat-total').querySelector('.stat-value').textContent = 
+                data.total_transactions.toLocaleString();
+            document.getElementById('stat-amount').querySelector('.stat-value').textContent = 
+                formatCurrency(data.total_amount);
+            document.getElementById('stat-fraud').querySelector('.stat-value').textContent = 
+                data.fraud_count;
+            document.getElementById('stat-rate').querySelector('.stat-value').textContent = 
+                data.fraud_rate + '%';
+        } catch (e) {
+            console.error('Error loading statistics:', e);
+        }
+    }
+
+    function renderTransactions(transactions) {
+        const tbody = document.getElementById('txn-tbody');
+        if (!transactions.length) {
+            tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found</p></div></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = transactions.map(t => {
+            const riskLevel = t.is_fraud ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
+            const statusEmoji = t.is_fraud ? '⚠️' : (t.status === 'approved' ? '✓' : '✗');
+            const timestamp = new Date(t.timestamp).toLocaleString();
+            
+            return `
+                <tr>
+                    <td style="font-size:12px;color:var(--text-muted);">${timestamp}</td>
+                    <td class="mono" style="font-family:monospace;font-size:11px;letter-spacing:1px;">${t.transaction_id}</td>
+                    <td style="font-weight:600;">${t.merchant}</td>
+                    <td style="font-weight:600;color:${t.is_fraud ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(t.amount)}</td>
+                    <td><span style="font-size:11px;color:var(--text-muted);">${t.category}</span></td>
+                    <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;font-size:11px;"></i><span style="font-size:11px;">${t.location}</span></td>
+                    <td>
+                        <span style="font-weight:700;font-size:12px;color:${riskLevel === 'low' ? 'var(--success)' : riskLevel === 'medium' ? 'var(--warning)' : riskLevel === 'high' ? 'var(--warning)' : 'var(--danger)'};">
+                            ${t.fraud_score}%
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-status ${t.is_fraud ? 'fraud' : t.status}" style="font-size:11px;">
+                            ${statusEmoji} ${t.is_fraud ? 'Fraud' : t.status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-xs btn-outline" onclick="showTransactionDetail('${t.transaction_id}')" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function showTransactionDetail(transactionId) {
+        try {
+            const data = await apiCall(`/api/transactions/${transactionId}/details`);
+            const t = data.transaction;
+            const alerts = data.alerts;
+            
+            const riskLevel = t.is_fraud ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
+            const riskColor = riskLevel === 'low' ? 'var(--success)' : riskLevel === 'medium' ? 'var(--warning)' : 'var(--danger)';
+            
+            let alertsHtml = '';
+            if (alerts.length > 0) {
+                alertsHtml = `
+                    <div style="margin-top:20px;padding:20px;background:var(--danger-light);border-radius:8px;border:1px solid var(--danger-lighter);">
+                        <h4 style="color:var(--danger);margin-bottom:12px;">
+                            <i class="fas fa-exclamation-circle"></i> Security Alerts (${alerts.length})
+                        </h4>
+                        ${alerts.map(a => `
+                            <div style="margin-bottom:12px;padding:10px;background:white;border-radius:6px;border-left:4px solid var(--danger);">
+                                <div style="font-weight:600;color:var(--danger);">${a.severity.toUpperCase()}</div>
+                                <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">${a.message}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            const riskFactors = Array.isArray(t.risk_factors) ? t.risk_factors : [];
+            
+            document.getElementById('detail-content').innerHTML = `
+                <h3 style="margin-bottom:16px;">
+                    <i class="fas fa-receipt" style="color:var(--info);margin-right:8px;"></i>
+                    Transaction Details
+                </h3>
+                
+                <div style="background:var(--surface-secondary);padding:16px;border-radius:8px;margin-bottom:16px;">
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                        <div>
+                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Transaction ID</div>
+                            <div style="font-family:monospace;font-weight:600;font-size:13px;">${t.transaction_id}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Timestamp</div>
+                            <div style="font-weight:600;">${new Date(t.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Merchant</div>
+                            <div style="font-weight:600;">${t.merchant}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Category</div>
+                            <div style="font-weight:600;">${t.category}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+                    <div style="background:var(--success-light);padding:16px;border-radius:8px;text-align:center;">
+                        <div style="font-size:24px;font-weight:700;color:var(--success);">${formatCurrency(t.amount)}</div>
+                        <div style="font-size:12px;color:var(--success);margin-top:4px;">Amount</div>
+                    </div>
+                    <div style="background:var(--info-light);padding:16px;border-radius:8px;text-align:center;">
+                        <div style="font-size:24px;font-weight:700;color:var(--info);">${t.location}</div>
+                        <div style="font-size:12px;color:var(--info);margin-top:4px;">Location</div>
+                    </div>
+                    <div style="background:${riskLevel === 'low' ? 'var(--success-light)' : 'var(--danger-light)'};padding:16px;border-radius:8px;text-align:center;">
+                        <div style="font-size:24px;font-weight:700;color:${riskColor};">${t.fraud_score}%</div>
+                        <div style="font-size:12px;${riskColor};margin-top:4px;">Risk Score</div>
+                    </div>
+                </div>
+
+                <div style="background:var(--surface-secondary);padding:16px;border-radius:8px;margin-bottom:16px;">
+                    <h4 style="margin-bottom:12px;">Card Information</h4>
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:12px;">
+                        <div>
+                            <span style="color:var(--text-secondary);">Card Number:</span>
+                            <div style="font-family:monospace;font-weight:600;">${t.card_number}</div>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-secondary);">Card Holder:</span>
+                            <div style="font-weight:600;">${t.card_holder}</div>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-secondary);">Device Type:</span>
+                            <div style="font-weight:600;">${t.device_type || 'Unknown'}</div>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-secondary);">IP Address:</span>
+                            <div style="font-family:monospace;font-weight:600;">${t.ip_address || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                ${riskFactors.length > 0 ? `
+                    <div style="background:var(--warning-light);padding:16px;border-radius:8px;margin-bottom:16px;">
+                        <h4 style="margin-bottom:12px;color:var(--warning);">
+                            <i class="fas fa-shield-alt"></i> Risk Factors
+                        </h4>
+                        <ul style="margin:0;padding-left:20px;font-size:12px;">
+                            ${riskFactors.map(f => `<li style="margin-bottom:4px;color:var(--warning);">${f}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                <div style="padding:16px;background:var(--surface-secondary);border-radius:8px;margin-bottom:16px;">
+                    <h4 style="margin-bottom:12px;">Status</h4>
+                    <div style="display:flex;gap:12px;font-size:12px;">
+                        <div>
+                            <span style="color:var(--text-secondary);">Status:</span>
+                            <span class="badge-status ${t.is_fraud ? 'fraud' : t.status}" style="margin-left:8px;font-weight:600;">
+                                ${t.is_fraud ? '⚠️ FRAUD' : '✓ ' + t.status.toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                ${alertsHtml}
+            `;
+            
+            document.getElementById('detail-modal').style.display = 'flex';
+        } catch (e) {
+            console.error('Error loading transaction details:', e);
+            alert('Failed to load transaction details');
+        }
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detail-modal').style.display = 'none';
+    }
+
+    async function exportTransactions() {
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
+        const status = document.getElementById('status-filter').value;
+
+        const params = new URLSearchParams({
+            date_from: dateFrom,
+            date_to: dateTo,
+            status
+        });
+
+        try {
+            const data = await apiCall(`/api/transactions/export?${params}`);
+            
+            // Create a blob and download
+            const blob = new Blob([data.csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            notify('Transactions exported successfully', 'success');
+        } catch (e) {
+            console.error('Error exporting transactions:', e);
+            notify('Failed to export transactions', 'error');
+        }
+    }
+
+    function renderPagination(page, totalPages) {
+        const container = document.getElementById('pagination');
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '<div style="display:flex;gap:8px;justify-content:center;align-items:center;">';
+        
+        if (page > 1) {
+            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=1;loadTransactions();">First</button>`;
+            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=${page-1};loadTransactions();">← Prev</button>`;
+        }
+
+        html += `<span style="color:var(--text-secondary);margin:0 12px;">Page ${page} of ${totalPages}</span>`;
+
+        if (page < totalPages) {
+            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=${page+1};loadTransactions();">Next →</button>`;
+            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=${totalPages};loadTransactions();">Last</button>`;
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    }
+
+    async function blockCard(cardNumber) {
+        if (!confirm(`Block card ${cardNumber}?`)) return;
+        try {
+            await apiCall('/api/cards/block', {
+                method: 'POST',
+                body: JSON.stringify({ card_number: cardNumber, reason: 'Fraud detected' })
+            });
+            showToast('Card blocked successfully', 'success');
+            loadTransactions();
+        } catch (e) {}
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+    });
+
+    loadTransactions();
+</script>
+{% endblock %}

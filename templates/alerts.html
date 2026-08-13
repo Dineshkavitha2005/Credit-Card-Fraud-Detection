@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts{% endblock %}
+{% block page_title %}Security Alerts{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:12px;margin-bottom:24px;">
+    <button class="btn btn-outline" onclick="markAllRead()">
+        <i class="fas fa-check-double"></i> Mark All as Read
+    </button>
+    <button class="btn btn-outline" onclick="loadAlerts()">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+</div>
+
+<!-- Alert Stats -->
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="stat-card red">
+        <div class="stat-label">Critical Alerts</div>
+        <div class="stat-value" id="critical-count">0</div>
+    </div>
+    <div class="stat-card yellow">
+        <div class="stat-label">High Alerts</div>
+        <div class="stat-value" id="high-count">0</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Medium Alerts</div>
+        <div class="stat-value" id="medium-count">0</div>
+    </div>
+</div>
+
+<!-- Alerts List -->
+<div class="panel">
+    <div class="panel-header">
+        <h3><i class="fas fa-shield-exclamation" style="color:var(--danger);margin-right:8px;"></i> All Alerts</h3>
+        <span style="color:var(--text-muted);font-size:13px;" id="alert-count">Loading...</span>
+    </div>
+    <div class="panel-body no-padding" id="alerts-list">
+        <div class="spinner"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Utility function for API calls
+    async function apiCall(url, options = {}) {
+        try {
+            const response = await fetch(url, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                body: options.body || undefined,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('API Error:', error);
+            showToast(`Error: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+
+    async function loadAlerts() {
+        try {
+            const data = await apiCall('/api/alerts');
+            const alerts = data.alerts;
+
+            document.getElementById('alert-count').textContent = `${alerts.length} alerts`;
+            document.getElementById('critical-count').textContent = alerts.filter(a => a.severity === 'critical').length;
+            document.getElementById('high-count').textContent = alerts.filter(a => a.severity === 'high').length;
+            document.getElementById('medium-count').textContent = alerts.filter(a => a.severity === 'medium').length;
+
+            const container = document.getElementById('alerts-list');
+
+            if (!alerts.length) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding:60px;">
+                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                        <p style="font-size:16px;margin-top:12px;">All clear! No alerts at this time.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = alerts.map(a => `
+                <div class="alert-item ${a.is_read ? '' : 'unread'}" style="${!a.is_read ? 'background:rgba(99,102,241,0.03);' : ''}">
+                    <div class="alert-icon ${a.severity}">
+                        <i class="fas fa-${
+                            a.severity === 'critical' ? 'skull-crossbones' :
+                            a.severity === 'high' ? 'exclamation-triangle' : 'info-circle'
+                        }"></i>
+                    </div>
+                    <div class="alert-content" style="flex:1;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                            <span class="badge-risk ${a.severity}">${a.severity}</span>
+                            <span style="font-size:12px;color:var(--text-muted);">${a.alert_type.replace(/_/g, ' ').toUpperCase()}</span>
+                            ${!a.is_read ? '<span style="width:8px;height:8px;background:var(--primary);border-radius:50%;"></span>' : ''}
+                        </div>
+                        <div class="alert-title" style="font-size:14px;">${a.message}</div>
+                        <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
+                            <span class="alert-time"><i class="far fa-clock" style="margin-right:4px;"></i>${new Date(a.created_at).toLocaleString()}</span>
+                            <span class="mono" style="font-size:11px;color:var(--text-muted);">${a.transaction_id}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        ${!a.is_read ? `
+                            <button class="btn btn-xs btn-outline" onclick="markRead(${a.id})" title="Mark as read">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {}
+    }
+
+    async function markRead(alertId) {
+        try {
+            await apiCall(`/api/alerts/${alertId}/read`, { method: 'POST' });
+            loadAlerts();
+            updateAlertBadge();
+        } catch (e) {}
+    }
+
+    async function markAllRead() {
+        try {
+            const data = await apiCall('/api/alerts');
+            const unread = data.alerts.filter(a => !a.is_read);
+            for (const alert of unread) {
+                await fetch(`/api/alerts/${alert.id}/read`, { method: 'POST' });
+            }
+            showToast('All alerts marked as read', 'success');
+            loadAlerts();
+            updateAlertBadge();
+        } catch (e) {}
+    }
+
+    loadAlerts();
+    setInterval(loadAlerts, 30000);
+</script>
+{% endblock %}

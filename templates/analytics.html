@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Fraud Analytics{% endblock %}
+
+{% block content %}
+<!-- Top Charts Row -->
+<div class="grid-2" style="margin-bottom:24px;">
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-chart-pie" style="color:var(--primary-light);margin-right:8px;"></i> Fraud by Category</h3>
+        </div>
+        <div class="panel-body">
+            <div class="chart-container" style="height:320px;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-chart-bar" style="color:var(--success);margin-right:8px;"></i> Risk Score Distribution</h3>
+        </div>
+        <div class="panel-body">
+            <div class="chart-container" style="height:320px;">
+                <canvas id="riskChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hourly + Monthly -->
+<div class="grid-2" style="margin-bottom:24px;">
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-clock" style="color:var(--warning);margin-right:8px;"></i> Hourly Transaction Pattern</h3>
+        </div>
+        <div class="panel-body">
+            <div class="chart-container" style="height:280px;">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-calendar-alt" style="color:var(--info);margin-right:8px;"></i> Monthly Fraud Trend</h3>
+        </div>
+        <div class="panel-body">
+            <div class="chart-container" style="height:280px;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Location + Merchants -->
+<div class="grid-2">
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-map-marker-alt" style="color:var(--danger);margin-right:8px;"></i> Top Fraud Locations</h3>
+        </div>
+        <div class="panel-body no-padding">
+            <table class="data-table" id="location-table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Total Txn</th>
+                        <th>Fraud</th>
+                        <th>Rate</th>
+                    </tr>
+                </thead>
+                <tbody id="location-tbody">
+                    <tr><td colspan="4"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h3><i class="fas fa-store" style="color:var(--warning);margin-right:8px;"></i> Top Fraudulent Merchants</h3>
+        </div>
+        <div class="panel-body no-padding">
+            <table class="data-table" id="merchant-table">
+                <thead>
+                    <tr>
+                        <th>Merchant</th>
+                        <th>Fraud Count</th>
+                        <th>Total Fraud Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="merchant-tbody">
+                    <tr><td colspan="3"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Utility function for API calls
+    async function apiCall(url, options = {}) {
+        try {
+            const response = await fetch(url, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                body: options.body || undefined,
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('API Error:', error);
+            showToast(`Error: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+
+    const chartColors = {
+        primary: 'rgba(99, 102, 241, 0.8)',
+        danger: 'rgba(239, 68, 68, 0.8)',
+        success: 'rgba(16, 185, 129, 0.8)',
+        warning: 'rgba(245, 158, 11, 0.8)',
+        info: 'rgba(59, 130, 246, 0.8)',
+        purple: 'rgba(139, 92, 246, 0.8)',
+        pink: 'rgba(236, 72, 153, 0.8)',
+        cyan: 'rgba(6, 182, 212, 0.8)',
+    };
+
+    const chartBg = {
+        primary: 'rgba(99, 102, 241, 0.15)',
+        danger: 'rgba(239, 68, 68, 0.15)',
+        success: 'rgba(16, 185, 129, 0.15)',
+        warning: 'rgba(245, 158, 11, 0.15)',
+        info: 'rgba(59, 130, 246, 0.15)',
+    };
+
+    const defaultOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: '#64748b', font: { size: 11 } },
+                grid: { display: false }
+            },
+            y: {
+                ticks: { color: '#64748b', font: { size: 11 }, stepSize: 1, precision: 0 },
+                grid: { color: 'rgba(51,65,85,0.3)' },
+                beginAtZero: true,
+                suggestedMax: 5
+            }
+        }
+    };
+
+    async function loadAnalytics() {
+        try {
+            const data = await apiCall('/api/analytics/overview');
+
+            // Show empty state helper
+            function showEmpty(canvasId, message) {
+                const canvas = document.getElementById(canvasId);
+                const container = canvas.parentElement;
+                canvas.style.display = 'none';
+                container.innerHTML = `<div class="empty-state" style="padding:40px;"><i class="fas fa-chart-bar"></i><p>${message}</p></div>`;
+            }
+
+            // Category Doughnut Chart
+            if (data.categories.length) {
+                const colorPalette = [chartColors.primary, chartColors.danger, chartColors.success,
+                    chartColors.warning, chartColors.info, chartColors.purple, chartColors.pink, chartColors.cyan];
+
+                new Chart(document.getElementById('categoryChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.categories.map(c => c.category),
+                        datasets: [{
+                            data: data.categories.map(c => c.fraud_count),
+                            backgroundColor: colorPalette.slice(0, data.categories.length),
+                            borderWidth: 0,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 12 }
+                            }
+                        }
+                    }
+                });            } else {
+                showEmpty('categoryChart', 'No category data yet. Simulate transactions to see analytics.');            }
+
+            // Risk Distribution Bar Chart
+            if (data.risk_distribution.length) {
+                const riskColors = ['rgba(16,185,129,0.7)', 'rgba(59,130,246,0.7)',
+                    'rgba(245,158,11,0.7)', 'rgba(239,68,68,0.7)', 'rgba(220,38,38,0.8)'];
+
+                new Chart(document.getElementById('riskChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.risk_distribution.map(r => r.score_range),
+                        datasets: [{
+                            label: 'Transactions',
+                            data: data.risk_distribution.map(r => r.count),
+                            backgroundColor: riskColors,
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        ...defaultOptions,
+                        plugins: {
+                            ...defaultOptions.plugins,
+                            legend: { display: false }
+                        }
+                    }
+                });
+            } else {
+                showEmpty('riskChart', 'No risk data yet.');
+            }
+
+            // Hourly Line Chart
+            if (data.hourly.length) {
+                new Chart(document.getElementById('hourlyChart'), {
+                    type: 'line',
+                    data: {
+                        labels: data.hourly.map(h => `${h.hour}:00`),
+                        datasets: [
+                            {
+                                label: 'Total',
+                                data: data.hourly.map(h => h.total),
+                                borderColor: chartColors.primary,
+                                backgroundColor: chartBg.primary,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 3
+                            },
+                            {
+                                label: 'Fraud',
+                                data: data.hourly.map(h => h.fraud_count),
+                                borderColor: chartColors.danger,
+                                backgroundColor: chartBg.danger,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 3
+                            }
+                        ]
+                    },
+                    options: defaultOptions
+                });
+            } else {
+                showEmpty('hourlyChart', 'No hourly data yet.');
+            }
+
+            // Monthly Bar Chart
+            if (data.monthly.length) {
+                new Chart(document.getElementById('monthlyChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.monthly.map(m => m.month),
+                        datasets: [
+                            {
+                                label: 'Total Txn',
+                                data: data.monthly.map(m => m.total),
+                                backgroundColor: 'rgba(99,102,241,0.6)',
+                                borderRadius: 6,
+                                borderSkipped: false
+                            },
+                            {
+                                label: 'Fraud Txn',
+                                data: data.monthly.map(m => m.fraud_count),
+                                backgroundColor: 'rgba(239,68,68,0.7)',
+                                borderRadius: 6,
+                                borderSkipped: false
+                            }
+                        ]
+                    },
+                    options: defaultOptions
+                });
+            } else {
+                showEmpty('monthlyChart', 'No monthly data yet.');
+            }
+
+            // Location Table
+            const locTbody = document.getElementById('location-tbody');
+            if (data.locations.length) {
+                locTbody.innerHTML = data.locations.map(l => {
+                    const rate = l.total > 0 ? ((l.fraud_count / l.total) * 100).toFixed(1) : 0;
+                    return `
+                        <tr>
+                            <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:6px;"></i>${l.location}</td>
+                            <td>${l.total}</td>
+                            <td style="color:var(--danger);font-weight:600;">${l.fraud_count}</td>
+                            <td>
+                                <div class="score-meter">
+                                    <span style="font-weight:600;">${rate}%</span>
+                                    <div class="score-bar">
+                                        <div class="score-fill ${rate > 50 ? 'high' : rate > 25 ? 'medium' : 'low'}" style="width:${Math.min(rate, 100)}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                locTbody.innerHTML = '<tr><td colspan="4" class="empty-state">No data yet</td></tr>';
+            }
+
+            // Merchant Table
+            const merTbody = document.getElementById('merchant-tbody');
+            if (data.top_merchants.length) {
+                merTbody.innerHTML = data.top_merchants.map(m => `
+                    <tr>
+                        <td><i class="fas fa-store" style="color:var(--text-muted);margin-right:6px;"></i>${m.merchant}</td>
+                        <td style="color:var(--danger);font-weight:600;">${m.fraud_count}</td>
+                        <td style="font-weight:600;">${formatCurrency(m.total_fraud_amount)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                merTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
+            }
+
+        } catch (e) {
+            console.error('Failed to load analytics', e);
+        }
+    }
+
+    loadAnalytics();
+</script>
+{% endblock %}
