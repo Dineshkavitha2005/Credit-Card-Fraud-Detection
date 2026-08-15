@@ -108,13 +108,14 @@ def unauthorized():
         return jsonify({'error': 'Authentication required'}), 401
     return redirect(url_for('login', next=request.url))
 
-DATABASE = 'fraud_detection.db'
+DATABASE = os.path.join(app.instance_path, 'fraud_detection.db') if os.path.exists(os.path.join(app.instance_path, 'fraud_detection.db')) else 'fraud_detection.db'
 
 # ─── Database Helpers ────────────────────────────────────────────────
 
 def get_db():
-    """Get SQLite connection for legacy operations"""
-    conn = sqlite3.connect(DATABASE)
+    """Get SQLite connection for operations"""
+    db_path = app.config.get('DATABASE', DATABASE)
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -1092,6 +1093,284 @@ def dashboard_stats():
         'unread_alerts': unread_alerts,
         'weekly_trend': weekly_data
     })
+
+@app.route('/api/dashboard/overview')
+@login_required
+def dashboard_overview():
+    """Comprehensive dashboard overview with filtering and data visualization datasets"""
+    db.session.commit()
+    conn = get_db()
+    user = current_user
+
+    start_date = request.args.get('start_date', '').strip()
+    end_date = request.args.get('end_date', '').strip()
+    risk_level = request.args.get('risk_level', 'all').strip().lower()
+    status_filter = request.args.get('status', 'all').strip().lower()
+    search = request.args.get('search', '').strip()
+
+    where_clauses = ['1=1']
+    params = []
+
+    # Scoping for non-admin users
+    if user and hasattr(user, 'role') and user.role != 'admin':
+        raw_card_nums = [CardEncryption.decrypt_card_number(card.card_number) for card in user.cards]
+        masked_card_nums = [mask_card_number(num) for num in raw_card_nums]
+        all_user_cards = list(set(raw_card_nums + masked_card_nums))
+        if all_user_cards:
+            placeholders = ','.join(['?' for _ in all_user_cards])
+            where_clauses.append(f'card_number IN ({placeholders})')
+            params.extend(all_user_cards)
+        else:
+            where_clauses.append('1=0')
+
+    # Date range filter
+    if start_date:
+        where_clauses.append('DATE(timestamp) >= ?')
+        params.append(start_date)
+    if end_date:
+        where_clauses.append('DATE(timestamp) <= ?')
+        params.append(end_date)
+
+    # Risk level filter
+    if risk_level == 'low':
+        where_clauses.append('fraud_score < 40')
+    elif risk_level == 'medium':
+        where_clauses.append('fraud_score >= 40 AND fraud_score < 70')
+    elif risk_level == 'high':
+        where_clauses.append('fraud_score >= 70 AND fraud_score < 90')
+    elif risk_level == 'critical':
+        where_clauses.append('fraud_score >= 90')
+
+    # Status filter
+    if status_filter == 'fraud':
+        where_clauses.append('is_fraud = 1')
+    elif status_filter == 'genuine':
+        where_clauses.append('is_fraud = 0')
+    elif status_filter in ['flagged', 'blocked', 'approved', 'pending']:
+        where_clauses.append('status = ?')
+        params.append(status_filter)
+
+    # Search filter
+    if search:
+        where_clauses.append('(card_holder LIKE ? OR merchant LIKE ? OR transaction_id LIKE ? OR location LIKE ? OR category LIKE ?)')
+        search_pattern = f'%{search}%'
+        params.extend([search_pattern] * 5)
+
+    where_sql = ' AND '.join(where_clauses)
+
+    # 1. KPI Cards
+    kpi_query = f'''
+        SELECT
+            COUNT(*) as total_transactions,
+            COALESCE(SUM(amount), 0) as total_amount,
+            SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraudulent_transactions,
+            SUM(CASE WHEN fraud_score >= 70 THEN 1 ELSE 0 END) as high_risk_transactions,
+            SUM(CASE WHEN status = 'blocked' OR is_fraud = 1 THEN 1 ELSE 0 END) as blocked_transactions,
+            COALESCE(SUM(CASE WHEN is_fraud = 1 THEN amount ELSE 0 END), 0) as fraud_amount_saved
+        FROM transactions WHERE {where_sql}
+    '''
+    kpi_res = conn.execute(kpi_query, params).fetchone()
+    total_txns = kpi_res['total_transactions'] or 0
+    total_amt = round(kpi_res['total_amount'] or 0, 2)
+    fraud_txns = kpi_res['fraudulent_transactions'] or 0
+    fraud_rate = round((fraud_txns / max(total_txns, 1)) * 100, 2)
+    high_risk_txns = kpi_res['high_risk_transactions'] or 0
+    blocked_txns = kpi_res['blocked_transactions'] or 0
+    fraud_amount_saved = round(kpi_res['fraud_amount_saved'] or 0, 2)
+
+    blocked_cards_count = conn.execute('SELECT COUNT(*) as cnt FROM blocked_cards').fetchone()['cnt']
+    unread_alerts_count = conn.execute('SELECT COUNT(*) as cnt FROM alerts WHERE is_read = 0').fetchone()['cnt']
+
+    # 2. Fraud vs Genuine
+    genuine_count = max(0, total_txns - fraud_txns)
+    fraud_vs_genuine = {
+        'genuine_count': genuine_count,
+        'fraud_count': fraud_txns,
+        'genuine_rate': round((genuine_count / max(total_txns, 1)) * 100, 2),
+        'fraud_rate': fraud_rate
+    }
+
+    # 3. Fraud Trends by Day
+    day_trend_rows = conn.execute(f'''
+        SELECT DATE(timestamp) as day_date,
+               COUNT(*) as total,
+               SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraud,
+               COALESCE(SUM(amount), 0) as total_amount
+        FROM transactions WHERE {where_sql}
+        GROUP BY day_date ORDER BY day_date ASC LIMIT 30
+    ''', params).fetchall()
+    trends_by_day = [
+        {
+            'day': r['day_date'],
+            'total': r['total'],
+            'fraud': r['fraud'],
+            'amount': round(r['total_amount'], 2)
+        } for r in day_trend_rows
+    ]
+
+    # 4. Fraud Trends by Month
+    month_trend_rows = conn.execute(f'''
+        SELECT strftime('%Y-%m', timestamp) as month_date,
+               COUNT(*) as total,
+               SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraud,
+               COALESCE(SUM(amount), 0) as total_amount,
+               COALESCE(SUM(CASE WHEN is_fraud = 1 THEN amount ELSE 0 END), 0) as fraud_amount
+        FROM transactions WHERE {where_sql}
+        GROUP BY month_date ORDER BY month_date ASC LIMIT 12
+    ''', params).fetchall()
+    trends_by_month = [
+        {
+            'month': r['month_date'],
+            'total': r['total'],
+            'fraud': r['fraud'],
+            'total_amount': round(r['total_amount'], 2),
+            'fraud_amount': round(r['fraud_amount'], 2)
+        } for r in month_trend_rows
+    ]
+
+    # 5. Risk Score Distribution
+    risk_dist_rows = conn.execute(f'''
+        SELECT
+            CASE
+                WHEN fraud_score < 20 THEN '0-20 (Very Low)'
+                WHEN fraud_score < 40 THEN '20-40 (Low)'
+                WHEN fraud_score < 60 THEN '40-60 (Medium)'
+                WHEN fraud_score < 80 THEN '60-80 (High)'
+                ELSE '80-100 (Critical)'
+            END as score_range,
+            COUNT(*) as count
+        FROM transactions WHERE {where_sql}
+        GROUP BY score_range ORDER BY score_range ASC
+    ''', params).fetchall()
+    
+    risk_order = ['0-20 (Very Low)', '20-40 (Low)', '40-60 (Medium)', '60-80 (High)', '80-100 (Critical)']
+    risk_dict = {r['score_range']: r['count'] for r in risk_dist_rows}
+    risk_distribution = [{'range': r, 'count': risk_dict.get(r, 0)} for r in risk_order]
+
+    # 6. Hourly Fraud Pattern (00 to 23)
+    hourly_rows = conn.execute(f'''
+        SELECT strftime('%H', timestamp) as hour,
+               COUNT(*) as total,
+               SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraud
+        FROM transactions WHERE {where_sql}
+        GROUP BY hour ORDER BY hour ASC
+    ''', params).fetchall()
+    hourly_map = {r['hour']: {'total': r['total'], 'fraud': r['fraud']} for r in hourly_rows}
+    hourly_pattern = [
+        {
+            'hour': f"{h:02d}:00",
+            'total': hourly_map.get(f"{h:02d}", {}).get('total', 0),
+            'fraud': hourly_map.get(f"{h:02d}", {}).get('fraud', 0)
+        } for h in range(24)
+    ]
+
+    # 7. Transaction Amount Distribution
+    amount_dist_rows = conn.execute(f'''
+        SELECT
+            CASE
+                WHEN amount < 50 THEN '$0-$50'
+                WHEN amount < 200 THEN '$50-$200'
+                WHEN amount < 500 THEN '$200-$500'
+                WHEN amount < 1000 THEN '$500-$1000'
+                ELSE '$1000+'
+            END as amount_range,
+            COUNT(*) as count,
+            SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraud_count
+        FROM transactions WHERE {where_sql}
+        GROUP BY amount_range
+    ''', params).fetchall()
+    amount_order = ['$0-$50', '$50-$200', '$200-$500', '$500-$1000', '$1000+']
+    amount_map = {r['amount_range']: {'count': r['count'], 'fraud': r['fraud_count']} for r in amount_dist_rows}
+    amount_distribution = [
+        {
+            'range': r,
+            'count': amount_map.get(r, {}).get('count', 0),
+            'fraud_count': amount_map.get(r, {}).get('fraud', 0)
+        } for r in amount_order
+    ]
+
+    # 8. Top Fraud Categories
+    category_rows = conn.execute(f'''
+        SELECT category,
+               COUNT(*) as total,
+               SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraud_count,
+               COALESCE(SUM(CASE WHEN is_fraud = 1 THEN amount ELSE 0 END), 0) as fraud_amount
+        FROM transactions WHERE {where_sql}
+        GROUP BY category ORDER BY fraud_count DESC, total DESC LIMIT 10
+    ''', params).fetchall()
+    top_categories = [
+        {
+            'category': r['category'] or 'Uncategorized',
+            'total': r['total'],
+            'fraud_count': r['fraud_count'],
+            'fraud_amount': round(r['fraud_amount'], 2)
+        } for r in category_rows
+    ]
+
+    # 9. High-Risk Locations
+    location_rows = conn.execute(f'''
+        SELECT location,
+               COUNT(*) as total,
+               SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) as fraud_count,
+               COALESCE(AVG(fraud_score), 0) as avg_risk,
+               COALESCE(SUM(amount), 0) as total_amount
+        FROM transactions WHERE {where_sql}
+        GROUP BY location ORDER BY fraud_count DESC, avg_risk DESC LIMIT 10
+    ''', params).fetchall()
+    high_risk_locations = [
+        {
+            'location': r['location'] or 'Unknown',
+            'total': r['total'],
+            'fraud_count': r['fraud_count'],
+            'avg_risk': round(r['avg_risk'], 1),
+            'total_amount': round(r['total_amount'], 2),
+            'fraud_rate': round((r['fraud_count'] / max(r['total'], 1)) * 100, 1)
+        } for r in location_rows
+    ]
+
+    # 10. Recent Transactions matching filter
+    recent_txn_rows = conn.execute(f'''
+        SELECT * FROM transactions WHERE {where_sql}
+        ORDER BY timestamp DESC LIMIT 8
+    ''', params).fetchall()
+    recent_transactions = [dict(r) for r in recent_txn_rows]
+    for t in recent_transactions:
+        if t.get('timestamp'):
+            if hasattr(t['timestamp'], 'isoformat'):
+                t['timestamp'] = t['timestamp'].isoformat()
+
+    # 11. Alerts
+    alert_rows = conn.execute('SELECT * FROM alerts ORDER BY created_at DESC LIMIT 5').fetchall()
+    recent_alerts = [dict(r) for r in alert_rows]
+
+    conn.close()
+
+    return jsonify({
+        'kpi': {
+            'total_transactions': total_txns,
+            'total_amount': total_amt,
+            'fraudulent_transactions': fraud_txns,
+            'fraud_rate': fraud_rate,
+            'high_risk_transactions': high_risk_txns,
+            'blocked_transactions': blocked_txns,
+            'fraud_amount_saved': fraud_amount_saved,
+            'blocked_cards': blocked_cards_count,
+            'unread_alerts': unread_alerts_count
+        },
+        'charts': {
+            'fraud_vs_genuine': fraud_vs_genuine,
+            'trends_by_day': trends_by_day,
+            'trends_by_month': trends_by_month,
+            'risk_distribution': risk_distribution,
+            'hourly_pattern': hourly_pattern,
+            'amount_distribution': amount_distribution,
+            'top_categories': top_categories,
+            'high_risk_locations': high_risk_locations
+        },
+        'recent_transactions': recent_transactions,
+        'recent_alerts': recent_alerts
+    })
+
 
 @app.route('/api/transactions', methods=['GET'])
 @login_required
