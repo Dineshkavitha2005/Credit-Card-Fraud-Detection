@@ -10,7 +10,7 @@ if hasattr(sys.stdout, 'reconfigure'):
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
 
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
@@ -29,6 +29,7 @@ import numpy as np
 import joblib
 import pandas as pd
 from functools import wraps
+from preprocessor import TransactionPreprocessor
 from flask.json.provider import DefaultJSONProvider
 from models import (
     db, User, UserCard, Transaction, Alert, FraudRule, BlockedCard, AuditLog, UserSession,
@@ -78,6 +79,11 @@ if not secret_key_val or secret_key_val in {'your_secret_key_here', 'change_this
 app.secret_key = secret_key_val
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fraud_detection.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Secure report directory path inside instance folder
+reports_dir = os.path.abspath(os.path.join(app.instance_path, 'reports'))
+os.makedirs(reports_dir, exist_ok=True)
+app.config['REPORTS_DIR'] = reports_dir
 
 CORS(app)
 
@@ -186,7 +192,7 @@ def init_db():
 # ─── Fraud Detection Engine ─────────────────────────────────────────
 
 class FraudDetectionEngine:
-    """ML-powered fraud detection engine with scoring"""
+    """ML-powered fraud detection engine with deterministic feature engineering, scoring, and explainability"""
 
     def __init__(self):
         self.weights = {
@@ -200,65 +206,71 @@ class FraudDetectionEngine:
         self.high_risk_countries = ['Nigeria', 'Russia', 'China', 'Romania', 'Brazil']
         self.high_risk_categories = ['Electronics', 'Gift Cards', 'Cryptocurrency', 'Wire Transfer']
         
-        # Load ML model if exists
+        # Preprocessor instance
+        self.preprocessor = TransactionPreprocessor.load_config('preprocessing_config.json')
+
+        # Load ML model artifacts
         self.model = None
         self.scaler = None
         self.feature_names = None
+        self.model_version = 'v2.0.0'
+        self.model_metadata = {}
         
         try:
             if os.path.exists('fraud_model.pkl') and os.path.exists('scaler.pkl'):
                 self.model = joblib.load('fraud_model.pkl')
                 self.scaler = joblib.load('scaler.pkl')
-                self.feature_names = joblib.load('features.pkl')
-                print("✅ Machine Learning model loaded successfully")
+                if os.path.exists('features.pkl'):
+                    self.feature_names = joblib.load('features.pkl')
+                else:
+                    self.feature_names = self.preprocessor.feature_names
+                
+                if os.path.exists('model_metadata.json'):
+                    with open('model_metadata.json', 'r') as f:
+                        self.model_metadata = json.load(f)
+                        self.model_version = self.model_metadata.get('model_version', 'v2.0.0')
+
+                print("✅ Machine Learning model v{} loaded successfully".format(self.model_version))
         except Exception as e:
-            print(f"⚠️ Error loading ML model: {e}")
+            print("⚠️ Error loading ML model: {}".format(e))
 
     def analyze_transaction(self, transaction):
-        """Analyze a transaction and return fraud score + risk factors"""
+        """Analyze a transaction and return combined risk score, ML prob, rule score, and explainable risk factors."""
         risk_factors = []
         scores = {}
         
-        # ─── ML Model Scoring (If available) ───
+        # Create a working copy and populate velocity score if missing
+        txn_copy = dict(transaction)
+        if 'velocity_score' not in txn_copy:
+            txn_copy['velocity_score'] = float(self._check_velocity(txn_copy))
+
+        # ─── 1. ML Model Scoring (Deterministic Preprocessing) ───
         ml_score = 0.0
+        ml_prob = 0.0
         if self.model and self.scaler:
             try:
-                # Prepare features for dataset-based model
-                # Expected: V1-V28, Amount
-                if 'V1' in transaction:
-                    # Simulation mode - using real dataset features
-                    features = [float(transaction.get(f, 0)) for f in self.feature_names]
-                else:
-                    # Real input mode - generate synthetic features for model
-                    features = []
-                    for f in self.feature_names:
-                        if f == 'Amount':
-                            features.append(float(transaction.get('amount', 0)))
-                        else:
-                            seed = hash(str(transaction.get('merchant')) + str(transaction.get('category')))
-                            random.seed(seed)
-                            features.append(float(random.uniform(-1, 1)))
+                # Deterministic feature transformation (No random number generation)
+                features_df = self.preprocessor.transform_dict(txn_copy)
+                target_features = self.feature_names or self.preprocessor.feature_names
+                features_aligned = features_df[target_features]
+                features_scaled = self.scaler.transform(features_aligned)
                 
-                # Reshape and Scale with feature names
-                features_df = pd.DataFrame([features], columns=self.feature_names)
-                features_scaled = self.scaler.transform(features_df)
-                
-                # Get probability of fraud
                 probabilities = self.model.predict_proba(features_scaled)
                 if len(probabilities) > 0 and len(probabilities[0]) > 1:
                     ml_prob = float(probabilities[0][1])
                     ml_score = float(ml_prob * 100.0)
                 
-                if ml_score > 70:
-                    risk_factors.append(f'ML Engine detects pattern deviation ({ml_score:.1f}%)')
+                if ml_prob >= 0.65 or ml_score >= 65.0:
+                    risk_factors.append('ML Engine detects pattern deviation (Probability: {:.1f}%)'.format(ml_prob * 100.0))
             except Exception as e:
-                print(f"ML Scoring Error: {e}")
+                print("ML Scoring Error: {}".format(e))
                 ml_score = 0.0
+                ml_prob = 0.0
 
-        # ─── Rule-Based Scoring (Fallback & Augmentation) ───
-        # 1. Amount Analysis
+        # ─── 2. Rule-Based Checks (Preserved & Enhanced Explainability) ───
+        # A. Amount Analysis
         try:
-            amount = float(transaction.get('amount', 0))
+            amount = float(transaction.get('amount', transaction.get('Amount', 0)))
         except (ValueError, TypeError):
             amount = 0.0
 
@@ -274,12 +286,12 @@ class FraudDetectionEngine:
         else:
             scores['amount_score'] = float(max(0.0, amount / 5000.0))
 
-        # 2. Velocity Check (transactions in short period)
+        # B. Velocity Check
         scores['velocity_score'] = float(self._check_velocity(transaction))
         if scores['velocity_score'] > 0.5:
             risk_factors.append('Multiple transactions in short time period')
 
-        # 3. Geographic Analysis
+        # C. Geographic Analysis
         location = str(transaction.get('location', ''))
         if any(country.lower() in location.lower() for country in self.high_risk_countries):
             scores['geo_score'] = 0.9
@@ -287,9 +299,15 @@ class FraudDetectionEngine:
         else:
             scores['geo_score'] = 0.1
 
-        # 4. Time Analysis
+        # D. Time Analysis
         try:
-            hour = datetime.now().hour
+            timestamp = transaction.get('timestamp')
+            if isinstance(timestamp, str):
+                dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                hour = dt.hour
+            else:
+                hour = datetime.now().hour
+
             if 0 <= hour <= 5:
                 scores['time_score'] = 0.7
                 risk_factors.append('Transaction during unusual hours (12AM-5AM)')
@@ -298,42 +316,58 @@ class FraudDetectionEngine:
         except:
             scores['time_score'] = 0.1
 
-        # 5. Device Analysis
+        # E. Device Analysis
         device = str(transaction.get('device_type', 'unknown'))
-        if device.lower() in ['unknown', 'vpn', 'tor']:
+        if any(d in device.lower() for d in ['vpn', 'tor', 'unknown']):
             scores['device_score'] = 0.8
             risk_factors.append('Suspicious device or connection type: {}'.format(device))
         else:
             scores['device_score'] = 0.1
 
-        # 6. Pattern Analysis
+        # F. Merchant Category Analysis
         category = str(transaction.get('category', ''))
-        if category in self.high_risk_categories:
+        if any(c.lower() in category.lower() for c in self.high_risk_categories):
             scores['pattern_score'] = 0.7
             risk_factors.append('High-risk merchant category: {}'.format(category))
         else:
             scores['pattern_score'] = 0.15
 
-        # Calculate weighted fraud score
+        # Weighted Rule Score
         rule_score = sum(
             float(scores.get(key, 0.0)) * float(weight)
             for key, weight in self.weights.items()
         ) * 100.0
 
-        # Combine ML and Rule-based scores
-        if self.model:
-            # If ML exists, it takes 70% weight
-            fraud_score = (float(ml_score) * 0.7) + (float(rule_score) * 0.3)
+        # ─── 3. Model Score vs. Rule Score Comparison ───
+        score_difference = round(float(ml_score) - float(rule_score), 2)
+        if abs(score_difference) <= 15.0:
+            primary_driver = 'concurrence'
+        elif ml_score > rule_score:
+            primary_driver = 'ml_engine'
         else:
-            fraud_score = float(rule_score)
+            primary_driver = 'rule_engine'
 
-        # Normalize to 0-100
-        fraud_score = float(min(round(float(fraud_score), 2), 100.0))
+        # ─── 4. Combined Risk Score & Decision ───
+        if self.model:
+            # Ensemble combination: 50% ML Engine, 50% Rule-Based Engine
+            blend_score = (float(ml_score) * 0.50) + (float(rule_score) * 0.50)
+            # High-risk preservation: ensure strong risk signals from either engine are not suppressed
+            combined_score = max(blend_score, max(ml_score, rule_score))
+        else:
+            combined_score = float(rule_score)
+
+        fraud_score = float(min(round(float(combined_score), 2), 100.0))
 
         raw_result = {
             'fraud_score': float(fraud_score),
-            'is_fraud': bool(fraud_score >= 65),
+            'is_fraud': bool(fraud_score >= 65.0),
             'risk_level': str(self._get_risk_level(fraud_score)),
+            'ml_score': float(round(ml_score, 2)),
+            'rule_score': float(round(rule_score, 2)),
+            'ml_probability': float(round(ml_prob, 4)),
+            'model_version': str(self.model_version),
+            'score_difference': float(score_difference),
+            'primary_driver': str(primary_driver),
             'risk_factors': [str(rf) for rf in risk_factors],
             'component_scores': {str(k): float(v) for k, v in scores.items()}
         }
@@ -1230,6 +1264,12 @@ def process_transaction():
             'status': status,
             'fraud_score': float(result['fraud_score']),
             'risk_level': str(result['risk_level']),
+            'ml_score': float(result.get('ml_score', 0.0)),
+            'rule_score': float(result.get('rule_score', 0.0)),
+            'ml_probability': float(result.get('ml_probability', 0.0)),
+            'model_version': str(result.get('model_version', 'v2.0.0')),
+            'score_difference': float(result.get('score_difference', 0.0)),
+            'primary_driver': str(result.get('primary_driver', 'concurrence')),
             'risk_factors': result['risk_factors'],
             'component_scores': result.get('component_scores', {}),
             'is_fraud': bool(result['is_fraud']),
@@ -1805,73 +1845,164 @@ def get_transaction_statistics():
         'by_status': status_stats
     })
 
+def query_filtered_transactions_data(filters, user):
+    """Query transactions applying security & multi-dimensional filters"""
+    query = Transaction.query
+
+    # Authorization Check: Non-admin users ONLY see their own transactions
+    if user.role != 'admin':
+        raw_card_nums = [CardEncryption.decrypt_card_number(card.card_number) for card in user.cards]
+        masked_card_nums = [mask_card_number(num) for num in raw_card_nums]
+        user_cards = list(set([c for c in (raw_card_nums + masked_card_nums) if c]))
+        
+        if user_cards:
+            query = query.filter(
+                or_(
+                    Transaction.user_id == user.id,
+                    Transaction.card_number.in_(user_cards)
+                )
+            )
+        else:
+            query = query.filter(Transaction.user_id == user.id)
+    else:
+        # Admin can filter by specific user if provided
+        target_user = filters.get('user_id') or filters.get('user')
+        if target_user and str(target_user).strip() not in ('all', ''):
+            try:
+                query = query.filter(Transaction.user_id == int(target_user))
+            except (ValueError, TypeError):
+                target_u = User.query.filter((User.username == str(target_user)) | (User.email == str(target_user))).first()
+                if target_u:
+                    query = query.filter(Transaction.user_id == target_u.id)
+
+    # Filter: Date Range
+    date_from = filters.get('date_from') or filters.get('start_date')
+    if date_from and str(date_from).strip():
+        try:
+            df = datetime.fromisoformat(str(date_from).replace('Z', ''))
+            query = query.filter(Transaction.timestamp >= df)
+        except Exception:
+            try:
+                df = datetime.strptime(str(date_from)[:10], '%Y-%m-%d')
+                query = query.filter(Transaction.timestamp >= df)
+            except Exception:
+                pass
+
+    date_to = filters.get('date_to') or filters.get('end_date')
+    if date_to and str(date_to).strip():
+        try:
+            dt = datetime.fromisoformat(str(date_to).replace('Z', ''))
+            if len(str(date_to)) <= 10:
+                dt = dt + timedelta(days=1) - timedelta(microseconds=1)
+            query = query.filter(Transaction.timestamp <= dt)
+        except Exception:
+            try:
+                dt = datetime.strptime(str(date_to)[:10], '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+                query = query.filter(Transaction.timestamp <= dt)
+            except Exception:
+                pass
+
+    # Filter: Fraud Status
+    fraud_status = filters.get('fraud_status') or filters.get('status')
+    if fraud_status and str(fraud_status).strip() not in ('all', ''):
+        f_stat = str(fraud_status).lower()
+        if f_stat in ('genuine', 'safe'):
+            query = query.filter(Transaction.is_fraud == False, Transaction.fraud_score < 0.7)
+        elif f_stat in ('fraud', 'fraudulent'):
+            query = query.filter(or_(Transaction.is_fraud == True, Transaction.fraud_score >= 0.7))
+        else:
+            query = query.filter(Transaction.status == f_stat)
+
+    # Filter: Risk Level
+    risk_level = filters.get('risk_level')
+    if risk_level and str(risk_level).strip() not in ('all', ''):
+        rl = str(risk_level).lower()
+        if rl == 'low':
+            query = query.filter(Transaction.fraud_score <= 0.3)
+        elif rl == 'medium':
+            query = query.filter(Transaction.fraud_score > 0.3, Transaction.fraud_score <= 0.7)
+        elif rl == 'high':
+            query = query.filter(Transaction.fraud_score >= 0.7)
+        elif rl == 'critical':
+            query = query.filter(Transaction.fraud_score >= 0.9)
+
+    # Filter: Amount Range
+    min_amount = filters.get('min_amount')
+    if min_amount is not None and str(min_amount).strip() != '':
+        try:
+            query = query.filter(Transaction.amount >= float(min_amount))
+        except (ValueError, TypeError):
+            pass
+
+    max_amount = filters.get('max_amount')
+    if max_amount is not None and str(max_amount).strip() != '':
+        try:
+            query = query.filter(Transaction.amount <= float(max_amount))
+        except (ValueError, TypeError):
+            pass
+
+    db_txns = query.order_by(Transaction.timestamp.desc()).all()
+
+    txns = []
+    for t in db_txns:
+        txns.append({
+            'id': t.id,
+            'transaction_id': t.transaction_id,
+            'user_id': t.user_id,
+            'card_number': mask_card_number(t.card_number),
+            'card_holder': t.card_holder,
+            'amount': t.amount,
+            'merchant': t.merchant,
+            'category': t.category,
+            'location': t.location,
+            'ip_address': t.ip_address,
+            'device_type': t.device_type,
+            'is_fraud': t.is_fraud,
+            'fraud_score': t.fraud_score,
+            'status': t.status,
+            'timestamp': t.timestamp
+        })
+    return txns
+
+
 @app.route('/api/transactions/export', methods=['GET'])
 @login_required
 def export_transactions():
-    """Export transactions as CSV with masked card numbers"""
-    import csv
-    from io import StringIO
-    
-    user = current_user
-    conn = get_db()
-    
-    # Apply filters
-    date_from = request.args.get('date_from', '')
-    date_to = request.args.get('date_to', '')
-    status_filter = request.args.get('status', '')
-    
-    query = 'SELECT * FROM transactions WHERE 1=1'
-    params = []
-    
-    # Only show user's transactions
-    if user and user.role != 'admin':
-        raw_card_nums = [CardEncryption.decrypt_card_number(card.card_number) for card in user.cards]
-        masked_card_nums = [mask_card_number(num) for num in raw_card_nums]
-        all_user_cards = list(set(raw_card_nums + masked_card_nums))
-        if all_user_cards:
-            placeholders = ','.join(['?' for _ in all_user_cards])
-            query += f' AND card_number IN ({placeholders})'
-            params.extend(all_user_cards)
-    
-    if date_from:
-        query += ' AND DATE(timestamp) >= ?'
-        params.append(date_from)
-    if date_to:
-        query += ' AND DATE(timestamp) <= ?'
-        params.append(date_to)
-    
-    if status_filter == 'fraud':
-        query += ' AND is_fraud = 1'
-    elif status_filter == 'safe':
-        query += ' AND is_fraud = 0'
-    
-    query += ' ORDER BY timestamp DESC'
-    
-    transactions = [dict(row) for row in conn.execute(query, params).fetchall()]
-    conn.close()
-    
-    # Mask card numbers in transactions before exporting CSV
-    for t in transactions:
-        t['card_number'] = mask_card_number(t.get('card_number', ''))
-    
-    # Create CSV
-    output = StringIO()
-    if transactions:
-        writer = csv.DictWriter(output, fieldnames=transactions[0].keys())
-        writer.writeheader()
-        writer.writerows(transactions)
-    
-    # Create file-like object
-    mem = StringIO()
-    mem.write(output.getvalue())
-    mem.seek(0)
-    
-    filename = f"transactions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    
-    return jsonify({
-        'csv': output.getvalue(),
-        'filename': filename
-    })
+    """Export transactions directly as CSV or PDF download stream"""
+    from utils import ReportGenerator
+    from flask import Response
+
+    file_format = request.args.get('format', 'csv').lower()
+    if file_format not in ('csv', 'pdf'):
+        file_format = 'csv'
+
+    filters = {
+        'date_from': request.args.get('date_from', ''),
+        'date_to': request.args.get('date_to', ''),
+        'fraud_status': request.args.get('status', '') or request.args.get('fraud_status', ''),
+        'risk_level': request.args.get('risk_level', ''),
+        'min_amount': request.args.get('min_amount', ''),
+        'max_amount': request.args.get('max_amount', ''),
+        'user_id': request.args.get('user_id', '')
+    }
+
+    transactions = query_filtered_transactions_data(filters, current_user)
+    filename = f"transactions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_format}"
+
+    if file_format == 'csv':
+        csv_data = ReportGenerator.generate_csv(transactions)
+        return Response(
+            csv_data,
+            mimetype='text/csv',
+            headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+        )
+    else:
+        pdf_bytes = ReportGenerator.generate_pdf('pdf_transaction_report', 'Transaction Detail Report', transactions, filters=filters)
+        return Response(
+            pdf_bytes,
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+        )
 
 
 # ─── Email Verification & Authentication ───────────────────────────
@@ -2488,67 +2619,195 @@ def manage_security_questions():
 @app.route('/api/reports/generate', methods=['POST'])
 @login_required
 def generate_report():
-    """Generate transaction or activity report"""
-    from utils import EmailService
-    
-    data = request.get_json()
-    report_type = data.get('report_type', 'transaction_report')
-    file_format = data.get('format', 'csv')
-    filters = data.get('filters', {})
-    
-    report = Report(
-        user_id=current_user.id,
-        report_type=report_type,
-        title=f"{report_type.replace('_', ' ').title()} - {datetime.now().strftime('%Y-%m-%d')}",
-        file_format=file_format,
-        filters=filters,
-        status='pending'
-    )
-    db.session.add(report)
-    db.session.commit()
-    
-    return jsonify({
-        'message': 'Report generation started',
-        'report_id': report.id,
-        'status': 'pending'
-    })
+    """Generate actual PDF or CSV report and save to secure directory"""
+    import uuid
+    from utils import ReportGenerator
+
+    try:
+        data = request.get_json() or {}
+        report_type = data.get('report_type', 'transaction_report')
+        file_format = (data.get('format') or data.get('file_format') or 'pdf').lower()
+        if file_format not in ('csv', 'pdf'):
+            file_format = 'pdf'
+            
+        filters = data.get('filters', {})
+        if not isinstance(filters, dict):
+            filters = {}
+
+        # Enforce non-admin restriction
+        if current_user.role != 'admin':
+            filters['user_id'] = current_user.id
+
+        # Query matching transactions
+        transactions = query_filtered_transactions_data(filters, current_user)
+
+        # Title formatting
+        title_map = {
+            'csv_transaction_report': 'CSV Transaction Detail Report',
+            'pdf_transaction_report': 'PDF Transaction Detail Report',
+            'transaction_report': f"{file_format.upper()} Transaction Detail Report",
+            'fraud_analysis_report': 'Fraud Analysis & Vulnerability Report',
+            'dashboard_summary_report': 'Dashboard Executive Summary Report',
+            'dashboard_summary': 'Dashboard Executive Summary Report'
+        }
+        report_title = data.get('title') or title_map.get(report_type, f"{report_type.replace('_', ' ').title()}")
+
+        # Generate unique random filename (do NOT expose real internal paths)
+        file_ext = 'pdf' if file_format == 'pdf' else 'csv'
+        unique_filename = f"report_{current_user.id}_{uuid.uuid4().hex[:12]}.{file_ext}"
+        reports_dir = app.config['REPORTS_DIR']
+        output_filepath = os.path.abspath(os.path.join(reports_dir, unique_filename))
+
+        # Create physical report file
+        if file_format == 'csv':
+            ReportGenerator.generate_csv(transactions, output_path=output_filepath)
+        else:
+            ReportGenerator.generate_pdf(report_type, report_title, transactions, filters=filters, output_path=output_filepath)
+
+        file_size = os.path.getsize(output_filepath) if os.path.exists(output_filepath) else 0
+
+        # Create database record
+        report = Report(
+            user_id=current_user.id,
+            report_type=report_type,
+            title=report_title,
+            description=f"Generated {file_format.upper()} report with {len(transactions)} transaction records",
+            file_path=unique_filename,
+            file_format=file_format,
+            file_size=file_size,
+            filters=filters,
+            status='completed',
+            completed_at=datetime.utcnow()
+        )
+        db.session.add(report)
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Report generated successfully',
+            'report_id': report.id,
+            'title': report.title,
+            'file_format': report.file_format,
+            'file_size': report.file_size,
+            'status': 'completed'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f"Failed to generate report: {str(e)}"}), 500
+
+
+@app.route('/api/reports', methods=['GET'])
+@login_required
+def list_reports():
+    """List generated reports for current user (or all if admin)"""
+    if current_user.role == 'admin':
+        reports = Report.query.order_by(Report.created_at.desc()).limit(100).all()
+    else:
+        reports = Report.query.filter_by(user_id=current_user.id).order_by(Report.created_at.desc()).limit(50).all()
+
+    result = []
+    for r in reports:
+        result.append({
+            'id': r.id,
+            'user_id': r.user_id,
+            'report_type': r.report_type,
+            'title': r.title,
+            'file_format': r.file_format,
+            'file_size': r.file_size or 0,
+            'status': r.status,
+            'download_count': r.download_count or 0,
+            'created_at': r.created_at.isoformat() if r.created_at else None,
+            'completed_at': r.completed_at.isoformat() if r.completed_at else None,
+            'filters': r.filters or {}
+        })
+
+    return jsonify({'reports': result})
 
 
 @app.route('/api/reports/<int:report_id>', methods=['GET'])
 @login_required
 def get_report_status(report_id):
-    """Get report generation status"""
-    report = Report.query.filter_by(id=report_id, user_id=current_user.id).first()
+    """Get report details & status"""
+    if current_user.role == 'admin':
+        report = Report.query.get(report_id)
+    else:
+        report = Report.query.filter_by(id=report_id, user_id=current_user.id).first()
+
     if not report:
         return jsonify({'error': 'Report not found'}), 404
-    
+
     return jsonify({
         'id': report.id,
+        'user_id': report.user_id,
         'status': report.status,
         'title': report.title,
+        'report_type': report.report_type,
         'file_format': report.file_format,
-        'created_at': report.created_at.isoformat(),
+        'file_size': report.file_size,
+        'created_at': report.created_at.isoformat() if report.created_at else None,
         'completed_at': report.completed_at.isoformat() if report.completed_at else None,
-        'download_count': report.download_count
+        'download_count': report.download_count,
+        'filters': report.filters or {}
     })
 
 
 @app.route('/api/reports/<int:report_id>/download', methods=['GET'])
 @login_required
 def download_report(report_id):
-    """Download generated report"""
-    report = Report.query.filter_by(id=report_id, user_id=current_user.id).first()
-    if not report or report.status != 'completed':
-        return jsonify({'error': 'Report not available'}), 404
-    
-    report.download_count += 1
+    """Download generated report with strict authorization check & path validation"""
+    if current_user.role == 'admin':
+        report = Report.query.get(report_id)
+    else:
+        report = Report.query.filter_by(id=report_id, user_id=current_user.id).first()
+
+    if not report or report.status != 'completed' or not report.file_path:
+        return jsonify({'error': 'Report not found or not available for download'}), 404
+
+    # Security: Ensure file stays strictly within REPORTS_DIR
+    reports_dir = app.config['REPORTS_DIR']
+    file_path = os.path.abspath(os.path.join(reports_dir, report.file_path))
+
+    if not file_path.startswith(reports_dir) or not os.path.exists(file_path):
+        return jsonify({'error': 'Report file missing from secure storage'}), 404
+
+    report.download_count = (report.download_count or 0) + 1
     db.session.commit()
-    
-    # Return file download (implementation depends on storage)
-    return jsonify({
-        'message': 'Download started',
-        'file_url': f'/tmp/reports/{report.file_path}'
-    })
+
+    mimetype = 'application/pdf' if report.file_format == 'pdf' else 'text/csv'
+    safe_download_name = f"{report.title.replace(' ', '_')}.{report.file_format}"
+
+    return send_file(
+        file_path,
+        mimetype=mimetype,
+        as_attachment=True,
+        download_name=safe_download_name
+    )
+
+
+@app.route('/api/reports/<int:report_id>', methods=['DELETE'])
+@login_required
+def delete_report(report_id):
+    """Safely delete report record and physical file"""
+    if current_user.role == 'admin':
+        report = Report.query.get(report_id)
+    else:
+        report = Report.query.filter_by(id=report_id, user_id=current_user.id).first()
+
+    if not report:
+        return jsonify({'error': 'Report not found'}), 404
+
+    if report.file_path:
+        reports_dir = app.config['REPORTS_DIR']
+        file_path = os.path.abspath(os.path.join(reports_dir, report.file_path))
+        if file_path.startswith(reports_dir) and os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+
+    db.session.delete(report)
+    db.session.commit()
+    return jsonify({'message': 'Report deleted successfully'})
 
 
 # ─── Initialize and Run ─────────────────────────────────────────────

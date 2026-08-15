@@ -1,0 +1,50 @@
+{
+  "version": "2.0.0",
+  "feature_names": [
+    "amount_raw",
+    "log_amount",
+    "category_risk",
+    "location_risk",
+    "device_risk",
+    "hour",
+    "hour_sin",
+    "hour_cos",
+    "unusual_hour_flag",
+    "velocity_score",
+    "v_mean",
+    "v_std",
+    "v_min",
+    "v_max",
+    "v_sum_abs"
+  ],
+  "category_risk_map": {
+    "Cryptocurrency": 0.9,
+    "Gift Cards": 0.85,
+    "Wire Transfer": 0.8,
+    "Electronics": 0.7,
+    "Luxury": 0.65,
+    "Jewelry": 0.65,
+    "Travel": 0.6,
+    "Gambling": 0.85,
+    "Online Shopping": 0.25,
+    "General": 0.15,
+    "Groceries": 0.05,
+    "Supermarket": 0.05
+  },
+  "high_risk_countries": [
+    "Nigeria",
+    "Russia",
+    "China",
+    "Romania",
+    "Brazil",
+    "Ukraine"
+  ],
+  "medium_risk_countries": [
+    "Vietnam",
+    "Turkey",
+    "Mexico",
+    "Indonesia",
+    "Philippines"
+  ],
+  "created_at": "2026-08-15T19:13:32.922913"
+}

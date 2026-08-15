@@ -120,6 +120,27 @@
             </select>
         </div>
 
+        <!-- Risk Level Filter -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Risk Level</label>
+            <select class="form-control" id="risk-level-filter" onchange="loadTransactions()">
+                <option value="all">All Risk Levels</option>
+                <option value="low">Low Risk (&le; 0.3)</option>
+                <option value="medium">Medium Risk (0.3 - 0.7)</option>
+                <option value="high">High Risk (0.7 - 0.9)</option>
+                <option value="critical">Critical (&gt; 0.9)</option>
+            </select>
+        </div>
+
+        <!-- Export Format -->
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Export Format</label>
+            <select class="form-control" id="export-format">
+                <option value="csv">CSV File</option>
+                <option value="pdf">PDF Document</option>
+            </select>
+        </div>
+
         <!-- Action Buttons -->
         <div style="display:flex;gap:8px;align-items:flex-end;">
             <button class="btn btn-outline" onclick="resetFilters()" style="flex:1;">
@@ -244,14 +265,15 @@
     }
 
     async function loadTransactions() {
-        const search = document.getElementById('search-input').value;
-        const dateFrom = document.getElementById('date-from').value;
-        const dateTo = document.getElementById('date-to').value;
-        const status = document.getElementById('status-filter').value;
-        const category = document.getElementById('category-filter').value;
-        const amountMin = document.getElementById('amount-min').value;
-        const amountMax = document.getElementById('amount-max').value;
-        const sortBy = document.getElementById('sort-by').value;
+        const search = document.getElementById('search-input')?.value || '';
+        const dateFrom = document.getElementById('date-from')?.value || '';
+        const dateTo = document.getElementById('date-to')?.value || '';
+        const status = document.getElementById('status-filter')?.value || '';
+        const category = document.getElementById('category-filter')?.value || '';
+        const amountMin = document.getElementById('amount-min')?.value || '';
+        const amountMax = document.getElementById('amount-max')?.value || '';
+        const sortBy = document.getElementById('sort-by')?.value || 'timestamp';
+        const riskLevel = document.getElementById('risk-level-filter')?.value || 'all';
 
         const params = new URLSearchParams({
             page: currentPage,
@@ -263,6 +285,7 @@
             category,
             amount_min: amountMin,
             amount_max: amountMax,
+            risk_level: riskLevel,
             sort_by: sortBy,
             sort_order: 'DESC'
         });
@@ -468,31 +491,34 @@
         const dateFrom = document.getElementById('date-from').value;
         const dateTo = document.getElementById('date-to').value;
         const status = document.getElementById('status-filter').value;
+        const riskLevel = document.getElementById('risk-level-filter').value;
+        const minAmount = document.getElementById('amount-min').value;
+        const maxAmount = document.getElementById('amount-max').value;
+        const format = document.getElementById('export-format').value;
 
         const params = new URLSearchParams({
             date_from: dateFrom,
             date_to: dateTo,
-            status
+            status: status,
+            risk_level: riskLevel,
+            min_amount: minAmount,
+            max_amount: maxAmount,
+            format: format
         });
 
         try {
-            const data = await apiCall(`/api/transactions/export?${params}`);
-            
-            // Create a blob and download
-            const blob = new Blob([data.csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
+            const exportUrl = `/api/transactions/export?${params.toString()}`;
             const a = document.createElement('a');
-            a.href = url;
-            a.download = data.filename;
+            a.href = exportUrl;
+            a.download = `transactions_${new Date().toISOString().slice(0,10)}.${format}`;
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
             
-            notify('Transactions exported successfully', 'success');
+            showToast(`Exporting transaction ${format.toUpperCase()} report...`, 'success');
         } catch (e) {
             console.error('Error exporting transactions:', e);
-            notify('Failed to export transactions', 'error');
+            showToast('Failed to export transactions', 'error');
         }
     }
 

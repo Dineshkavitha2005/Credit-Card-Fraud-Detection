@@ -1,0 +1,35 @@
+{
+  "model_version": "v2.0.0",
+  "architecture": "RandomForestClassifier",
+  "n_estimators": 100,
+  "max_depth": 12,
+  "trained_at": "2026-08-15T19:13:32.924205",
+  "dataset": "creditcard_2023.csv",
+  "training_samples": 80000,
+  "test_samples": 20000,
+  "feature_count": 15,
+  "features": [
+    "amount_raw",
+    "log_amount",
+    "category_risk",
+    "location_risk",
+    "device_risk",
+    "hour",
+    "hour_sin",
+    "hour_cos",
+    "unusual_hour_flag",
+    "velocity_score",
+    "v_mean",
+    "v_std",
+    "v_min",
+    "v_max",
+    "v_sum_abs"
+  ],
+  "evaluation_metrics": {
+    "accuracy": 0.9988,
+    "precision": 0.9545,
+    "recall": 0.4667,
+    "f1_score": 0.6269,
+    "roc_auc": 0.9732
+  }
+}
