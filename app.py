@@ -37,6 +37,7 @@ from models import (
     Notification, SecurityQuestion, RateLimitRecord, Report, SuspiciousActivity, AdminAction,
     CardEncryption, mask_card_number
 )
+from audit_logger import audit_logger, EventType
 
 def sanitize_numpy_types(obj):
     """Recursively convert NumPy data types into native Python types for JSON serialization."""
@@ -87,8 +88,9 @@ app.config['REPORTS_DIR'] = reports_dir
 
 CORS(app)
 
-# Initialize SQLAlchemy and LoginManager
+# Initialize SQLAlchemy, LoginManager, and AuditLogger
 db.init_app(app)
+audit_logger.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -104,6 +106,13 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized():
+    audit_logger.log_event(
+        EventType.API_AUTH_FAILURE,
+        user_id=None,
+        status='failure',
+        target_resource=request.path,
+        details={'reason': 'Unauthenticated request to protected resource'}
+    )
     if request.is_json or request.path.startswith('/api/'):
         return jsonify({'error': 'Authentication required'}), 401
     return redirect(url_for('login', next=request.url))
@@ -153,14 +162,36 @@ def migrate_database_security():
         print(f"User cards migration note: {e}")
 
 
+def migrate_audit_logs_table():
+    """Ensure audit_logs table has all required columns in SQLite database"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(audit_logs);")
+        columns = [row['name'] for row in cursor.fetchall()]
+        
+        if 'event_type' not in columns:
+            cursor.execute("ALTER TABLE audit_logs ADD COLUMN event_type VARCHAR(50);")
+        if 'target_resource' not in columns:
+            cursor.execute("ALTER TABLE audit_logs ADD COLUMN target_resource VARCHAR(255);")
+        if 'user_agent' not in columns:
+            cursor.execute("ALTER TABLE audit_logs ADD COLUMN user_agent VARCHAR(500);")
+            
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Audit log schema migration note: {e}")
+
+
 def init_db():
     """Initialize database with all tables and perform security migrations"""
     with app.app_context():
         # Create SQLAlchemy tables
         db.create_all()
         
-        # Security migration of existing plain text numbers
+        # Security migration of existing plain text numbers & audit log schema
         migrate_database_security()
+        migrate_audit_logs_table()
         
         # Create default admin user if doesn't exist
         admin_exists = User.query.filter_by(username='admin').first()
@@ -414,10 +445,24 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
+            audit_logger.log_event(
+                EventType.API_AUTH_FAILURE,
+                user_id=None,
+                status='failure',
+                target_resource=request.path,
+                details={'reason': 'Unauthenticated request to admin endpoint'}
+            )
             if request.is_json or request.path.startswith('/api/'):
                 return jsonify({'error': 'Authentication required'}), 401
             return redirect(url_for('login', next=request.url))
         if current_user.role != 'admin':
+            audit_logger.log_event(
+                EventType.API_AUTH_FAILURE,
+                user_id=current_user.id,
+                status='failure',
+                target_resource=request.path,
+                details={'reason': 'Non-admin user requested admin endpoint', 'role': current_user.role}
+            )
             if request.is_json or request.path.startswith('/api/'):
                 return jsonify({'error': 'Admin access required'}), 403
             return render_template('message.html',
@@ -457,21 +502,26 @@ def register():
         
         # Validation
         if not all([first_name, last_name, email, username, password]):
+            audit_logger.log_event(EventType.REGISTRATION, status='failure', details={'username': username, 'email': email, 'reason': 'Missing fields'})
             return render_template('register.html', error='All required fields must be filled')
         
         if password != confirm_password:
+            audit_logger.log_event(EventType.REGISTRATION, status='failure', details={'username': username, 'email': email, 'reason': 'Passwords do not match'})
             return render_template('register.html', error='Passwords do not match')
         
         # Check password strength
         strength = SecurityHelper.check_password_strength(password)
         if not strength['is_valid']:
+            audit_logger.log_event(EventType.REGISTRATION, status='failure', details={'username': username, 'email': email, 'reason': 'Weak password'})
             return render_template('register.html', error=', '.join(strength['feedback']))
         
         # Check if user already exists
         if User.query.filter_by(username=username).first():
+            audit_logger.log_event(EventType.REGISTRATION, status='failure', details={'username': username, 'email': email, 'reason': 'Username exists'})
             return render_template('register.html', error='Username already exists')
         
         if User.query.filter_by(email=email).first():
+            audit_logger.log_event(EventType.REGISTRATION, status='failure', details={'username': username, 'email': email, 'reason': 'Email exists'})
             return render_template('register.html', error='Email already registered')
         
         # Create new user (unverified)
@@ -504,6 +554,8 @@ def register():
             )
             db.session.add(verification)
             db.session.commit()
+            
+            audit_logger.log_event(EventType.REGISTRATION, user_id=user.id, status='success', details={'username': username, 'email': email})
             
             # Log activity
             activity = UserActivity(
@@ -564,6 +616,12 @@ def login():
             login_attempt.failure_reason = 'rate_limited'
             db.session.add(login_attempt)
             db.session.commit()
+            audit_logger.log_event(
+                EventType.SUSPICIOUS_ACTIVITY,
+                user_id=user.id if user else None,
+                status='failure',
+                details={'reason': 'Rate limit exceeded on login', 'attempted_username': username}
+            )
             return render_template('login.html', error='Too many login attempts. Please try again later.')
         
         if user and user.check_password(password):
@@ -571,6 +629,12 @@ def login():
                 login_attempt.failure_reason = 'account_locked'
                 db.session.add(login_attempt)
                 db.session.commit()
+                audit_logger.log_event(
+                    EventType.FAILED_LOGIN,
+                    user_id=user.id,
+                    status='failure',
+                    details={'reason': 'Account is disabled', 'username': username}
+                )
                 return render_template('login.html', error='Account is disabled. Contact support.')
             
             # Reset rate limit on successful authentication
@@ -627,6 +691,13 @@ def login():
             db.session.add(activity)
             db.session.add(login_attempt)
             db.session.commit()
+
+            audit_logger.log_event(
+                EventType.LOGIN,
+                user_id=user.id,
+                status='success',
+                details={'username': user.username, 'email': user.email}
+            )
             
             # Send login alert if suspicious
             if suspicion['is_suspicious']:
@@ -650,6 +721,13 @@ def login():
                 )
                 db.session.add(susp_activity)
                 db.session.commit()
+
+                audit_logger.log_event(
+                    EventType.SUSPICIOUS_ACTIVITY,
+                    user_id=user.id,
+                    status='success',
+                    details={'activity': 'Suspicious Login', 'location': f"{geo_data.get('city')}, {geo_data.get('country')}"}
+                )
             
             # Check if user has cards
             card_count = UserCard.query.filter_by(user_id=user.id).count()
@@ -675,6 +753,13 @@ def login():
         db.session.add(login_attempt)
         db.session.add(activity)
         db.session.commit()
+
+        audit_logger.log_event(
+            EventType.FAILED_LOGIN,
+            user_id=user.id if user else None,
+            status='failure',
+            details={'attempted_username': username, 'reason': 'Invalid credentials'}
+        )
         
         return render_template('login.html', error='Invalid username or password')
     
@@ -684,14 +769,12 @@ def login():
 def logout():
     """Logout user and clear session"""
     if current_user.is_authenticated:
-        audit = AuditLog(
+        audit_logger.log_event(
+            EventType.LOGOUT,
             user_id=current_user.id,
-            action='logout',
             status='success',
-            ip_address=request.remote_addr
+            details={'username': current_user.username}
         )
-        db.session.add(audit)
-        db.session.commit()
     
     logout_user()
     return redirect(url_for('login'))
@@ -755,24 +838,21 @@ def change_password():
     confirm_password = request.form.get('confirm_password', '')
     
     if not user.check_password(current_password):
+        audit_logger.log_event(EventType.PASSWORD_CHANGE, user_id=user.id, status='failure', details={'reason': 'Incorrect current password'})
         return render_template('profile.html', user=user, error='Current password is incorrect')
     
     if new_password != confirm_password:
+        audit_logger.log_event(EventType.PASSWORD_CHANGE, user_id=user.id, status='failure', details={'reason': 'Password confirmation mismatch'})
         return render_template('profile.html', user=user, error='New passwords do not match')
     
     if len(new_password) < 8:
+        audit_logger.log_event(EventType.PASSWORD_CHANGE, user_id=user.id, status='failure', details={'reason': 'Password length under 8 characters'})
         return render_template('profile.html', user=user, error='Password must be at least 8 characters')
     
     user.set_password(new_password)
-    
-    audit = AuditLog(
-        user_id=user.id,
-        action='password_changed',
-        status='success',
-        ip_address=request.remote_addr
-    )
-    db.session.add(audit)
     db.session.commit()
+    
+    audit_logger.log_event(EventType.PASSWORD_CHANGE, user_id=user.id, status='success', details={'message': 'Password updated successfully'})
     
     return render_template('profile.html', user=user, success='Password changed successfully')
 
@@ -1475,6 +1555,13 @@ def process_transaction():
 
         if is_blocked:
             conn.close()
+            audit_logger.log_event(
+                EventType.FRAUD_DETECTION,
+                user_id=current_user.id,
+                status='failure',
+                target_resource='Blocked Card',
+                details={'card_number': masked_card, 'reason': 'Attempted transaction on blocked card'}
+            )
             return jsonify(sanitize_numpy_types({
                 'status': 'blocked',
                 'message': 'This card has been blocked. Transaction denied.',
@@ -1537,6 +1624,38 @@ def process_transaction():
 
         conn.commit()
         conn.close()
+
+        # Log audit events asynchronously
+        audit_logger.log_event(
+            EventType.TRANSACTION_SUBMISSION,
+            user_id=current_user.id,
+            status='success',
+            target_resource=f"Transaction:{transaction_id}",
+            details={
+                'transaction_id': transaction_id,
+                'amount': float(amount),
+                'merchant': str(data['merchant']),
+                'card_number': masked_card,
+                'status': status,
+                'fraud_score': float(result['fraud_score'])
+            }
+        )
+
+        if bool(result['is_fraud']) or float(result['fraud_score']) >= 40:
+            audit_logger.log_event(
+                EventType.FRAUD_DETECTION,
+                user_id=current_user.id,
+                status='success',
+                target_resource=f"Transaction:{transaction_id}",
+                details={
+                    'transaction_id': transaction_id,
+                    'amount': float(amount),
+                    'merchant': str(data['merchant']),
+                    'card_number': masked_card,
+                    'fraud_score': float(result['fraud_score']),
+                    'risk_factors': result['risk_factors']
+                }
+            )
 
         response_payload = sanitize_numpy_types({
             'transaction_id': transaction_id,
@@ -1686,6 +1805,13 @@ def block_card():
                      (encrypted_card, reason, current_user.username))
         conn.commit()
         conn.close()
+        audit_logger.log_event(
+            EventType.ACCOUNT_BLOCK,
+            user_id=current_user.id,
+            status='success',
+            target_resource='Blocked Card',
+            details={'card_number': mask_card_number(raw_card), 'reason': reason}
+        )
         return jsonify({'message': 'Card blocked successfully'})
     except sqlite3.IntegrityError:
         conn.close()
@@ -1711,6 +1837,13 @@ def unblock_card():
     conn.commit()
     conn.close()
     if deleted_any:
+        audit_logger.log_event(
+            EventType.ACCOUNT_UNBLOCK,
+            user_id=current_user.id,
+            status='success',
+            target_resource='Blocked Card',
+            details={'card_number': mask_card_number(target_card)}
+        )
         return jsonify({'message': 'Card unblocked successfully'})
     return jsonify({'message': 'Card was not found in block list'}), 404
 
@@ -2270,11 +2403,14 @@ def export_transactions():
 
     if file_format == 'csv':
         csv_data = ReportGenerator.generate_csv(transactions)
-        return Response(
-            csv_data,
-            mimetype='text/csv',
-            headers={'Content-Disposition': f'attachment; filename="{filename}"'}
-        )
+        csv_str = csv_data.decode('utf-8', errors='replace') if isinstance(csv_data, bytes) else str(csv_data)
+        if 'format' in request.args or request.args.get('download') == '1' or request.headers.get('Accept') == 'text/csv':
+            return Response(
+                csv_data,
+                mimetype='text/csv',
+                headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+            )
+        return jsonify({'csv': csv_str})
     else:
         pdf_bytes = ReportGenerator.generate_pdf('pdf_transaction_report', 'Transaction Detail Report', transactions, filters=filters)
         return Response(
@@ -2666,6 +2802,14 @@ def admin_update_user(user_id):
     db.session.add(admin_action)
     db.session.commit()
 
+    audit_logger.log_event(
+        EventType.ADMIN_USER_CHANGE,
+        user_id=current_user.id,
+        status='success',
+        target_resource=f"User:{user.id}",
+        details={'target_username': user.username, 'changes': {k: v for k, v in data.items() if k not in {'password'}}}
+    )
+
     return jsonify({'message': 'User updated successfully', 'user': serialize_admin_user(user)})
 
 
@@ -2691,6 +2835,14 @@ def admin_delete_user(user_id):
     )
     db.session.add(admin_action)
     db.session.commit()
+
+    audit_logger.log_event(
+        EventType.ACCOUNT_BLOCK,
+        user_id=current_user.id,
+        status='success',
+        target_resource=f"User:{user.id}",
+        details={'deactivated_username': user.username, 'reason': 'Admin deactivated user account'}
+    )
 
     return jsonify({'message': f'User {user.username} deactivated successfully', 'user': serialize_admin_user(user)})
 
@@ -2720,6 +2872,14 @@ def admin_block_user(user_id):
     db.session.add(admin_action)
     db.session.commit()
 
+    audit_logger.log_event(
+        EventType.ACCOUNT_BLOCK,
+        user_id=current_user.id,
+        status='success',
+        target_resource=f"User:{user.id}",
+        details={'blocked_username': user.username, 'reason': data.get('reason', 'Admin blocked user account')}
+    )
+
     return jsonify({'message': f'User {user.username} blocked', 'user': serialize_admin_user(user)})
 
 
@@ -2742,6 +2902,14 @@ def admin_unblock_user(user_id):
     )
     db.session.add(admin_action)
     db.session.commit()
+
+    audit_logger.log_event(
+        EventType.ACCOUNT_UNBLOCK,
+        user_id=current_user.id,
+        status='success',
+        target_resource=f"User:{user.id}",
+        details={'unblocked_username': user.username}
+    )
 
     return jsonify({'message': f'User {user.username} unblocked', 'user': serialize_admin_user(user)})
 
@@ -2961,6 +3129,14 @@ def generate_report():
         db.session.add(report)
         db.session.commit()
 
+        audit_logger.log_event(
+            EventType.REPORT_GENERATION,
+            user_id=current_user.id,
+            status='success',
+            target_resource=f"Report:{report.id}",
+            details={'report_id': report.id, 'report_type': report_type, 'file_format': file_format, 'title': report_title}
+        )
+
         return jsonify({
             'message': 'Report generated successfully',
             'report_id': report.id,
@@ -2972,6 +3148,13 @@ def generate_report():
 
     except Exception as e:
         db.session.rollback()
+        audit_logger.log_event(
+            EventType.REPORT_GENERATION,
+            user_id=current_user.id,
+            status='failure',
+            target_resource='Report',
+            details={'error': str(e)}
+        )
         return jsonify({'error': f"Failed to generate report: {str(e)}"}), 500
 
 
@@ -3052,6 +3235,14 @@ def download_report(report_id):
     report.download_count = (report.download_count or 0) + 1
     db.session.commit()
 
+    audit_logger.log_event(
+        EventType.REPORT_DOWNLOAD,
+        user_id=current_user.id,
+        status='success',
+        target_resource=f"Report:{report.id}",
+        details={'report_id': report.id, 'title': report.title, 'file_format': report.file_format}
+    )
+
     mimetype = 'application/pdf' if report.file_format == 'pdf' else 'text/csv'
     safe_download_name = f"{report.title.replace(' ', '_')}.{report.file_format}"
 
@@ -3087,6 +3278,186 @@ def delete_report(report_id):
     db.session.delete(report)
     db.session.commit()
     return jsonify({'message': 'Report deleted successfully'})
+
+
+# ─── Admin Audit Logs Viewer & Export APIs ─────────────────────────
+
+@app.route('/admin/audit-logs', methods=['GET'])
+@admin_required
+def admin_audit_logs_page():
+    """Render admin audit log viewer template"""
+    return render_template('admin_audit_logs.html')
+
+
+@app.route('/api/admin/audit-logs', methods=['GET'])
+@admin_required
+def get_admin_audit_logs():
+    """
+    Paginated & Filtered API for Audit Logs.
+    Supported Query Parameters:
+    - page: Integer page number (default 1)
+    - per_page: Items per page (default 25, max 100)
+    - event_type: Event category string or 'all'
+    - status: 'success', 'failure', or 'all'
+    - user_id: Specific user ID integer
+    - start_date: ISO date (YYYY-MM-DD)
+    - end_date: ISO date (YYYY-MM-DD)
+    - search: Keyword search string (IP, user, resource, details)
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 25, type=int), 100)
+    event_type = request.args.get('event_type', '').strip()
+    status = request.args.get('status', '').strip()
+    user_id_param = request.args.get('user_id', type=int)
+    start_date_str = request.args.get('start_date', '').strip()
+    end_date_str = request.args.get('end_date', '').strip()
+    search = request.args.get('search', '').strip()
+
+    query = AuditLog.query
+
+    # Apply Event Type Filter
+    if event_type and event_type != 'all':
+        query = query.filter(or_(AuditLog.event_type == event_type, AuditLog.action == event_type))
+
+    # Apply Status Filter
+    if status and status != 'all':
+        query = query.filter_by(status=status)
+
+    # Apply User ID Filter
+    if user_id_param:
+        query = query.filter_by(user_id=user_id_param)
+
+    # Apply Date Range Filter
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            query = query.filter(AuditLog.created_at >= start_date)
+        except ValueError:
+            pass
+
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(AuditLog.created_at < end_date)
+        except ValueError:
+            pass
+
+    # Apply Keyword Search
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                AuditLog.ip_address.ilike(search_pattern),
+                AuditLog.target_resource.ilike(search_pattern),
+                AuditLog.event_type.ilike(search_pattern),
+                AuditLog.action.ilike(search_pattern),
+                AuditLog.user_agent.ilike(search_pattern)
+            )
+        )
+
+    # Sort by creation timestamp descending
+    query = query.order_by(AuditLog.created_at.desc())
+
+    # Execute pagination
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    # Summary stats for metric counters
+    total_count = AuditLog.query.count()
+    failed_logins = AuditLog.query.filter(
+        or_(AuditLog.event_type == 'failed_login', AuditLog.action == 'failed_login')
+    ).count()
+    fraud_detections = AuditLog.query.filter(
+        or_(AuditLog.event_type == 'fraud_detection', AuditLog.action == 'fraud_detection')
+    ).count()
+    auth_failures = AuditLog.query.filter(
+        or_(AuditLog.event_type == 'api_auth_failure', AuditLog.action == 'api_auth_failure')
+    ).count()
+
+    return jsonify({
+        'logs': [log.to_dict() for log in pagination.items],
+        'total': pagination.total,
+        'page': pagination.page,
+        'pages': pagination.pages,
+        'per_page': pagination.per_page,
+        'stats': {
+            'total': total_count,
+            'failed_logins': failed_logins,
+            'fraud_detections': fraud_detections,
+            'auth_failures': auth_failures
+        }
+    })
+
+
+@app.route('/api/admin/audit-logs/export', methods=['GET'])
+@admin_required
+def export_admin_audit_logs():
+    """Export filtered audit logs as CSV or JSON"""
+    import io
+    import csv
+
+    export_format = request.args.get('format', 'csv').lower()
+    event_type = request.args.get('event_type', '').strip()
+    status = request.args.get('status', '').strip()
+    search = request.args.get('search', '').strip()
+    start_date_str = request.args.get('start_date', '').strip()
+    end_date_str = request.args.get('end_date', '').strip()
+
+    query = AuditLog.query
+
+    if event_type and event_type != 'all':
+        query = query.filter(or_(AuditLog.event_type == event_type, AuditLog.action == event_type))
+    if status and status != 'all':
+        query = query.filter_by(status=status)
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+            query = query.filter(AuditLog.created_at >= start_date)
+        except ValueError:
+            pass
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(AuditLog.created_at < end_date)
+        except ValueError:
+            pass
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                AuditLog.ip_address.ilike(search_pattern),
+                AuditLog.target_resource.ilike(search_pattern),
+                AuditLog.event_type.ilike(search_pattern)
+            )
+        )
+
+    logs = query.order_by(AuditLog.created_at.desc()).limit(1000).all()
+
+    if export_format == 'json':
+        return jsonify([l.to_dict() for l in logs])
+
+    # CSV output
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Event ID', 'Event Type', 'User ID', 'Target Resource', 'IP Address', 'User Agent', 'Status', 'Timestamp', 'Details'])
+
+    for l in logs:
+        d = l.to_dict()
+        writer.writerow([
+            d['event_id'],
+            d['event_type'],
+            d['user_id'] or 'Anonymous',
+            d['target_resource'],
+            d['ip_address'],
+            d['user_agent'],
+            d['status'],
+            d['created_at'],
+            json.dumps(d['details'])
+        ])
+
+    response = app.make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=audit_logs_export.csv"
+    response.headers["Content-type"] = "text/csv; charset=utf-8"
+    return response
 
 
 # ─── Initialize and Run ─────────────────────────────────────────────
