@@ -39,6 +39,18 @@ from models import (
 )
 from audit_logger import audit_logger, EventType
 
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
+from sqlalchemy.exc import SQLAlchemyError
+from errors import (
+    APIError, BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError,
+    MethodNotAllowedError, ConflictError, PayloadTooLargeError, UnprocessableEntityError,
+    ValidationError, RateLimitExceededError, InternalServerError, format_error_response, is_json_request
+)
+from validators import (
+    sanitize_string, sanitize_payload, parse_and_validate_json, validate_email,
+    validate_username, validate_amount, validate_card_number, validate_file_upload
+)
+
 def sanitize_numpy_types(obj):
     """Recursively convert NumPy data types into native Python types for JSON serialization."""
     if obj is None:
@@ -80,6 +92,7 @@ if not secret_key_val or secret_key_val in {'your_secret_key_here', 'change_this
 app.secret_key = secret_key_val
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fraud_detection.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max payload limit
 
 # Secure report directory path inside instance folder
 reports_dir = os.path.abspath(os.path.join(app.instance_path, 'reports'))
@@ -113,9 +126,101 @@ def unauthorized():
         target_resource=request.path,
         details={'reason': 'Unauthenticated request to protected resource'}
     )
-    if request.is_json or request.path.startswith('/api/'):
-        return jsonify({'error': 'Authentication required'}), 401
+    if is_json_request():
+        return jsonify(format_error_response('Authentication required', status_code=401, code='UNAUTHORIZED')), 401
     return redirect(url_for('login', next=request.url))
+
+
+# ─── Centralized Error Handlers ─────────────────────────────────────
+
+def handle_error_response(message, status_code=500, code="INTERNAL_SERVER_ERROR", details=None, title=None):
+    """Return JSON for API requests or HTML page for web requests."""
+    if is_json_request():
+        resp_data = format_error_response(message, status_code=status_code, code=code, details=details)
+        return jsonify(resp_data), status_code
+    else:
+        title_val = title or code.replace("_", " ").title()
+        return render_template(
+            "error.html",
+            status_code=status_code,
+            title=title_val,
+            message=message
+        ), status_code
+
+@app.errorhandler(APIError)
+def handle_api_error(e):
+    app.logger.warning(f"APIError [{e.code}]: {e.message}")
+    return handle_error_response(e.message, status_code=e.status_code, code=e.code, details=e.details)
+
+@app.errorhandler(400)
+def handle_bad_request(e):
+    msg = getattr(e, 'description', 'Bad Request')
+    return handle_error_response(msg, status_code=400, code="BAD_REQUEST")
+
+@app.errorhandler(401)
+def handle_unauthorized(e):
+    msg = getattr(e, 'description', 'Authentication required')
+    return handle_error_response(msg, status_code=401, code="UNAUTHORIZED")
+
+@app.errorhandler(403)
+def handle_forbidden(e):
+    msg = getattr(e, 'description', 'Access forbidden')
+    return handle_error_response(msg, status_code=403, code="FORBIDDEN")
+
+@app.errorhandler(404)
+def handle_not_found(e):
+    msg = getattr(e, 'description', 'The requested resource or page was not found')
+    return handle_error_response(msg, status_code=404, code="NOT_FOUND")
+
+@app.errorhandler(405)
+def handle_method_not_allowed(e):
+    msg = getattr(e, 'description', 'HTTP method not allowed for this endpoint')
+    return handle_error_response(msg, status_code=405, code="METHOD_NOT_ALLOWED")
+
+@app.errorhandler(409)
+def handle_conflict(e):
+    msg = getattr(e, 'description', 'Resource conflict')
+    return handle_error_response(msg, status_code=409, code="CONFLICT")
+
+@app.errorhandler(413)
+@app.errorhandler(RequestEntityTooLarge)
+def handle_request_entity_too_large(e):
+    return handle_error_response("Request payload exceeds maximum allowed size of 16MB", status_code=413, code="PAYLOAD_TOO_LARGE")
+
+@app.errorhandler(422)
+def handle_unprocessable_entity(e):
+    msg = getattr(e, 'description', 'Unprocessable request parameters')
+    return handle_error_response(msg, status_code=422, code="UNPROCESSABLE_ENTITY")
+
+@app.errorhandler(429)
+def handle_too_many_requests(e):
+    msg = getattr(e, 'description', 'Too many requests. Please try again later.')
+    return handle_error_response(msg, status_code=429, code="RATE_LIMIT_EXCEEDED")
+
+@app.errorhandler(SQLAlchemyError)
+def handle_database_error(e):
+    db.session.rollback()
+    app.logger.error(f"Database Exception: {str(e)}", exc_info=True)
+    return handle_error_response("A database error occurred. Operation was rolled back.", status_code=500, code="DATABASE_ERROR")
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(e):
+    app.logger.info(f"HTTPException [{e.code}]: {e.description}")
+    return handle_error_response(e.description or str(e), status_code=e.code or 500, code=getattr(e, 'name', 'HTTP_ERROR').upper().replace(" ", "_"))
+
+@app.errorhandler(Exception)
+def handle_generic_exception(e):
+    db.session.rollback()
+    app.logger.error(f"Unhandled Exception: {str(e)}", exc_info=True)
+    return handle_error_response("An internal server error occurred. Please try again later.", status_code=500, code="INTERNAL_SERVER_ERROR")
+
+@app.teardown_request
+def teardown_request(exception=None):
+    if exception is not None:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 DATABASE = os.path.join(app.instance_path, 'fraud_detection.db') if os.path.exists(os.path.join(app.instance_path, 'fraud_detection.db')) else 'fraud_detection.db'
 
@@ -452,8 +557,8 @@ def admin_required(f):
                 target_resource=request.path,
                 details={'reason': 'Unauthenticated request to admin endpoint'}
             )
-            if request.is_json or request.path.startswith('/api/'):
-                return jsonify({'error': 'Authentication required'}), 401
+            if is_json_request():
+                return jsonify(format_error_response('Authentication required', status_code=401, code='UNAUTHORIZED')), 401
             return redirect(url_for('login', next=request.url))
         if current_user.role != 'admin':
             audit_logger.log_event(
@@ -463,12 +568,12 @@ def admin_required(f):
                 target_resource=request.path,
                 details={'reason': 'Non-admin user requested admin endpoint', 'role': current_user.role}
             )
-            if request.is_json or request.path.startswith('/api/'):
-                return jsonify({'error': 'Admin access required'}), 403
-            return render_template('message.html',
+            if is_json_request():
+                return jsonify(format_error_response('Admin access required', status_code=403, code='FORBIDDEN')), 403
+            return render_template('error.html',
+                                 status_code=403,
                                  title='Access Denied',
-                                 message='Admin privileges are required to access this page.',
-                                 type='error'), 403
+                                 message='Admin privileges are required to access this page.'), 403
         return f(*args, **kwargs)
     return decorated_function
 
@@ -1508,37 +1613,24 @@ def process_transaction():
     try:
         data = request.get_json(silent=True)
         if not data or not isinstance(data, dict):
-            return jsonify({
-                'error': 'Invalid or missing JSON payload in request body',
-                'status': 'error'
-            }), 400
+            return jsonify(format_error_response('Invalid or missing JSON payload in request body', status_code=400, code='BAD_REQUEST')), 400
+
+        data = sanitize_payload(data)
 
         required = ['card_number', 'card_holder', 'amount', 'merchant', 'category', 'location']
         missing = [field for field in required if field not in data or data[field] is None or str(data[field]).strip() == '']
         if missing:
-            return jsonify({
-                'error': f'Missing required field(s): {", ".join(missing)}',
-                'status': 'error'
-            }), 400
+            return jsonify(format_error_response(f'Missing required field(s): {", ".join(missing)}', status_code=400, code='BAD_REQUEST')), 400
 
         # Validate transaction amount
         try:
             amount = float(data['amount'])
             if amount < 0:
-                return jsonify({
-                    'error': 'Transaction amount cannot be negative',
-                    'status': 'error'
-                }), 400
+                return jsonify(format_error_response('Transaction amount cannot be negative', status_code=400, code='BAD_REQUEST')), 400
             if math.isnan(amount) or math.isinf(amount):
-                return jsonify({
-                    'error': 'Transaction amount must be a finite number',
-                    'status': 'error'
-                }), 400
+                return jsonify(format_error_response('Transaction amount must be a finite number', status_code=400, code='BAD_REQUEST')), 400
         except (ValueError, TypeError):
-            return jsonify({
-                'error': 'Transaction amount must be a valid number',
-                'status': 'error'
-            }), 400
+            return jsonify(format_error_response('Transaction amount must be a valid number', status_code=400, code='BAD_REQUEST')), 400
 
         # Check if card is blocked
         raw_card = str(data['card_number']).strip()
@@ -1576,12 +1668,8 @@ def process_transaction():
             result = fraud_engine.analyze_transaction(data)
         except Exception as e:
             conn.close()
-            print(f"Error during analyze_transaction: {e}")
-            return jsonify({
-                'error': 'Failed to process fraud detection on transaction',
-                'details': str(e),
-                'status': 'error'
-            }), 500
+            app.logger.error(f"Error during analyze_transaction: {e}", exc_info=True)
+            return jsonify(format_error_response('Failed to process fraud detection on transaction', status_code=500, code='INTERNAL_SERVER_ERROR')), 500
 
         transaction_id = 'TXN' + datetime.now().strftime('%Y%m%d%H%M%S') + str(random.randint(1000, 9999))
 
@@ -1676,13 +1764,11 @@ def process_transaction():
 
         return jsonify(response_payload), 200
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error in process_transaction endpoint: {e}")
-        return jsonify({
-            'error': 'Internal server error processing transaction',
-            'details': str(e),
-            'status': 'error'
-        }), 500
+        app.logger.error(f"Error in process_transaction endpoint: {e}", exc_info=True)
+        return jsonify(format_error_response('Internal server error processing transaction', status_code=500, code='INTERNAL_SERVER_ERROR')), 500
 
 @app.route('/api/transactions/<transaction_id>/review', methods=['POST'])
 @login_required
@@ -3458,6 +3544,16 @@ def export_admin_audit_logs():
     response.headers["Content-Disposition"] = "attachment; filename=audit_logs_export.csv"
     response.headers["Content-type"] = "text/csv; charset=utf-8"
     return response
+
+
+@app.route('/api/test/force-db-error')
+def test_force_db_error():
+    """Endpoint for testing database rollback and 500 error handling."""
+    u = User(username='tmp_user_rollback_test', email='tmp_roll@test.com')
+    db.session.add(u)
+    db.session.execute(db.text("SELECT * FROM non_existent_table_xyz"))
+    db.session.commit()
+    return jsonify({"message": "OK"})
 
 
 # ─── Initialize and Run ─────────────────────────────────────────────
