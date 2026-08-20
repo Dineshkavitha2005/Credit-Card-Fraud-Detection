@@ -191,19 +191,21 @@ class AuditLogger:
         try:
             if app_obj:
                 with app_obj.app_context():
-                    from models import db, AuditLog
+                    from app.extensions import db
+                    from app.models.audit import AuditLog
                     log_record = AuditLog(**payload)
                     db.session.add(log_record)
                     db.session.commit()
             else:
-                from models import db, AuditLog
+                from app.extensions import db
+                from app.models.audit import AuditLog
                 log_record = AuditLog(**payload)
                 db.session.add(log_record)
                 db.session.commit()
         except Exception as e:
             logger.error(f"Failed to persist audit log record: {str(e)}", exc_info=True)
             try:
-                from models import db
+                from app.extensions import db
                 db.session.rollback()
             except Exception:
                 pass

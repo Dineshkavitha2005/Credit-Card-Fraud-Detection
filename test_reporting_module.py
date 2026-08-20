@@ -22,18 +22,15 @@ from utils import ReportGenerator
 class ReportingModuleTestCase(unittest.TestCase):
 
     def setUp(self):
-        app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        app.config['SECRET_KEY'] = 'test_secret_key_reporting_2026'
-        app.config['CARD_ENCRYPTION_KEY'] = 'g7xK_vL8_S02mD_KjN2P9zQ3xR4vT7yU8wA='
-        os.environ['CARD_ENCRYPTION_KEY'] = app.config['CARD_ENCRYPTION_KEY']
-
-        self.app_context = app.app_context()
+        from app import create_app
+        from app.config import TestingConfig
+        self.app = create_app(TestingConfig)
+        self.app_context = self.app.app_context()
         self.app_context.push()
         db.drop_all()
         db.create_all()
 
-        self.client = app.test_client()
+        self.client = self.app.test_client()
 
         # Create Admin User
         self.admin = User(

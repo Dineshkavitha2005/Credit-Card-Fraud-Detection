@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+
+{% block title %}Security Audit Logs{% endblock %}
+{% block page_title %}Security & Administrative Audit Logs{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .metric-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .metric-icon {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
+    }
+    .event-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .event-badge.login { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .event-badge.logout { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .event-badge.failed_login { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .event-badge.registration { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .event-badge.password_change { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .event-badge.transaction_submission { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .event-badge.fraud_detection { background: rgba(239, 68, 68, 0.25); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); font-weight:700; }
+    .event-badge.admin_user_change { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .event-badge.account_block { background: rgba(225, 29, 72, 0.2); color: #fda4af; border: 1px solid rgba(225, 29, 72, 0.4); }
+    .event-badge.account_unblock { background: rgba(20, 184, 166, 0.15); color: #5eead4; border: 1px solid rgba(20, 184, 166, 0.3); }
+    .event-badge.report_generation { background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .event-badge.report_download { background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .event-badge.suspicious_activity { background: rgba(234, 179, 8, 0.2); color: #fef08a; border: 1px solid rgba(234, 179, 8, 0.4); }
+    .event-badge.api_auth_failure { background: rgba(244, 63, 94, 0.2); color: #fecdd3; border: 1px solid rgba(244, 63, 94, 0.4); }
+
+    .status-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .status-pill.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .status-pill.failure { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+
+    /* Modal styling */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(4px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1000;
+        opacity: 0; visibility: hidden;
+        transition: all 0.2s ease;
+    }
+    .modal-overlay.active {
+        opacity: 1; visibility: visible;
+    }
+    .modal-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        width: 90%; max-width: 650px;
+        max-height: 85vh;
+        display: flex; flex-direction: column;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .json-code {
+        background: #090d16;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+        color: #e2e8f0;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Overview Stats -->
+<div class="stats-grid">
+    <div class="metric-card">
+        <div class="metric-icon" style="background:rgba(99,102,241,0.15);color:var(--primary-light);">
+            <i class="fas fa-list-check"></i>
+        </div>
+        <div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Total Audit Logs</div>
+            <div style="font-size:22px;font-weight:700;" id="metricTotal">0</div>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon" style="background:rgba(239,68,68,0.15);color:var(--danger-light);">
+            <i class="fas fa-user-xmark"></i>
+        </div>
+        <div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Failed Logins</div>
+            <div style="font-size:22px;font-weight:700;" id="metricFailedLogins">0</div>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon" style="background:rgba(245,158,11,0.15);color:var(--warning-light);">
+            <i class="fas fa-shield-cat"></i>
+        </div>
+        <div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Fraud Detections</div>
+            <div style="font-size:22px;font-weight:700;" id="metricFraudDetections">0</div>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon" style="background:rgba(244,63,94,0.15);color:#fecdd3;">
+            <i class="fas fa-lock"></i>
+        </div>
+        <div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Auth Failures</div>
+            <div style="font-size:22px;font-weight:700;" id="metricAuthFailures">0</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Panel -->
+<div class="panel" style="margin-bottom:24px;">
+    <div class="panel-header">
+        <h3><i class="fas fa-filter" style="color:var(--primary);margin-right:8px;"></i> Audit Log Filters</h3>
+        <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="exportAuditLogs('csv')">
+                <i class="fas fa-file-csv"></i> Export CSV
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="exportAuditLogs('json')">
+                <i class="fas fa-code"></i> Export JSON
+            </button>
+        </div>
+    </div>
+    <div class="panel-body" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:16px;align-items:end;">
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Search</label>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="filterSearch" class="form-control" placeholder="IP, User, Resource, Text...">
+            </div>
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Event Category</label>
+            <select id="filterEventType" class="form-control">
+                <option value="all">All Events</option>
+                <option value="login">Login</option>
+                <option value="logout">Logout</option>
+                <option value="failed_login">Failed Login</option>
+                <option value="registration">Registration</option>
+                <option value="password_change">Password Change</option>
+                <option value="transaction_submission">Transaction Submission</option>
+                <option value="fraud_detection">Fraud Detection</option>
+                <option value="admin_user_change">Admin User Change</option>
+                <option value="account_block">Account Block</option>
+                <option value="account_unblock">Account Unblock</option>
+                <option value="report_generation">Report Generation</option>
+                <option value="report_download">Report Download</option>
+                <option value="suspicious_activity">Suspicious Activity</option>
+                <option value="api_auth_failure">API Auth Failure</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Status</label>
+            <select id="filterStatus" class="form-control">
+                <option value="all">All Statuses</option>
+                <option value="success">Success</option>
+                <option value="failure">Failure</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">From Date</label>
+            <input type="date" id="filterStartDate" class="form-control">
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">To Date</label>
+            <input type="date" id="filterEndDate" class="form-control">
+        </div>
+        <div>
+            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Per Page</label>
+            <select id="filterPerPage" class="form-control">
+                <option value="10">10 per page</option>
+                <option value="25" selected>25 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+            </select>
+        </div>
+    </div>
+    <div style="padding:0 20px 16px 20px;display:flex;gap:10px;">
+        <button class="btn btn-primary btn-sm" onclick="applyFilters()">
+            <i class="fas fa-filter"></i> Apply Filters
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="resetFilters()">
+            <i class="fas fa-rotate-left"></i> Reset
+        </button>
+    </div>
+</div>
+
+<!-- Logs Data Table -->
+<div class="panel">
+    <div class="panel-header">
+        <h3><i class="fas fa-shield-halved" style="color:var(--primary);margin-right:8px;"></i> Security Event Stream</h3>
+        <span style="color:var(--text-muted);font-size:13px;" id="tableSummary">Loading event stream...</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Event ID</th>
+                    <th>Event Type</th>
+                    <th>User ID</th>
+                    <th>Target Resource</th>
+                    <th>IP Address</th>
+                    <th>User Agent</th>
+                    <th>Status</th>
+                    <th>Timestamp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="logsTableBody">
+                <tr>
+                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Fetching audit records...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="paginationControls">
+        <!-- Pagination injected dynamically -->
+    </div>
+</div>
+
+<!-- Metadata Inspector Modal -->
+<div class="modal-overlay" id="metadataModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div>
+                <h4 style="font-size:16px;font-weight:700;" id="modalTitle">Audit Metadata</h4>
+                <span style="font-size:12px;color:var(--text-muted);" id="modalSubTitle">ID: AUD-000000</span>
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="closeMetadataModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">Safe Metadata Payload (Sanitized)</span>
+                <button class="btn btn-outline btn-xs" onclick="copyMetadataJSON()">
+                    <i class="fas fa-copy"></i> Copy JSON
+                </button>
+            </div>
+            <div class="json-code" id="modalJSONContent">{}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentPage = 1;
+    let currentLogsData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAuditLogs(1);
+
+        // Attach event listeners for real-time filter updates
+        document.getElementById('filterSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') applyFilters();
+        });
+        document.getElementById('filterEventType').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        document.getElementById('filterPerPage').addEventListener('change', applyFilters);
+    });
+
+    async function loadAuditLogs(page = 1) {
+        currentPage = page;
+        const search = document.getElementById('filterSearch').value.trim();
+        const eventType = document.getElementById('filterEventType').value;
+        const status = document.getElementById('filterStatus').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+        const perPage = document.getElementById('filterPerPage').value;
+
+        const params = new URLSearchParams({
+            page: page,
+            per_page: perPage
+        });
+        if (search) params.append('search', search);
+        if (eventType !== 'all') params.append('event_type', eventType);
+        if (status !== 'all') params.append('status', status);
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+
+        const tbody = document.getElementById('logsTableBody');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading audit records...
+                </td>
+            </tr>
+        `;
+
+        try {
+            const res = await fetch(`/api/admin/audit-logs?${params.toString()}`);
+            if (!res.ok) {
+                if (res.status === 403 || res.status === 401) {
+                    showToast('Access denied: Admin privileges required.', 'danger');
+                }
+                throw new Error(`HTTP ${res.status}`);
+            }
+            const data = await res.json();
+            currentLogsData = data.logs || [];
+
+            // Update stats
+            if (data.stats) {
+                document.getElementById('metricTotal').textContent = data.stats.total || data.total;
+                document.getElementById('metricFailedLogins').textContent = data.stats.failed_logins || 0;
+                document.getElementById('metricFraudDetections').textContent = data.stats.fraud_detections || 0;
+                document.getElementById('metricAuthFailures').textContent = data.stats.auth_failures || 0;
+            }
+
+            renderTable(data.logs || []);
+            renderPagination(data.page, data.pages, data.total, data.per_page);
+
+            document.getElementById('tableSummary').textContent = 
+                `Showing ${data.logs.length} of ${data.total} audit events (Page ${data.page} of ${data.pages || 1})`;
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align:center;padding:32px;color:var(--danger-light);">
+                        <i class="fas fa-circle-exclamation" style="margin-right:8px;"></i> Failed to load audit records. Please try again.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function renderTable(logs) {
+        const tbody = document.getElementById('logsTableBody');
+        if (logs.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                        No audit log entries match your search criteria.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = logs.map(log => {
+            const eventType = log.event_type || log.action || 'unknown';
+            const statusClass = log.status === 'success' ? 'success' : 'failure';
+            const formatTime = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+            const userStr = log.user_id ? `<span style="font-weight:600;color:var(--primary-light);">User #${log.user_id}</span>` : '<span style="color:var(--text-muted);">Anonymous</span>';
+            const userAgentShort = log.user_agent ? (log.user_agent.length > 25 ? log.user_agent.substring(0, 25) + '...' : log.user_agent) : 'N/A';
+
+            return `
+                <tr>
+                    <td style="font-family:monospace;font-weight:600;color:var(--text-secondary);">${log.event_id || ('AUD-' + String(log.id).padStart(6, '0'))}</td>
+                    <td><span class="event-badge ${eventType}">${eventType.replace('_', ' ')}</span></td>
+                    <td>${userStr}</td>
+                    <td style="font-family:monospace;font-size:12px;" title="${log.target_resource}">${log.target_resource}</td>
+                    <td style="font-family:monospace;font-size:12px;">${log.ip_address}</td>
+                    <td style="font-size:12px;color:var(--text-muted);" title="${log.user_agent}">${userAgentShort}</td>
+                    <td><span class="status-pill ${statusClass}">${log.status}</span></td>
+                    <td style="font-size:12px;color:var(--text-muted);">${formatTime}</td>
+                    <td>
+                        <button class="btn btn-outline btn-xs" onclick="inspectMetadata(${log.id})">
+                            <i class="fas fa-eye"></i> Metadata
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderPagination(page, pages, total, perPage) {
+        const container = document.getElementById('paginationControls');
+        if (pages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        html += `<button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="loadAuditLogs(${page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+
+        for (let i = 1; i <= pages; i++) {
+            if (i === 1 || i === pages || (i >= page - 2 && i <= page + 2)) {
+                html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadAuditLogs(${i})">${i}</button>`;
+            } else if (i === page - 3 || i === page + 3) {
+                html += `<span style="color:var(--text-muted);padding:0 4px;">...</span>`;
+            }
+        }
+
+        html += `<button class="page-btn" ${page >= pages ? 'disabled' : ''} onclick="loadAuditLogs(${page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+        container.innerHTML = html;
+    }
+
+    function applyFilters() {
+        loadAuditLogs(1);
+    }
+
+    function resetFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterEventType').value = 'all';
+        document.getElementById('filterStatus').value = 'all';
+        document.getElementById('filterStartDate').value = '';
+        document.getElementById('filterEndDate').value = '';
+        document.getElementById('filterPerPage').value = '25';
+        loadAuditLogs(1);
+    }
+
+    function inspectMetadata(logId) {
+        const log = currentLogsData.find(l => l.id === logId);
+        if (!log) return;
+
+        document.getElementById('modalTitle').textContent = `Event Metadata: ${log.event_type}`;
+        document.getElementById('modalSubTitle').textContent = `Event ID: ${log.event_id} | Resource: ${log.target_resource}`;
+        
+        const detailsJSON = JSON.stringify(log.details || {}, null, 2);
+        document.getElementById('modalJSONContent').textContent = detailsJSON;
+
+        document.getElementById('metadataModal').classList.add('active');
+    }
+
+    function closeMetadataModal() {
+        document.getElementById('metadataModal').classList.remove('active');
+    }
+
+    function copyMetadataJSON() {
+        const code = document.getElementById('modalJSONContent').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('Safe metadata copied to clipboard!', 'success');
+        });
+    }
+
+    function exportAuditLogs(format) {
+        const search = document.getElementById('filterSearch').value.trim();
+        const eventType = document.getElementById('filterEventType').value;
+        const status = document.getElementById('filterStatus').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+
+        const params = new URLSearchParams({ format: format });
+        if (search) params.append('search', search);
+        if (eventType !== 'all') params.append('event_type', eventType);
+        if (status !== 'all') params.append('status', status);
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+
+        window.open(`/api/admin/audit-logs/export?${params.toString()}`, '_blank');
+    }
+</script>
+{% endblock %}

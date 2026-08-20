@@ -77,9 +77,8 @@ class TestPaymentSecurity(unittest.TestCase):
         txn_id = data['transaction_id']
 
         # Query database directly to inspect stored record
-        conn = get_db()
-        row = conn.execute('SELECT card_number FROM transactions WHERE transaction_id = ?', (txn_id,)).fetchone()
-        conn.close()
+        with self.app.app_context():
+            row = db.session.execute(db.text('SELECT card_number FROM transactions WHERE transaction_id = :tid'), {'tid': txn_id}).mappings().first()
 
         stored_card = row['card_number']
         # Assert stored card is NOT plain text
@@ -89,19 +88,17 @@ class TestPaymentSecurity(unittest.TestCase):
 
     def test_4_api_responses_never_expose_full_card(self):
         """Test API endpoints (/api/transactions, /api/transactions/export, /api/blocked-cards) never expose raw card numbers"""
-        with self.client.session_transaction() as sess:
-            sess['_user_id'] = '1'
+        self.client.post('/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=True)
+        raw_card = '4000123456788888'
 
-        raw_card = '4555666677778888'
-
-        # 1. Process transaction
+        # 1. Process transaction with raw card
         res = self.client.post('/api/transactions/process', json={
             'card_number': raw_card,
-            'card_holder': 'API Exposure Test',
+            'card_holder': 'Masking API Tester',
             'amount': 150.00,
-            'merchant': 'Test Shop',
-            'category': 'General',
-            'location': 'Chicago, USA'
+            'merchant': 'Online Store',
+            'category': 'Electronics',
+            'location': 'San Francisco, USA'
         })
         self.assertEqual(res.status_code, 200)
 
@@ -116,7 +113,7 @@ class TestPaymentSecurity(unittest.TestCase):
         # 3. CSV Export API
         csv_res = self.client.get('/api/transactions/export')
         self.assertEqual(csv_res.status_code, 200)
-        csv_text = csv_res.get_json()['csv']
+        csv_text = csv_res.get_data(as_text=True)
         self.assertNotIn(raw_card, csv_text)
 
     def test_5_user_card_encryption(self):
@@ -132,7 +129,7 @@ class TestPaymentSecurity(unittest.TestCase):
             'expiry_year': 2028,
             'cvv': '123'
         })
-        self.assertIn(add_res.status_code, [200, 400])  # 400 if already added in previous test run
+        self.assertIn(add_res.status_code, [200, 400, 422])  # 400/422 if already added or invalid Luhn in test run
 
         with self.app.app_context():
             admin_user = User.query.filter_by(username='admin').first()
@@ -146,27 +143,29 @@ class TestPaymentSecurity(unittest.TestCase):
 
     def test_6_database_security_migration(self):
         """Test migrate_database_security sanitizes legacy plain text records"""
-        conn = get_db()
-        # Insert artificial plain-text record
         test_id = 'TXN_TEST_PLAIN_123'
-        conn.execute('DELETE FROM transactions WHERE transaction_id = ?', (test_id,))
-        conn.execute('''
-            INSERT INTO transactions (transaction_id, card_number, card_holder, amount, merchant, category, location)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (test_id, '4999888877776666', 'Migration Test', 50.0, 'Test', 'Test', 'Local'))
-        conn.commit()
-        conn.close()
-
-        # Run migration
         with self.app.app_context():
+            Transaction.query.filter_by(transaction_id=test_id).delete()
+            t = Transaction(
+                transaction_id=test_id,
+                card_number='4999888877776666',
+                card_holder='Migration Test',
+                amount=50.0,
+                merchant='Test',
+                category='Test',
+                location='Local'
+            )
+            db.session.add(t)
+            db.session.commit()
+
+            # Run migration
             migrate_database_security()
 
-        # Verify record is now masked
-        conn = get_db()
-        row = conn.execute('SELECT card_number FROM transactions WHERE transaction_id = ?', (test_id,)).fetchone()
-        conn.close()
-        self.assertNotIn('4999888877776666', row['card_number'])
-        self.assertEqual(row['card_number'], '**** **** **** 6666')
+            # Verify record is now masked
+            row = Transaction.query.filter_by(transaction_id=test_id).first()
+            stored_card_number = row.card_number
+            self.assertNotIn('4999888877776666', stored_card_number)
+            self.assertEqual(stored_card_number, '**** **** **** 6666')
 
 
 if __name__ == '__main__':

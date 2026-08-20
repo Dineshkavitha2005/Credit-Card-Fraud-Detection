@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | FraudShield</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .bg-animation { display: none; }
+
+        .register-container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .register-brand {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-brand .logo {
+            width: 60px; height: 60px;
+            background: #4f46e5;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .register-brand h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .register-brand p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 10px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            color: #333;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background: white;
+            border-color: #4f46e5;
+        }
+
+        input::placeholder {
+            color: #999;
+        }
+
+        .password-strength {
+            margin-top: 6px;
+            height: 4px;
+            background: #f0f0f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            background: #ef4444;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            margin-top: 4px;
+            color: #666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 11px;
+            background: #4f46e5;
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #3f37c5;
+        }
+
+        .auth-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+
+        .auth-link a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .password-requirements {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            color: #666;
+            margin: 4px 0;
+        }
+
+        .requirement i {
+            margin-right: 8px;
+            width: 14px;
+            color: #999;
+        }
+
+        .requirement.met {
+            color: #28a745;
+        }
+
+        .requirement.met i {
+            color: #28a745;
+        }
+
+        @media (max-width: 640px) {
+            .register-card {
+                padding: 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="register-container">
+        <div class="register-brand">
+            <div class="logo"><i class="fas fa-shield-alt"></i></div>
+            <h1>FraudShield</h1>
+            <p>Secure Registration</p>
+        </div>
+
+        <div class="register-card">
+            {% if error %}
+            <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+            {% endif %}
+
+            <form method="POST" id="registerForm">
+                <!-- Name Fields -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" name="first_name" placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="last_name" placeholder="Doe" required>
+                    </div>
+                </div>
+
+                <!-- Email & Phone -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" name="email" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" name="phone" placeholder="+1 (555) 000-0000">
+                    </div>
+                </div>
+
+                <!-- Username & Password -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" name="username" placeholder="john_doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password *</label>
+                        <input type="password" name="password" id="password" placeholder="••••••••" required onkeyup="checkPasswordStrength()">
+                    </div>
+                </div>
+
+                <!-- Password Strength Indicator -->
+                <div class="password-strength">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <div class="strength-text" id="strengthText"></div>
+
+                <div class="password-requirements">
+                    <div class="requirement" id="req-length">
+                        <i class="fas fa-circle"></i> At least 8 characters
+                    </div>
+                    <div class="requirement" id="req-uppercase">
+                        <i class="fas fa-circle"></i> One uppercase letter
+                    </div>
+                    <div class="requirement" id="req-number">
+                        <i class="fas fa-circle"></i> One number
+                    </div>
+                    <div class="requirement" id="req-special">
+                        <i class="fas fa-circle"></i> One special character (!@#$%^&*)
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>Confirm Password *</label>
+                    <input type="password" name="confirm_password" placeholder="••••••••" required>
+                </div>
+
+                <!-- Address Fields -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" name="address" placeholder="123 Main Street">
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" name="city" placeholder="New York">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>State / Province</label>
+                        <input type="text" name="state" placeholder="NY">
+                    </div>
+                    <div class="form-group">
+                        <label>Zip Code</label>
+                        <input type="text" name="zipcode" placeholder="10001">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Country</label>
+                    <input type="text" name="country" placeholder="United States">
+                </div>
+
+                <!-- Terms -->
+                <div class="form-group" style="margin-top: 25px;">
+                    <input type="checkbox" name="accept_terms" id="accept_terms" required>
+                    <label for="accept_terms" style="display: inline; margin-left: 8px; text-transform: none; font-weight: 400;">
+                        I agree to the <a href="#" style="color: #818cf8; text-decoration: none;">Terms of Service</a> and <a href="#" style="color: #818cf8; text-decoration: none;">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Account</button>
+
+                <div class="auth-link">
+                    Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            let strength = 0;
+            let requirements = {
+                'req-length': password.length >= 8,
+                'req-uppercase': /[A-Z]/.test(password),
+                'req-number': /[0-9]/.test(password),
+                'req-special': /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+            };
+
+            // Update requirement indicators
+            for (let req in requirements) {
+                const elem = document.getElementById(req);
+                if (requirements[req]) {
+                    elem.classList.add('met');
+                    strength++;
+                } else {
+                    elem.classList.remove('met');
+                }
+            }
+
+            // Update strength bar
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const colors = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e'];
+            const texts = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+            
+            strengthBar.style.width = (strength * 25) + '%';
+            strengthBar.style.background = colors[strength];
+            strengthText.textContent = texts[strength] || '';
+            strengthText.style.color = colors[strength];
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.querySelector('input[name="password"]').value;
+            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+
+            if (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || password.length < 8) {
+                e.preventDefault();
+                alert('Password does not meet the requirements!');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

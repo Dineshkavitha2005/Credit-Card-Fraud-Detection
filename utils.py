@@ -445,21 +445,36 @@ class ReportGenerator:
     """Generate PDF and CSV reports with strict data safety and formatting"""
 
     @staticmethod
-    def calculate_metrics(transactions):
-        """Calculate summary metrics for a list of transaction dicts"""
+    def _get_field(obj, key, default=None):
+        """Safely retrieve field value from dict or model object"""
+        if isinstance(obj, dict):
+            val = obj.get(key, default)
+        else:
+            val = getattr(obj, key, default)
+        return default if val is None else val
+
+    @classmethod
+    def calculate_metrics(cls, transactions):
+        """Calculate summary metrics for a list of transaction dicts or model objects"""
         total_txns = len(transactions)
-        fraud_txns = [t for t in transactions if t.get('is_fraud') or float(t.get('fraud_score', 0) or 0) >= 0.7]
-        genuine_txns = [t for t in transactions if not (t.get('is_fraud') or float(t.get('fraud_score', 0) or 0) >= 0.7)]
+        
+        def is_t_fraud(t):
+            is_f = cls._get_field(t, 'is_fraud', False)
+            score = float(cls._get_field(t, 'fraud_score', 0) or 0)
+            return bool(is_f) or score >= 0.7 or score >= 50.0
+
+        fraud_txns = [t for t in transactions if is_t_fraud(t)]
+        genuine_txns = [t for t in transactions if not is_t_fraud(t)]
         
         fraud_count = len(fraud_txns)
         genuine_count = len(genuine_txns)
         fraud_pct = (fraud_count / total_txns * 100.0) if total_txns > 0 else 0.0
         
-        total_amount = sum(float(t.get('amount', 0) or 0) for t in transactions)
-        fraud_amount = sum(float(t.get('amount', 0) or 0) for t in fraud_txns)
-        genuine_amount = sum(float(t.get('amount', 0) or 0) for t in genuine_txns)
+        total_amount = sum(float(cls._get_field(t, 'amount', 0) or 0) for t in transactions)
+        fraud_amount = sum(float(cls._get_field(t, 'amount', 0) or 0) for t in fraud_txns)
+        genuine_amount = sum(float(cls._get_field(t, 'amount', 0) or 0) for t in genuine_txns)
         
-        high_risk_txns = [t for t in transactions if float(t.get('fraud_score', 0) or 0) >= 0.7]
+        high_risk_txns = [t for t in transactions if float(cls._get_field(t, 'fraud_score', 0) or 0) >= 0.7]
         high_risk_count = len(high_risk_txns)
         
         return {
@@ -474,12 +489,12 @@ class ReportGenerator:
             'high_risk_list': high_risk_txns
         }
 
-    @staticmethod
-    def generate_csv(transactions, output_path=None):
+    @classmethod
+    def generate_csv(cls, transactions, output_path=None):
         """Generate safe CSV transaction report with masked card numbers"""
         import io
         import csv
-        from models import mask_card_number
+        from app.models.encryption import mask_card_number
 
         headers = [
             'Transaction ID', 'Timestamp', 'User ID', 'Card Number', 'Card Holder',
@@ -489,27 +504,27 @@ class ReportGenerator:
 
         rows = []
         for t in transactions:
-            ts = t.get('timestamp')
+            ts = cls._get_field(t, 'timestamp')
             if isinstance(ts, datetime):
                 ts_str = ts.strftime('%Y-%m-%d %H:%M:%S')
             else:
                 ts_str = str(ts or '')
 
             rows.append([
-                t.get('transaction_id', ''),
+                cls._get_field(t, 'transaction_id', ''),
                 ts_str,
-                t.get('user_id', ''),
-                mask_card_number(t.get('card_number', '')),
-                t.get('card_holder', ''),
-                f"{float(t.get('amount', 0) or 0):.2f}",
-                t.get('merchant', ''),
-                t.get('category', ''),
-                t.get('location', ''),
-                t.get('status', ''),
-                f"{float(t.get('fraud_score', 0) or 0):.4f}",
-                'Yes' if t.get('is_fraud') else 'No',
-                t.get('ip_address', ''),
-                t.get('device_type', '')
+                cls._get_field(t, 'user_id', ''),
+                mask_card_number(cls._get_field(t, 'card_number', '')),
+                cls._get_field(t, 'card_holder', ''),
+                f"{float(cls._get_field(t, 'amount', 0) or 0):.2f}",
+                cls._get_field(t, 'merchant', ''),
+                cls._get_field(t, 'category', ''),
+                cls._get_field(t, 'location', ''),
+                cls._get_field(t, 'status', ''),
+                f"{float(cls._get_field(t, 'fraud_score', 0) or 0):.4f}",
+                'Yes' if cls._get_field(t, 'is_fraud') else 'No',
+                cls._get_field(t, 'ip_address', ''),
+                cls._get_field(t, 'device_type', '')
             ])
 
         if output_path:
@@ -526,11 +541,11 @@ class ReportGenerator:
             writer.writerows(rows)
             return buffer.getvalue().encode('utf-8')
 
-    @staticmethod
-    def generate_pdf(report_type, title, transactions, filters=None, output_path=None):
+    @classmethod
+    def generate_pdf(cls, report_type, title, transactions, filters=None, output_path=None):
         """Generate PDF report using ReportLab"""
         import io
-        from models import mask_card_number
+        from app.models.encryption import mask_card_number
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import letter
         from reportlab.lib.units import inch
@@ -538,7 +553,7 @@ class ReportGenerator:
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.pdfgen import canvas
 
-        metrics = ReportGenerator.calculate_metrics(transactions)
+        metrics = cls.calculate_metrics(transactions)
 
         class NumberedCanvas(canvas.Canvas):
             def __init__(self, *args, **kwargs):
@@ -749,14 +764,14 @@ class ReportGenerator:
                 [Paragraph("Transaction ID", header_cell), Paragraph("Card Number", header_cell), Paragraph("Amount", header_cell), Paragraph("Merchant", header_cell), Paragraph("Risk Score", header_cell), Paragraph("Status", header_cell)]
             ]
             for t in metrics['high_risk_list'][:15]: # Top 15 high risk
-                score = float(t.get('fraud_score', 0) or 0)
+                score = float(cls._get_field(t, 'fraud_score', 0) or 0)
                 hr_rows.append([
-                    Paragraph(str(t.get('transaction_id', '')), cell_style),
-                    Paragraph(mask_card_number(t.get('card_number', '')), cell_style),
-                    Paragraph(f"${float(t.get('amount', 0) or 0):,.2f}", cell_bold),
-                    Paragraph(str(t.get('merchant', '')), cell_style),
+                    Paragraph(str(cls._get_field(t, 'transaction_id', '')), cell_style),
+                    Paragraph(mask_card_number(cls._get_field(t, 'card_number', '')), cell_style),
+                    Paragraph(f"${float(cls._get_field(t, 'amount', 0) or 0):,.2f}", cell_bold),
+                    Paragraph(str(cls._get_field(t, 'merchant', '')), cell_style),
                     Paragraph(f"<b>{score:.2f}</b>", badge_fraud),
-                    Paragraph(str(t.get('status', 'Flagged')).title(), badge_fraud if t.get('is_fraud') else cell_style)
+                    Paragraph(str(cls._get_field(t, 'status', 'Flagged')).title(), badge_fraud if cls._get_field(t, 'is_fraud') else cell_style)
                 ])
 
             if len(hr_rows) > 1:
@@ -794,17 +809,17 @@ class ReportGenerator:
         # Display max 100 rows in PDF to keep page count reasonable
         display_txns = transactions[:100]
         for t in display_txns:
-            ts = t.get('timestamp')
+            ts = cls._get_field(t, 'timestamp')
             ts_str = ts.strftime('%m-%d %H:%M') if isinstance(ts, datetime) else str(ts or '')[:11]
-            is_f = t.get('is_fraud') or float(t.get('fraud_score', 0) or 0) >= 0.7
+            is_f = cls._get_field(t, 'is_fraud') or float(cls._get_field(t, 'fraud_score', 0) or 0) >= 0.7
             
             txn_rows.append([
-                Paragraph(str(t.get('transaction_id', '')), cell_style),
+                Paragraph(str(cls._get_field(t, 'transaction_id', '')), cell_style),
                 Paragraph(ts_str, cell_style),
-                Paragraph(mask_card_number(t.get('card_number', '')), cell_style),
-                Paragraph(f"${float(t.get('amount', 0) or 0):,.2f}", cell_bold),
-                Paragraph(str(t.get('merchant', ''))[:20], cell_style),
-                Paragraph(f"{float(t.get('fraud_score', 0) or 0):.2f}", badge_fraud if is_f else cell_style),
+                Paragraph(mask_card_number(cls._get_field(t, 'card_number', '')), cell_style),
+                Paragraph(f"${float(cls._get_field(t, 'amount', 0) or 0):,.2f}", cell_bold),
+                Paragraph(str(cls._get_field(t, 'merchant', ''))[:20], cell_style),
+                Paragraph(f"{float(cls._get_field(t, 'fraud_score', 0) or 0):.2f}", badge_fraud if is_f else cell_style),
                 Paragraph("<b>FRAUD</b>" if is_f else "Safe", badge_fraud if is_f else badge_safe)
             ])
 

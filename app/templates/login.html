@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | FraudShield</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .bg-animation { display: none; }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-brand .logo {
+            width: 60px; height: 60px;
+            background: #4f46e5;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .login-brand h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .login-brand p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 10px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .login-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .login-card .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            color: #333;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: white;
+        }
+
+        .input-wrapper input::placeholder { color: #999; }
+
+        .error-message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #3f37c5;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .login-footer .credentials {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 14px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .login-footer .credentials strong {
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="login-container">
+        <div class="login-brand">
+            <div class="logo"><i class="fas fa-shield-halved"></i></div>
+            <h1>FraudShield</h1>
+            <p>Credit Card Fraud Detection System</p>
+        </div>
+
+        <div class="login-card">
+            <h2>Welcome back</h2>
+            <p class="subtitle">Sign in to access the fraud detection dashboard</p>
+
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="username" placeholder="Enter your username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+
+                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(100, 116, 139, 0.2);">
+                    <p style="color: #64748b; font-size: 14px;">
+                        Don't have an account? 
+                        <a href="{{ url_for('register') }}" style="color: #818cf8; text-decoration: none; font-weight: 600;">Create one now</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            <p>Protected by FraudShield Security &copy; 2026</p>
+            <div class="credentials">
+                <strong>Demo Credentials:</strong> admin / admin123
+            </div>
+        </div>
+    </div>
+</body>
+</html>
