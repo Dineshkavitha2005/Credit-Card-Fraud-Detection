@@ -663,31 +663,27 @@
 
 <script>
     // ─── Load Cards ────────────────────────────────────
-    function loadCards() {
+    async function loadCards() {
         const grid = document.getElementById('cardsGrid');
-        if (grid && !grid.children.length) {
+        if (grid && window.UIState) {
+            UIState.showLoading(grid, 'cards', { count: 3 });
+        } else if (grid) {
             grid.innerHTML = '<div class="spinner" style="grid-column: 1/-1;"></div>';
         }
-        fetch('/api/cards')
-            .then(r => r.json().catch(() => ({})))
-            .then(data => {
-                if (data && Array.isArray(data.cards)) {
-                    renderCards(data.cards);
-                } else {
-                    renderCards([]);
-                }
-            })
-            .catch(err => {
-                console.error('Load cards error:', err);
-                if (grid) {
-                    grid.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i>
-                            <h3>Unable to load cards</h3>
-                            <p>Failed to connect to the card management service.</p>
-                        </div>`;
-                }
-            });
+
+        try {
+            const data = await apiCall('/api/cards');
+            if (data && Array.isArray(data.cards)) {
+                renderCards(data.cards);
+            } else {
+                renderCards([]);
+            }
+        } catch (err) {
+            console.error('Load cards error:', err);
+            if (grid && window.UIState) {
+                grid.innerHTML = `<div style="grid-column: 1/-1;">${UIState.renderErrorState({ title: 'Unable to Load Cards', message: err.message || 'Failed to connect to the card management service.', onRetry: 'loadCards()' })}</div>`;
+            }
+        }
     }
 
     function renderCards(cards = []) {
@@ -696,20 +692,25 @@
         cards = Array.isArray(cards) ? cards : [];
 
         if (cards.length === 0) {
-            grid.innerHTML = `
-                <div class="empty-state" style="grid-column: 1/-1;">
-                    <i class="fas fa-credit-card"></i>
-                    <h3>No Cards Added Yet</h3>
-                    <p>Add your first credit card to start fraud monitoring.</p>
-                    <br>
-                    <button onclick="openModal()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;box-shadow:0 4px 16px rgba(99,102,241,0.3);">
-                        <i class="fas fa-plus"></i> Add Your First Card
-                    </button>
-                    {% if setup_mode == '1' %}
-                    <br><br>
-                    <a href="/dashboard" class="skip-btn">Skip for now →</a>
-                    {% endif %}
-                </div>`;
+            if (window.UIState) {
+                grid.innerHTML = `<div style="grid-column: 1/-1;">${UIState.renderEmptyState({
+                    icon: 'fa-credit-card',
+                    title: 'No Cards Saved Yet',
+                    message: 'Add your first credit card to start continuous fraud protection.',
+                    primaryAction: { label: 'Add Your First Card', onClick: 'openModal()', icon: 'fa-plus' }
+                })}</div>`;
+            } else {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-credit-card"></i>
+                        <h3>No Cards Added Yet</h3>
+                        <p>Add your first credit card to start fraud monitoring.</p>
+                        <br>
+                        <button onclick="openModal()" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Your First Card
+                        </button>
+                    </div>`;
+            }
             return;
         }
 
@@ -855,11 +856,15 @@
     }
 
     // ─── Submit Card ───────────────────────────────────
-    function submitCard(e) {
+    async function submitCard(e) {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        if (window.UIState) {
+            UIState.setButtonLoading(btn, true, 'Adding Card Securely...');
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        }
 
         const payload = {
             card_number: document.getElementById('cardNumber').value,
@@ -870,55 +875,42 @@
             card_nickname: document.getElementById('cardNickname').value
         };
 
-        fetch('/api/cards', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
-        .then(({ ok, data }) => {
-            if (ok) {
-                showToast(data.message, 'success');
-                closeModal();
-                loadCards();
+        try {
+            const data = await apiCall('/api/cards', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            showToast(data.message || 'Card added successfully', 'success');
+            closeModal();
+            loadCards();
+        } catch (err) {
+            // Already handled with toast in apiCall
+        } finally {
+            if (window.UIState) {
+                UIState.setButtonLoading(btn, false);
             } else {
-                showToast(data.error || 'Failed to add card', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-shield-halved"></i> Add Card Securely';
             }
-        })
-        .catch(() => showToast('Network error', 'error'))
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-shield-halved"></i> Add Card Securely';
-        });
+        }
     }
 
     // ─── Card Actions ──────────────────────────────────
-    function deleteCard(id, last4) {
+    async function deleteCard(id, last4) {
         if (!confirm(`Remove card ending in ${last4}?`)) return;
-        fetch(`/api/cards/${id}`, { method: 'DELETE' })
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, 'success');
-                loadCards();
-            });
+        try {
+            const data = await apiCall(`/api/cards/${id}`, { method: 'DELETE' });
+            showToast(data.message || 'Card removed', 'success');
+            loadCards();
+        } catch (err) {}
     }
 
-    function setPrimary(id) {
-        fetch(`/api/cards/${id}/primary`, { method: 'POST' })
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, 'success');
-                loadCards();
-            });
-    }
-
-    // ─── Toast ─────────────────────────────────────────
-    function showToast(msg, type) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.className = `toast-msg ${type}`;
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    async function setPrimary(id) {
+        try {
+            const data = await apiCall(`/api/cards/${id}/primary`, { method: 'POST' });
+            showToast(data.message || 'Primary card updated', 'success');
+            loadCards();
+        } catch (err) {}
     }
 
     // ─── Init ──────────────────────────────────────────

@@ -136,9 +136,27 @@ function closeUserModal() {
     if (modal) modal.classList.remove('active');
 }
 
+function resetUserFilters() {
+    adminUserState.search = '';
+    adminUserState.role = 'all';
+    adminUserState.status = 'all';
+    adminUserState.page = 1;
+    const sInput = document.getElementById('searchInput');
+    const rFilter = document.getElementById('roleFilter');
+    const stFilter = document.getElementById('statusFilter');
+    if (sInput) sInput.value = '';
+    if (rFilter) rFilter.value = 'all';
+    if (stFilter) stFilter.value = 'all';
+    loadUsers();
+}
+
 async function loadUsers() {
     const tbody = document.getElementById('userTableBody');
-    tbody.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
+    if (window.UIState && tbody) {
+        UIState.showLoading(tbody, 'table', { cols: 8, rows: 6 });
+    } else if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
+    }
 
     const params = new URLSearchParams({
         page: adminUserState.page,
@@ -149,16 +167,7 @@ async function loadUsers() {
     });
 
     try {
-        const response = await fetch(`/api/admin/users?${params.toString()}`, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
-        });
-
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(payload.error || 'Failed to load users');
-        }
+        const payload = await (window.UIState ? UIState.apiCall(`/api/admin/users?${params.toString()}`) : fetch(`/api/admin/users?${params.toString()}`).then(r => r.json()));
 
         const { users = [], total = 0, page = 1, pages = 1, per_page = adminUserState.perPage } = payload;
         adminUserState.page = Number(page) || 1;
@@ -170,7 +179,14 @@ async function loadUsers() {
         }
 
         if (!users.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-users-slash"></i><p>No users match the current search filters.</p></td></tr>';
+            const hasFilters = adminUserState.search || (adminUserState.role && adminUserState.role !== 'all') || (adminUserState.status && adminUserState.status !== 'all');
+            if (hasFilters && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="8">${UIState.renderNoResults({ query: adminUserState.search, onClear: 'resetUserFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
+            } else if (window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="8">${UIState.renderEmptyState({ icon: 'fa-users', title: 'No Users Found', message: 'No registered user accounts found in the database.' })}</td></tr>`;
+            } else {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-users-slash"></i><p>No users found.</p></td></tr>';
+            }
             document.getElementById('paginationControls').innerHTML = '';
             return;
         }
@@ -254,8 +270,9 @@ async function loadUsers() {
 
     } catch (error) {
         console.error('Error loading users:', error);
-        tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-circle" style="color:var(--danger);"></i><p>Unable to load users.</p></td></tr>';
-        if (window.showToast) showToast(error.message, 'error');
+        if (tbody && window.UIState) {
+            tbody.innerHTML = `<tr><td colspan="8">${UIState.renderErrorState({ title: 'Unable to Load Users', message: error.message || 'Failed to retrieve user accounts.', onRetry: 'loadUsers()' })}</td></tr>`;
+        }
     }
 }
 

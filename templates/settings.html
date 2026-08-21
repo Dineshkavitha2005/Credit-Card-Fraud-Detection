@@ -141,16 +141,29 @@
     }
 
     async function loadRules() {
+        const container = document.getElementById('rules-container');
+        if (container && window.UIState) {
+            UIState.showLoading(container, 'spinner');
+        }
+
         try {
             const data = await apiCall('/api/fraud-rules');
-            const container = document.getElementById('rules-container');
+            const rules = data.rules || [];
 
-            if (!data.rules.length) {
-                container.innerHTML = '<div class="empty-state"><p>No rules configured</p></div>';
+            if (!rules.length) {
+                if (window.UIState) {
+                    container.innerHTML = UIState.renderEmptyState({
+                        icon: 'fa-gears',
+                        title: 'No Fraud Rules',
+                        message: 'No fraud rules are currently active in the detection engine.'
+                    });
+                } else {
+                    container.innerHTML = '<div class="empty-state"><p>No rules configured</p></div>';
+                }
                 return;
             }
 
-            container.innerHTML = data.rules.map(r => `
+            container.innerHTML = rules.map(r => `
                 <div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid rgba(51,65,85,0.5);">
                     <div style="flex:1;">
                         <div style="font-size:14px;font-weight:600;">${r.rule_name}</div>
@@ -168,16 +181,38 @@
                     </label>
                 </div>
             `).join('');
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error loading fraud rules:', e);
+            if (container && window.UIState) {
+                container.innerHTML = UIState.renderErrorState({
+                    title: 'Unable to Load Fraud Rules',
+                    message: e.message || 'Failed to fetch active fraud detection rules.',
+                    onRetry: 'loadRules()'
+                });
+            }
+        }
     }
 
     async function loadBlockedCards() {
+        const container = document.getElementById('blocked-cards-container');
+        if (container && window.UIState) {
+            UIState.showLoading(container, 'spinner');
+        }
+
         try {
             const data = await apiCall('/api/blocked-cards');
-            const container = document.getElementById('blocked-cards-container');
+            const cards = data.blocked_cards || data.cards || [];
 
-            if (!data.cards.length) {
-                container.innerHTML = '<div class="empty-state" style="padding:40px;"><i class="fas fa-check-circle" style="color:var(--success);"></i><p>No blocked cards</p></div>';
+            if (!cards.length) {
+                if (window.UIState) {
+                    container.innerHTML = UIState.renderEmptyState({
+                        icon: 'fa-shield-check',
+                        title: 'No Blocked Cards',
+                        message: 'All cards are currently active and authorized.'
+                    });
+                } else {
+                    container.innerHTML = '<div class="empty-state" style="padding:40px;"><i class="fas fa-check-circle" style="color:var(--success);"></i><p>No blocked cards</p></div>';
+                }
                 return;
             }
 
@@ -185,11 +220,11 @@
                 <table class="data-table">
                     <thead><tr><th>Card</th><th>Reason</th><th>Blocked At</th><th>Action</th></tr></thead>
                     <tbody>
-                        ${data.cards.map(c => `
+                        ${cards.map(c => `
                             <tr>
                                 <td class="mono">${c.card_number}</td>
                                 <td style="font-size:12px;">${c.reason || '-'}</td>
-                                <td style="font-size:12px;color:var(--text-muted);">${new Date(c.blocked_at).toLocaleString()}</td>
+                                <td style="font-size:12px;color:var(--text-muted);">${c.blocked_at ? new Date(c.blocked_at).toLocaleString() : 'N/A'}</td>
                                 <td>
                                     <button class="btn btn-xs btn-success" onclick="unblockCard('${c.card_number}')">
                                         <i class="fas fa-unlock"></i> Unblock
@@ -200,13 +235,22 @@
                     </tbody>
                 </table>
             `;
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error loading blocked cards:', e);
+            if (container && window.UIState) {
+                container.innerHTML = UIState.renderErrorState({
+                    title: 'Unable to Load Blocked Cards',
+                    message: e.message || 'Failed to fetch blocked card list.',
+                    onRetry: 'loadBlockedCards()'
+                });
+            }
+        }
     }
 
     async function toggleRule(ruleId) {
         try {
-            await apiCall(`/api/fraud-rules/${ruleId}/toggle`, { method: 'POST' });
-            showToast('Rule updated', 'success');
+            const data = await apiCall(`/api/fraud-rules/${ruleId}/toggle`, { method: 'POST' });
+            showToast(data.message || 'Rule updated', 'success');
             loadRules();
         } catch (e) {}
     }
@@ -221,28 +265,38 @@
 
     async function blockCard(e) {
         e.preventDefault();
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (window.UIState && submitBtn) {
+            UIState.setButtonLoading(submitBtn, true, 'Blocking Card...');
+        }
+
         const cardNumber = document.getElementById('block-card-number').value;
         const reason = document.getElementById('block-reason').value;
 
         try {
-            await apiCall('/api/cards/block', {
+            const data = await apiCall('/api/cards/block', {
                 method: 'POST',
                 body: JSON.stringify({ card_number: cardNumber, reason })
             });
-            showToast('Card blocked successfully', 'success');
+            showToast(data.message || 'Card blocked successfully', 'success');
             closeBlockModal();
             loadBlockedCards();
-        } catch (e) {}
+        } catch (e) {
+        } finally {
+            if (window.UIState && submitBtn) {
+                UIState.setButtonLoading(submitBtn, false);
+            }
+        }
     }
 
     async function unblockCard(cardNumber) {
         if (!confirm(`Unblock card ${cardNumber}?`)) return;
         try {
-            await apiCall('/api/cards/unblock', {
+            const data = await apiCall('/api/cards/unblock', {
                 method: 'POST',
                 body: JSON.stringify({ card_number: cardNumber })
             });
-            showToast('Card unblocked', 'success');
+            showToast(data.message || 'Card unblocked', 'success');
             loadBlockedCards();
         } catch (e) {}
     }
@@ -254,7 +308,7 @@
                 method: 'POST',
                 body: JSON.stringify({ count })
             });
-            showToast(`${count} transactions generated! ${result.fraud_detected} fraud detected.`, 'success');
+            showToast(`${count} transactions generated! ${result.fraud_detected || 0} fraud detected.`, 'success');
         } catch (e) {}
     }
 

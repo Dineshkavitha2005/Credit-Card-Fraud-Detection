@@ -326,15 +326,28 @@
                     `;
                 }).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No generated reports yet</td></tr>';
+                if (window.UIState) {
+                    tbody.innerHTML = `<tr><td colspan="5">${UIState.renderEmptyState({ icon: 'fa-file-lines', title: 'No Reports Generated', message: 'Configure parameters and click "Generate Secured Report" to create your first report.' })}</td></tr>`;
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No generated reports yet</td></tr>';
+                }
             }
         } catch (e) {
             console.error('Failed to load reports history', e);
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load reports history</td></tr>';
+            if (tbody && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="5">${UIState.renderErrorState({ title: 'Unable to Load Reports', message: e.message || 'Failed to fetch generated reports history.', onRetry: 'loadGeneratedReports()' })}</td></tr>`;
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load reports history</td></tr>';
+            }
         }
     }
 
     async function generateNewReport() {
+        const btn = document.querySelector('button[onclick="generateNewReport()"]');
+        if (window.UIState && btn) {
+            UIState.setButtonLoading(btn, true, 'Generating Secured Report...');
+        }
+
         const type = document.getElementById('rep-type').value;
         const format = document.getElementById('rep-format').value;
         const dateFrom = document.getElementById('rep-date-from').value;
@@ -361,7 +374,6 @@
         };
 
         try {
-            showToast('Generating report...', 'info');
             await apiCall('/api/reports/generate', {
                 method: 'POST',
                 body: JSON.stringify(payload)
@@ -370,6 +382,10 @@
             loadGeneratedReports();
         } catch (e) {
             console.error('Report generation error:', e);
+        } finally {
+            if (window.UIState && btn) {
+                UIState.setButtonLoading(btn, false);
+            }
         }
     }
 

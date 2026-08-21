@@ -77,45 +77,62 @@
     }
 
     async function loadAlerts() {
+        const container = document.getElementById('alerts-list');
+        if (container && window.UIState) {
+            UIState.showLoading(container, 'spinner');
+        }
+
         try {
             const data = await apiCall('/api/alerts');
-            const alerts = data.alerts;
+            const alerts = data.alerts || [];
 
-            document.getElementById('alert-count').textContent = `${alerts.length} alerts`;
-            document.getElementById('critical-count').textContent = alerts.filter(a => a.severity === 'critical').length;
-            document.getElementById('high-count').textContent = alerts.filter(a => a.severity === 'high').length;
-            document.getElementById('medium-count').textContent = alerts.filter(a => a.severity === 'medium').length;
+            const alertCount = document.getElementById('alert-count');
+            const critCount = document.getElementById('critical-count');
+            const highCount = document.getElementById('high-count');
+            const medCount = document.getElementById('medium-count');
 
-            const container = document.getElementById('alerts-list');
+            if (alertCount) alertCount.textContent = `${alerts.length} alerts`;
+            if (critCount) critCount.textContent = alerts.filter(a => (a.severity || '').toLowerCase() === 'critical').length;
+            if (highCount) highCount.textContent = alerts.filter(a => (a.severity || '').toLowerCase() === 'high').length;
+            if (medCount) medCount.textContent = alerts.filter(a => (a.severity || '').toLowerCase() === 'medium').length;
 
             if (!alerts.length) {
-                container.innerHTML = `
-                    <div class="empty-state" style="padding:60px;">
-                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
-                        <p style="font-size:16px;margin-top:12px;">All clear! No alerts at this time.</p>
-                    </div>
-                `;
+                if (window.UIState) {
+                    container.innerHTML = UIState.renderEmptyState({
+                        icon: 'fa-shield-check',
+                        title: 'All Clear!',
+                        message: 'No security alerts or anomalous activity flagged at this time.',
+                        primaryAction: { label: 'Refresh Alerts', onClick: 'loadAlerts()', icon: 'fa-rotate-right' }
+                    });
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding:60px;">
+                            <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                            <p style="font-size:16px;margin-top:12px;">All clear! No alerts at this time.</p>
+                        </div>
+                    `;
+                }
                 return;
             }
 
             container.innerHTML = alerts.map(a => `
                 <div class="alert-item ${a.is_read ? '' : 'unread'}" style="${!a.is_read ? 'background:rgba(99,102,241,0.03);' : ''}">
-                    <div class="alert-icon ${a.severity}">
+                    <div class="alert-icon ${(a.severity || 'info').toLowerCase()}">
                         <i class="fas fa-${
-                            a.severity === 'critical' ? 'skull-crossbones' :
-                            a.severity === 'high' ? 'exclamation-triangle' : 'info-circle'
+                            (a.severity || '').toLowerCase() === 'critical' ? 'skull-crossbones' :
+                            (a.severity || '').toLowerCase() === 'high' ? 'exclamation-triangle' : 'info-circle'
                         }"></i>
                     </div>
                     <div class="alert-content" style="flex:1;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                            <span class="badge-risk ${a.severity}">${a.severity}</span>
-                            <span style="font-size:12px;color:var(--text-muted);">${a.alert_type.replace(/_/g, ' ').toUpperCase()}</span>
+                            <span class="badge-risk ${(a.severity || 'info').toLowerCase()}">${a.severity}</span>
+                            <span style="font-size:12px;color:var(--text-muted);">${(a.alert_type || 'ALERT').replace(/_/g, ' ').toUpperCase()}</span>
                             ${!a.is_read ? '<span style="width:8px;height:8px;background:var(--primary);border-radius:50%;"></span>' : ''}
                         </div>
                         <div class="alert-title" style="font-size:14px;">${a.message}</div>
                         <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
-                            <span class="alert-time"><i class="far fa-clock" style="margin-right:4px;"></i>${new Date(a.created_at).toLocaleString()}</span>
-                            <span class="mono" style="font-size:11px;color:var(--text-muted);">${a.transaction_id}</span>
+                            <span class="alert-time"><i class="far fa-clock" style="margin-right:4px;"></i>${a.created_at ? new Date(a.created_at).toLocaleString() : 'Recent'}</span>
+                            <span class="mono" style="font-size:11px;color:var(--text-muted);">${a.transaction_id || ''}</span>
                         </div>
                     </div>
                     <div style="display:flex;gap:8px;">
@@ -128,12 +145,22 @@
                 </div>
             `).join('');
 
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error loading alerts:', e);
+            if (container && window.UIState) {
+                container.innerHTML = UIState.renderErrorState({
+                    title: 'Unable to Load Security Alerts',
+                    message: e.message || 'Failed to retrieve alert notifications.',
+                    onRetry: 'loadAlerts()'
+                });
+            }
+        }
     }
 
     async function markRead(alertId) {
         try {
             await apiCall(`/api/alerts/${alertId}/read`, { method: 'POST' });
+            showToast('Alert marked as read', 'success');
             loadAlerts();
             updateAlertBadge();
         } catch (e) {}
@@ -142,7 +169,7 @@
     async function markAllRead() {
         try {
             const data = await apiCall('/api/alerts');
-            const unread = data.alerts.filter(a => !a.is_read);
+            const unread = (data.alerts || []).filter(a => !a.is_read);
             for (const alert of unread) {
                 await fetch(`/api/alerts/${alert.id}/read`, { method: 'POST' });
             }

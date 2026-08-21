@@ -6,7 +6,9 @@
     <title>{% block title %}FraudShield{% endblock %} | Credit Card Fraud Detection</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/ui-states.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/ui-states.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -849,9 +851,13 @@
         updateTime();
         setInterval(updateTime, 1000);
 
-        // Toast notification
+        // Toast notification (integrated with UIState)
         function showToast(message, type = 'info') {
+            if (window.UIState && typeof window.UIState.showToast === 'function') {
+                return window.UIState.showToast(message, type);
+            }
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const toast = document.createElement('div');
             const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
             toast.className = `toast ${type}`;
@@ -860,20 +866,18 @@
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
-        // API helper
+        // API helper (integrated with UIState for slow-network, offline, 401, 403 handling)
         async function apiCall(url, options = {}) {
-            try {
-                const res = await fetch(url, {
-                    headers: { 'Content-Type': 'application/json', ...options.headers },
-                    ...options
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Request failed');
-                return data;
-            } catch (err) {
-                showToast(err.message, 'error');
-                throw err;
+            if (window.UIState && typeof window.UIState.apiCall === 'function') {
+                return await window.UIState.apiCall(url, options);
             }
+            const res = await fetch(url, {
+                headers: { 'Content-Type': 'application/json', ...options.headers },
+                ...options
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Request failed');
+            return data;
         }
 
         // Format currency

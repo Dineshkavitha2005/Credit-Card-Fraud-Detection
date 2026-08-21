@@ -110,3 +110,14 @@ class TestSecurity:
             else:
                 res = authenticated_client.post(url, headers={'Accept': 'application/json'})
             assert res.status_code == 403
+
+    def test_health_check_endpoint(self, client):
+        """Test /health and /api/health return 200 OK with healthy database status."""
+        for url in ['/health', '/api/health']:
+            res = client.get(url)
+            assert res.status_code == 200
+            data = res.get_json()
+            assert data['status'] == 'healthy'
+            assert data['database'] == 'connected'
+            assert data['service'] == 'credit-card-fraud-detection'
+

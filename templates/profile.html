@@ -6,6 +6,7 @@
     <title>Profile Settings | FraudShield</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/ui-states.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -571,6 +572,7 @@
         </div>
     </div>
 
+    <script src="/static/js/ui-states.js"></script>
     <script>
         function checkPasswordStrength() {
             const password = document.getElementById('newPassword').value;
@@ -579,9 +581,16 @@
             if (/[A-Z]/.test(password)) strength++;
             if (/[0-9]/.test(password)) strength++;
             if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
-            
-            // You can add visual feedback here if needed
         }
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const btn = this.querySelector('button[type="submit"]');
+                if (window.UIState && btn) {
+                    UIState.setButtonLoading(btn, true, 'Saving...');
+                }
+            });
+        });
     </script>
 </body>
 </html>

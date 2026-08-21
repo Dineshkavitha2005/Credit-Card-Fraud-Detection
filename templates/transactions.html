@@ -265,6 +265,11 @@
     }
 
     async function loadTransactions() {
+        const tbody = document.getElementById('txn-tbody');
+        if (window.UIState && tbody) {
+            UIState.showLoading(tbody, 'table', { cols: 9, rows: 6 });
+        }
+
         const search = document.getElementById('search-input')?.value || '';
         const dateFrom = document.getElementById('date-from')?.value || '';
         const dateTo = document.getElementById('date-to')?.value || '';
@@ -292,11 +297,15 @@
 
         try {
             const data = await apiCall(`/api/transactions/history?${params}`);
-            document.getElementById('txn-count').textContent = `${data.total} transactions found`;
-            renderTransactions(data.transactions);
-            renderPagination(data.page, data.total_pages);
+            const countEl = document.getElementById('txn-count');
+            if (countEl) countEl.textContent = `${data.total || (data.transactions ? data.transactions.length : 0)} transactions found`;
+            renderTransactions(data.transactions || [], { search, dateFrom, dateTo, status, category, amountMin, amountMax, riskLevel });
+            renderPagination(data.page || 1, data.total_pages || (data.pages || 1));
         } catch (e) {
             console.error('Error loading transactions:', e);
+            if (tbody && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderErrorState({ title: 'Unable to Load Transactions', message: e.message || 'Could not fetch transaction history.', onRetry: 'loadTransactions()' })}</td></tr>`;
+            }
         }
     }
 
@@ -305,42 +314,56 @@
             const data = await apiCall('/api/transactions/statistics');
             
             // Update stat cards
-            document.getElementById('stat-total').querySelector('.stat-value').textContent = 
-                data.total_transactions.toLocaleString();
-            document.getElementById('stat-amount').querySelector('.stat-value').textContent = 
-                formatCurrency(data.total_amount);
-            document.getElementById('stat-fraud').querySelector('.stat-value').textContent = 
-                data.fraud_count;
-            document.getElementById('stat-rate').querySelector('.stat-value').textContent = 
-                data.fraud_rate + '%';
+            const totalVal = data.total_transactions != null ? data.total_transactions : (data.total_count || 0);
+            const amtVal = data.total_amount != null ? data.total_amount : 0;
+            const fraudVal = data.fraud_count != null ? data.fraud_count : 0;
+            const rateVal = data.fraud_rate != null ? data.fraud_rate : 0;
+
+            const statTotal = document.getElementById('stat-total');
+            const statAmount = document.getElementById('stat-amount');
+            const statFraud = document.getElementById('stat-fraud');
+            const statRate = document.getElementById('stat-rate');
+
+            if (statTotal) statTotal.querySelector('.stat-value').textContent = Number(totalVal).toLocaleString();
+            if (statAmount) statAmount.querySelector('.stat-value').textContent = formatCurrency(amtVal);
+            if (statFraud) statFraud.querySelector('.stat-value').textContent = Number(fraudVal).toLocaleString();
+            if (statRate) statRate.querySelector('.stat-value').textContent = rateVal + '%';
         } catch (e) {
             console.error('Error loading statistics:', e);
         }
     }
 
-    function renderTransactions(transactions) {
+    function renderTransactions(transactions, filterParams = {}) {
         const tbody = document.getElementById('txn-tbody');
         if (!transactions.length) {
-            tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found</p></div></td></tr>';
+            const hasFilters = filterParams.search || filterParams.dateFrom || filterParams.dateTo || (filterParams.status && filterParams.status !== 'all') || (filterParams.category && filterParams.category !== '') || filterParams.amountMin || filterParams.amountMax || (filterParams.riskLevel && filterParams.riskLevel !== 'all');
+            
+            if (hasFilters && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderNoResults({ query: filterParams.search, onClear: 'resetFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
+            } else if (window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderEmptyState({ icon: 'fa-receipt', title: 'No Transactions Found', message: 'Your transaction activity will appear here once you make or process a transaction.', primaryAction: { label: 'Refresh', onClick: 'loadTransactions()', icon: 'fa-rotate-right' } })}</td></tr>`;
+            } else {
+                tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found</p></div></td></tr>';
+            }
             return;
         }
 
         tbody.innerHTML = transactions.map(t => {
             const riskLevel = t.is_fraud ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
             const statusEmoji = t.is_fraud ? '⚠️' : (t.status === 'approved' ? '✓' : '✗');
-            const timestamp = new Date(t.timestamp).toLocaleString();
+            const timestamp = t.timestamp ? new Date(t.timestamp).toLocaleString() : 'N/A';
             
             return `
                 <tr>
                     <td style="font-size:12px;color:var(--text-muted);">${timestamp}</td>
                     <td class="mono" style="font-family:monospace;font-size:11px;letter-spacing:1px;">${t.transaction_id}</td>
-                    <td style="font-weight:600;">${t.merchant}</td>
+                    <td style="font-weight:600;">${t.merchant || '-'}</td>
                     <td style="font-weight:600;color:${t.is_fraud ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(t.amount)}</td>
-                    <td><span style="font-size:11px;color:var(--text-muted);">${t.category}</span></td>
-                    <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;font-size:11px;"></i><span style="font-size:11px;">${t.location}</span></td>
+                    <td><span style="font-size:11px;color:var(--text-muted);">${t.category || '-'}</span></td>
+                    <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;font-size:11px;"></i><span style="font-size:11px;">${t.location || '-'}</span></td>
                     <td>
                         <span style="font-weight:700;font-size:12px;color:${riskLevel === 'low' ? 'var(--success)' : riskLevel === 'medium' ? 'var(--warning)' : riskLevel === 'high' ? 'var(--warning)' : 'var(--danger)'};">
-                            ${t.fraud_score}%
+                            ${t.fraud_score != null ? t.fraud_score + '%' : '0%'}
                         </span>
                     </td>
                     <td>
@@ -350,7 +373,7 @@
                     </td>
                     <td>
                         <button class="btn btn-xs btn-outline" onclick="showTransactionDetail('${t.transaction_id}')" title="View Details">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas fa-eye"></i> View
                         </button>
                     </td>
                 </tr>

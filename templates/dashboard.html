@@ -616,7 +616,7 @@
         }, 300);
     }
 
-    // Fetch and apply filters with AbortController deduplication
+    // Fetch and apply filters with AbortController deduplication & UIState integration
     async function applyFilters(spinIcon = false) {
         const refreshIcon = document.getElementById('refresh-icon');
         if (spinIcon && refreshIcon) refreshIcon.classList.add('fa-spin');
@@ -639,43 +639,39 @@
         if (status !== 'all') params.append('status', status);
         if (search) params.append('search', search);
 
-        // Hide banner overlays
-        document.getElementById('dashboard-error-banner').style.display = 'none';
-        document.getElementById('dashboard-empty-banner').style.display = 'none';
+        // Hide banners
+        const errBanner = document.getElementById('dashboard-error-banner');
+        const emptyBanner = document.getElementById('dashboard-empty-banner');
+        if (errBanner) errBanner.style.display = 'none';
+        if (emptyBanner) emptyBanner.style.display = 'none';
 
         try {
-            const response = await fetch(`/api/dashboard/overview?${params.toString()}`, {
-                signal: activeAbortController.signal,
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            renderDashboardData(data);
+            const data = await (window.UIState ? UIState.apiCall(`/api/dashboard/overview?${params.toString()}`, { signal: activeAbortController.signal }) : fetch(`/api/dashboard/overview?${params.toString()}`, { signal: activeAbortController.signal }).then(r => r.json()));
+            renderDashboardData(data, { startDate, endDate, riskLevel, status, search });
         } catch (error) {
             if (error.name === 'AbortError') return; // Request aborted due to new user input
             console.error('Error loading dashboard overview:', error);
-            document.getElementById('dashboard-error-message').textContent = error.message || 'Failed to fetch dashboard data.';
-            document.getElementById('dashboard-error-banner').style.display = 'block';
+            if (errBanner) {
+                const msgEl = document.getElementById('dashboard-error-message');
+                if (msgEl) msgEl.textContent = error.message || 'Failed to fetch dashboard data.';
+                errBanner.style.display = 'block';
+            }
         } finally {
             if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         }
     }
 
-    function renderDashboardData(data) {
+    function renderDashboardData(data, filterParams = {}) {
         const kpi = data.kpi;
         const cData = data.charts;
 
         // Check empty dataset state
         if (!kpi.total_transactions) {
-            document.getElementById('dashboard-empty-banner').style.display = 'block';
+            const hasFilters = filterParams.search || filterParams.startDate || filterParams.endDate || (filterParams.status && filterParams.status !== 'all') || (filterParams.riskLevel && filterParams.riskLevel !== 'all');
+            const emptyBanner = document.getElementById('dashboard-empty-banner');
+            if (emptyBanner && !hasFilters) {
+                emptyBanner.style.display = 'block';
+            }
         }
 
         // Render KPI Cards
@@ -714,7 +710,7 @@
         renderChartHighRiskLocations(cData.high_risk_locations);
 
         // Render Recent Activity Tables
-        renderRecentTransactions(data.recent_transactions);
+        renderRecentTransactions(data.recent_transactions, filterParams);
         renderRecentAlerts(data.recent_alerts);
     }
 
@@ -1015,10 +1011,18 @@
     }
 
     // Render Recent Transactions
-    function renderRecentTransactions(transactions) {
+    // Render Recent Transactions
+    function renderRecentTransactions(transactions, filterParams = {}) {
         const tbody = document.getElementById('recent-transactions-tbody');
         if (!transactions || !transactions.length) {
-            tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No activity matches current filter parameters.</p></div></td></tr>';
+            const hasFilters = filterParams.search || filterParams.startDate || filterParams.endDate || (filterParams.status && filterParams.status !== 'all') || (filterParams.riskLevel && filterParams.riskLevel !== 'all');
+            if (hasFilters && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="7">${UIState.renderNoResults({ query: filterParams.search, onClear: 'resetFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
+            } else if (window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="7">${UIState.renderEmptyState({ icon: 'fa-receipt', title: 'No Transactions Found', message: 'Transactions will appear here once processed.', primaryAction: { label: 'Process Transaction', onClick: 'openProcessModal()', icon: 'fa-plus' } })}</td></tr>`;
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found.</p></div></td></tr>';
+            }
             return;
         }
 
@@ -1051,7 +1055,15 @@
     function renderRecentAlerts(alerts) {
         const container = document.getElementById('recent-alerts-container');
         if (!alerts || !alerts.length) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No security alerts recorded.</p></div>';
+            if (window.UIState) {
+                container.innerHTML = UIState.renderEmptyState({
+                    icon: 'fa-shield-check',
+                    title: 'All Clear',
+                    message: 'No security alerts or anomalous triggers recorded at this time.'
+                });
+            } else {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No security alerts recorded.</p></div>';
+            }
             return;
         }
 
@@ -1084,33 +1096,27 @@
         e.preventDefault();
         const form = e.target;
         const submitBtn = form.querySelector('button[type="submit"]');
-        const originalBtnHtml = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        if (window.UIState) {
+            UIState.setButtonLoading(submitBtn, true, 'Analyzing Transaction...');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        }
 
         const data = Object.fromEntries(new FormData(form));
         data.amount = parseFloat(data.amount);
         const resultDiv = document.getElementById('process-result');
 
         try {
-            const response = await fetch('/api/transactions/process', {
+            const result = await (window.UIState ? UIState.apiCall('/api/transactions/process', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }) : fetch('/api/transactions/process', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
                 credentials: 'include'
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                resultDiv.style.display = 'block';
-                resultDiv.style.background = 'rgba(239,68,68,0.1)';
-                resultDiv.style.borderColor = 'rgba(239,68,68,0.3)';
-                const details = result.details ? result.details.join(', ') : (result.error || 'Validation error');
-                resultDiv.innerHTML = `<div style="color:var(--danger);font-weight:600;"><i class="fas fa-times-circle"></i> ${details}</div>`;
-                showToast(details, 'error');
-                return;
-            }
+            }).then(r => r.json()));
 
             const isFraud = result.is_fraud;
             const score = result.fraud_score;
@@ -1122,15 +1128,22 @@
             resultDiv.style.borderColor = vColor;
             resultDiv.innerHTML = `
                 <div style="font-size:18px;font-weight:700;color:${vColor};margin-bottom:8px;">Verdict: ${verdict} (${score}%)</div>
-                <div style="font-size:12px;color:var(--text-muted);">Transaction ID: ${result.transaction_id} | Risk Level: ${result.risk_level.toUpperCase()}</div>
+                <div style="font-size:12px;color:var(--text-muted);">Transaction ID: ${result.transaction_id} | Risk Level: ${(result.risk_level || '').toUpperCase()}</div>
             `;
             showToast(`${verdict}: Transaction ${result.transaction_id}`, isFraud ? 'error' : 'success');
             applyFilters();
         } catch (err) {
-            showToast('Failed to process transaction', 'error');
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = 'rgba(239,68,68,0.1)';
+            resultDiv.style.borderColor = 'rgba(239,68,68,0.3)';
+            resultDiv.innerHTML = `<div style="color:var(--danger);font-weight:600;"><i class="fas fa-times-circle"></i> ${err.message || 'Validation error'}</div>`;
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnHtml;
+            if (window.UIState) {
+                UIState.setButtonLoading(submitBtn, false);
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-search"></i> Analyze & Process';
+            }
         }
     }
 

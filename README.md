@@ -22,29 +22,46 @@ A real-time credit card fraud detection web application with admin analytics das
 
 ## Quick Start
 
-### 1. Install Dependencies
+### 🐳 Option A: Docker Deployment (Recommended for Production)
 
+Run the containerized application with Gunicorn, non-root security, persistent volumes, and health monitoring:
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+
+# 2. Build and start services
+docker compose up --build -d
+
+# 3. View live logs
+docker compose logs -f
+
+# 4. Stop services (preserving data)
+docker compose down
+```
+
+- **Web UI:** `http://127.0.0.1:5000`
+- **Health Check:** `http://127.0.0.1:5000/health`
+- **Default Admin:** `admin` / `admin123`
+- *For advanced Docker orchestration, volume backups, and PostgreSQL clustering, see [DOCKER_GUIDE.md](DOCKER_GUIDE.md).*
+
+---
+
+### 💻 Option B: Local Python Setup
+
+#### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Run the Application
-
+#### 2. Run the Application
 ```bash
 python app.py
 ```
-### run
-.venv\Scripts\python.exe app.py
 
+#### 3. Open in Browser & Login
+Navigate to **http://127.0.0.1:5000** (`admin` / `admin123`).
 
-### 3. Open in Browser
-
-Navigate to **http://127.0.0.1:5000**
-
-### 4. Login
-
-- **Username:** `admin`
-- **Password:** `admin123`
 
 ## How the Fraud Detection Engine Works
 

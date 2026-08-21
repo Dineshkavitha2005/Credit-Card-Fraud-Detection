@@ -303,6 +303,23 @@
         document.getElementById('filterPerPage').addEventListener('change', applyFilters);
     });
 
+    function resetAuditFilters() {
+        const sInput = document.getElementById('filterSearch');
+        const evSelect = document.getElementById('filterEventType');
+        const stSelect = document.getElementById('filterStatus');
+        const sdInput = document.getElementById('filterStartDate');
+        const edInput = document.getElementById('filterEndDate');
+        const ppSelect = document.getElementById('filterPerPage');
+
+        if (sInput) sInput.value = '';
+        if (evSelect) evSelect.value = 'all';
+        if (stSelect) stSelect.value = 'all';
+        if (sdInput) sdInput.value = '';
+        if (edInput) edInput.value = '';
+        if (ppSelect) ppSelect.value = '25';
+        loadAuditLogs(1);
+    }
+
     async function loadAuditLogs(page = 1) {
         currentPage = page;
         const search = document.getElementById('filterSearch').value.trim();
@@ -323,61 +340,68 @@
         if (endDate) params.append('end_date', endDate);
 
         const tbody = document.getElementById('logsTableBody');
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
-                    <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading audit records...
-                </td>
-            </tr>
-        `;
-
-        try {
-            const res = await fetch(`/api/admin/audit-logs?${params.toString()}`);
-            if (!res.ok) {
-                if (res.status === 403 || res.status === 401) {
-                    showToast('Access denied: Admin privileges required.', 'danger');
-                }
-                throw new Error(`HTTP ${res.status}`);
-            }
-            const data = await res.json();
-            currentLogsData = data.logs || [];
-
-            // Update stats
-            if (data.stats) {
-                document.getElementById('metricTotal').textContent = data.stats.total || data.total;
-                document.getElementById('metricFailedLogins').textContent = data.stats.failed_logins || 0;
-                document.getElementById('metricFraudDetections').textContent = data.stats.fraud_detections || 0;
-                document.getElementById('metricAuthFailures').textContent = data.stats.auth_failures || 0;
-            }
-
-            renderTable(data.logs || []);
-            renderPagination(data.page, data.pages, data.total, data.per_page);
-
-            document.getElementById('tableSummary').textContent = 
-                `Showing ${data.logs.length} of ${data.total} audit events (Page ${data.page} of ${data.pages || 1})`;
-
-        } catch (err) {
-            console.error(err);
+        if (window.UIState && tbody) {
+            UIState.showLoading(tbody, 'table', { cols: 9, rows: 6 });
+        } else if (tbody) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" style="text-align:center;padding:32px;color:var(--danger-light);">
-                        <i class="fas fa-circle-exclamation" style="margin-right:8px;"></i> Failed to load audit records. Please try again.
+                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading audit records...
                     </td>
                 </tr>
             `;
         }
+
+        try {
+            const data = await (window.UIState ? UIState.apiCall(`/api/admin/audit-logs?${params.toString()}`) : fetch(`/api/admin/audit-logs?${params.toString()}`).then(r => r.json()));
+            currentLogsData = data.logs || [];
+
+            // Update stats
+            if (data.stats) {
+                const metTot = document.getElementById('metricTotal');
+                const metFail = document.getElementById('metricFailedLogins');
+                const metFraud = document.getElementById('metricFraudDetections');
+                const metAuth = document.getElementById('metricAuthFailures');
+
+                if (metTot) metTot.textContent = data.stats.total || data.total || 0;
+                if (metFail) metFail.textContent = data.stats.failed_logins || 0;
+                if (metFraud) metFraud.textContent = data.stats.fraud_detections || 0;
+                if (metAuth) metAuth.textContent = data.stats.auth_failures || 0;
+            }
+
+            renderTable(data.logs || [], { search, eventType, status, startDate, endDate });
+            renderPagination(data.page, data.pages, data.total, data.per_page);
+
+            const summary = document.getElementById('tableSummary');
+            if (summary) {
+                summary.textContent = `Showing ${(data.logs || []).length} of ${data.total || 0} audit events (Page ${data.page || 1} of ${data.pages || 1})`;
+            }
+
+        } catch (err) {
+            console.error('Audit logs error:', err);
+            if (tbody && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderErrorState({ title: 'Unable to Load Audit Logs', message: err.message || 'Failed to retrieve administrative audit records.', onRetry: 'loadAuditLogs(1)' })}</td></tr>`;
+            }
+        }
     }
 
-    function renderTable(logs) {
+    function renderTable(logs, filterParams = {}) {
         const tbody = document.getElementById('logsTableBody');
         if (logs.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
-                        No audit log entries match your search criteria.
-                    </td>
-                </tr>
-            `;
+            const hasFilters = filterParams.search || (filterParams.eventType && filterParams.eventType !== 'all') || (filterParams.status && filterParams.status !== 'all') || filterParams.startDate || filterParams.endDate;
+            if (hasFilters && window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderNoResults({ query: filterParams.search, onClear: 'resetAuditFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
+            } else if (window.UIState) {
+                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderEmptyState({ icon: 'fa-shield-halved', title: 'No Audit Records', message: 'No administrative or security events recorded yet.' })}</td></tr>`;
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                            No audit log entries match your search criteria.
+                        </td>
+                    </tr>
+                `;
+            }
             return;
         }
 
@@ -391,11 +415,11 @@
             return `
                 <tr>
                     <td style="font-family:monospace;font-weight:600;color:var(--text-secondary);">${log.event_id || ('AUD-' + String(log.id).padStart(6, '0'))}</td>
-                    <td><span class="event-badge ${eventType}">${eventType.replace('_', ' ')}</span></td>
+                    <td><span class="event-badge ${eventType}">${eventType.replace(/_/g, ' ')}</span></td>
                     <td>${userStr}</td>
-                    <td style="font-family:monospace;font-size:12px;" title="${log.target_resource}">${log.target_resource}</td>
-                    <td style="font-family:monospace;font-size:12px;">${log.ip_address}</td>
-                    <td style="font-size:12px;color:var(--text-muted);" title="${log.user_agent}">${userAgentShort}</td>
+                    <td style="font-family:monospace;font-size:12px;" title="${log.target_resource || ''}">${log.target_resource || '-'}</td>
+                    <td style="font-family:monospace;font-size:12px;">${log.ip_address || '-'}</td>
+                    <td style="font-size:12px;color:var(--text-muted);" title="${log.user_agent || ''}">${userAgentShort}</td>
                     <td><span class="status-pill ${statusClass}">${log.status}</span></td>
                     <td style="font-size:12px;color:var(--text-muted);">${formatTime}</td>
                     <td>

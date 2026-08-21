@@ -55,6 +55,25 @@ def cards_page():
     return render_template('cards.html', user=current_user)
 
 
+@main_bp.route('/health')
+@main_bp.route('/api/health')
+def health():
+    """Health check endpoint for Docker container probes, Kubernetes liveness/readiness, and load balancers."""
+    health_status = {
+        "status": "healthy",
+        "service": "credit-card-fraud-detection",
+        "database": "connected"
+    }
+    status_code = 200
+    try:
+        db.session.execute(db.text("SELECT 1"))
+    except Exception as e:
+        health_status["status"] = "degraded"
+        health_status["database"] = f"unhealthy: {str(e)}"
+        status_code = 503
+    return jsonify(health_status), status_code
+
+
 @main_bp.route('/api/test/force-db-error')
 def test_force_db_error():
     """Endpoint for testing database rollback and 500 error handling."""
@@ -63,3 +82,4 @@ def test_force_db_error():
     db.session.execute(db.text("SELECT * FROM non_existent_table_xyz"))
     db.session.commit()
     return jsonify({"message": "OK"})
+

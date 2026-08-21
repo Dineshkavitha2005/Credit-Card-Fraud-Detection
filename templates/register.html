@@ -6,6 +6,7 @@
     <title>Register | FraudShield</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/ui-states.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -345,6 +346,7 @@
         </div>
     </div>
 
+    <script src="/static/js/ui-states.js"></script>
     <script>
         function checkPasswordStrength() {
             const password = document.getElementById('password').value;
@@ -359,11 +361,13 @@
             // Update requirement indicators
             for (let req in requirements) {
                 const elem = document.getElementById(req);
-                if (requirements[req]) {
-                    elem.classList.add('met');
-                    strength++;
-                } else {
-                    elem.classList.remove('met');
+                if (elem) {
+                    if (requirements[req]) {
+                        elem.classList.add('met');
+                        strength++;
+                    } else {
+                        elem.classList.remove('met');
+                    }
                 }
             }
 
@@ -373,26 +377,45 @@
             const colors = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e'];
             const texts = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
             
-            strengthBar.style.width = (strength * 25) + '%';
-            strengthBar.style.background = colors[strength];
-            strengthText.textContent = texts[strength] || '';
-            strengthText.style.color = colors[strength];
+            if (strengthBar && strengthText) {
+                strengthBar.style.width = (strength * 25) + '%';
+                strengthBar.style.background = colors[strength];
+                strengthText.textContent = texts[strength] || '';
+                strengthText.style.color = colors[strength];
+            }
         }
 
         document.getElementById('registerForm').addEventListener('submit', function(e) {
-            const password = document.querySelector('input[name="password"]').value;
-            const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+            const pwdInput = document.querySelector('input[name="password"]');
+            const confirmInput = document.querySelector('input[name="confirm_password"]');
+            const password = pwdInput ? pwdInput.value : '';
+            const confirmPassword = confirmInput ? confirmInput.value : '';
             
             if (password !== confirmPassword) {
                 e.preventDefault();
-                alert('Passwords do not match!');
+                if (window.UIState && confirmInput) {
+                    UIState.setFieldState(confirmInput, false, 'Passwords do not match');
+                    UIState.showToast('Passwords do not match!', 'error');
+                } else {
+                    alert('Passwords do not match!');
+                }
                 return false;
             }
 
             if (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || password.length < 8) {
                 e.preventDefault();
-                alert('Password does not meet the requirements!');
+                if (window.UIState && pwdInput) {
+                    UIState.setFieldState(pwdInput, false, 'Password does not meet requirements');
+                    UIState.showToast('Password does not meet the security requirements!', 'error');
+                } else {
+                    alert('Password does not meet the requirements!');
+                }
                 return false;
+            }
+
+            const btn = this.querySelector('button[type="submit"]');
+            if (window.UIState && btn) {
+                UIState.setButtonLoading(btn, true, 'Creating Account...');
             }
         });
     </script>
