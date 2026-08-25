@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Reports &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Reports</h1>
+        <p class="page-header-subtitle">Executive summaries, forensic compliance exports, and audit dossiers</p>
+    </div>
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="loadReports(true)">
+            <i data-lucide="refresh-cw" id="rep-refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh Archive</span>
+        </button>
+    </div>
+</div>
+
+<!-- Report Studio Card -->
+<div class="sentinel-card" style="margin-bottom:24px;">
+    <div class="sentinel-card-header">
+        <div>
+            <div class="sentinel-card-title">
+                <i data-lucide="file-plus" style="width:16px;height:16px;color:var(--accent);"></i>
+                <span>Report Generation Studio</span>
+            </div>
+            <div class="sentinel-card-subtitle">Configure parameters and compile structured security artifacts</div>
+        </div>
+    </div>
+
+    <div class="sentinel-card-body">
+        <form id="report-gen-form" onsubmit="generateReport(event)">
+            <div class="grid-3" style="margin-bottom:16px;">
+                <div class="form-group">
+                    <label class="form-label" for="rep-type">Report Archetype <span style="color:var(--danger);">*</span></label>
+                    <select class="form-control" id="rep-type" required>
+                        <option value="Executive Summary">Executive Fraud Summary</option>
+                        <option value="Detailed Fraud Ledger">Detailed Fraud Ledger</option>
+                        <option value="Risk Distribution Dossier">Risk Distribution Dossier</option>
+                        <option value="Compliance & Audit Export">Compliance & Audit Export</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="rep-title">Report Title <span style="color:var(--danger);">*</span></label>
+                    <input type="text" class="form-control" id="rep-title" placeholder="e.g. Q1 Fraud Risk Assessment" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="rep-format">Output Format <span style="color:var(--danger);">*</span></label>
+                    <select class="form-control" id="rep-format">
+                        <option value="PDF">PDF Document (Formatted Dossier)</option>
+                        <option value="CSV">CSV Data Export (Tabular)</option>
+                        <option value="JSON">JSON Telemetry Payload</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-3" style="margin-bottom:20px;">
+                <div class="form-group">
+                    <label class="form-label" for="rep-start">Start Date</label>
+                    <input type="date" class="form-control" id="rep-start">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="rep-end">End Date</label>
+                    <input type="date" class="form-control" id="rep-end">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="rep-risk">Risk Tier Filter</label>
+                    <select class="form-control" id="rep-risk">
+                        <option value="all">All Risk Tiers</option>
+                        <option value="fraud_only">High & Critical Risk Only</option>
+                        <option value="genuine_only">Low & Medium Risk Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary" id="gen-submit-btn">
+                    <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+                    <span>Compile Report</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Historical Reports Archive Table -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div class="sentinel-card-title">
+            <i data-lucide="archive" style="width:16px;height:16px;color:var(--accent);"></i>
+            <span>Generated Reports Archive</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);" id="reports-count-text">Loading archive...</div>
+    </div>
+
+    <div class="sentinel-card-body no-padding">
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Format</th>
+                        <th>Size</th>
+                        <th>Compiled Date</th>
+                        <th>Downloads</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-tbody">
+                    <tr><td colspan="8" style="padding:28px;text-align:center;"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadReports();
+    });
+
+    async function loadReports(isManualRefresh = false) {
+        const refreshIcon = document.getElementById('rep-refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+        const tbody = document.getElementById('reports-tbody');
+        const countText = document.getElementById('reports-count-text');
+
+        try {
+            const res = await fetch('/api/reports');
+            if (!res.ok) throw new Error('Failed to load reports archive');
+            const data = await res.json();
+            const reports = data.reports || [];
+
+            if (countText) countText.textContent = `${reports.length} compiled documents`;
+
+            if (reports.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="padding:0;">
+                            <div class="ui-state-empty">
+                                <div class="empty-icon-wrap"><i data-lucide="file-x" style="width:24px;height:24px;"></i></div>
+                                <div class="empty-title">No reports compiled yet</div>
+                                <div class="empty-desc">Configure your parameters above to generate your first audit dossier or risk summary.</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                Sentinel.initIcons();
+                return;
+            }
+
+            tbody.innerHTML = reports.map(r => {
+                const isPdf = (r.file_format || '').toLowerCase() === 'pdf';
+                const sizeKb = r.file_size ? `${(r.file_size / 1024).toFixed(1)} KB` : '—';
+
+                return `
+                    <tr>
+                        <td class="mono-cell" style="font-weight:600;color:var(--accent);">#REP-${r.id}</td>
+                        <td><strong style="color:var(--text-primary);">${r.title || 'Security Report'}</strong></td>
+                        <td style="color:var(--text-secondary);font-size:12px;">${r.report_type || 'Custom'}</td>
+                        <td>
+                            <span class="status-pill ${isPdf ? 'blocked' : 'approved'}" style="font-size:10px;text-transform:uppercase;">
+                                ${r.file_format || 'PDF'}
+                            </span>
+                        </td>
+                        <td class="mono-cell" style="font-size:12px;">${sizeKb}</td>
+                        <td style="color:var(--text-secondary);font-size:12px;">${Sentinel.formatDate(r.created_at)}</td>
+                        <td>
+                            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">
+                                <i data-lucide="download" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"></i> ${r.download_count || 0}
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="display:inline-flex;gap:6px;">
+                                <a href="/api/reports/${r.id}/download" class="btn btn-secondary btn-xs" title="Download report file">
+                                    <i data-lucide="download" style="width:11px;height:11px;"></i> Download
+                                </a>
+                                <button class="btn btn-danger btn-xs" onclick="deleteReport(${r.id})" title="Delete report document">
+                                    <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            Sentinel.initIcons();
+
+            if (isManualRefresh) {
+                Sentinel.showToast('Reports repository refreshed', 'success');
+            }
+        } catch (err) {
+            console.error('Reports error:', err);
+            tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--danger);">Error loading report documents.</td></tr>`;
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+        }
+    }
+
+    async function generateReport(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('gen-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="btn-spinner"></span> Compiling...`;
+
+        const payload = {
+            report_type: document.getElementById('rep-type').value,
+            title: document.getElementById('rep-title').value.trim(),
+            file_format: document.getElementById('rep-format').value,
+            start_date: document.getElementById('rep-start').value,
+            end_date: document.getElementById('rep-end').value,
+            risk_filter: document.getElementById('rep-risk').value
+        };
+
+        try {
+            const res = await fetch('/api/reports/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to generate report');
+
+            Sentinel.showToast('Report compiled and ready for download', 'success');
+            loadReports();
+            document.getElementById('report-gen-form').reset();
+        } catch (err) {
+            Sentinel.showToast(err.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span>Compile Report</span>`;
+            Sentinel.initIcons();
+        }
+    }
+
+    async function deleteReport(reportId) {
+        if (!confirm('Are you sure you want to delete this compiled report?')) return;
+        try {
+            const res = await fetch(`/api/reports/${reportId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to delete report');
+            Sentinel.showToast('Report deleted', 'success');
+            loadReports();
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Action failed', 'error');
+        }
+    }
+</script>
+{% endblock %}

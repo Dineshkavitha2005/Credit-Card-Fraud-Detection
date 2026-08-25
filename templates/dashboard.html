@@ -1,601 +1,391 @@
 {% extends "base.html" %}
 
-{% block title %}Financial Fraud Monitoring Dashboard{% endblock %}
-{% block page_title %}Financial Fraud Monitoring Dashboard{% endblock %}
+{% block title %}Dashboard &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<style>
-    /* Custom Styling for Dashboard Upgrade */
-    .filter-bar {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 16px 20px;
-        margin-bottom: 24px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: var(--shadow);
-    }
-    
-    .filter-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
+<!-- Dashboard Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Dashboard</h1>
+        <p class="page-header-subtitle">Real-time fraud surveillance, risk scoring, and anomaly intelligence</p>
+        <div class="page-header-meta">
+            <span><i data-lucide="clock" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> Last updated: <strong id="last-updated-text">Just now</strong></span>
+            <span>&bull;</span>
+            <span id="dataset-meta-count">Analyzing active payment telemetry</span>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="applyFilters(true)" id="refresh-dashboard-btn" title="Refresh metrics">
+            <i data-lucide="refresh-cw" id="refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh</span>
+        </button>
+        <button class="btn btn-primary" onclick="openProcessModal()">
+            <i data-lucide="plus-circle" style="width:14px;height:14px;"></i>
+            <span>Analyze Transaction</span>
+        </button>
+    </div>
+</div>
 
-    .filter-label {
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--text-secondary);
-        margin-right: 4px;
-    }
-
-    .filter-control {
-        background: var(--bg-dark);
-        border: 1px solid var(--border);
-        color: var(--text-primary);
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-size: 13px;
-        outline: none;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .filter-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-    }
-
-    .preset-btn {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        color: var(--text-secondary);
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .preset-btn:hover, .preset-btn.active {
-        background: var(--primary);
-        color: #ffffff;
-        border-color: var(--primary);
-    }
-
-    /* KPI Grid - 6 Cards */
-    .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    .kpi-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 20px;
-        position: relative;
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .kpi-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    }
-
-    .kpi-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 4px;
-    }
-
-    .kpi-card.purple::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
-    .kpi-card.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-    .kpi-card.red::before { background: linear-gradient(90deg, #ef4444, #fca5a5); }
-    .kpi-card.yellow::before { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
-    .kpi-card.orange::before { background: linear-gradient(90deg, #f97316, #fdba74); }
-    .kpi-card.green::before { background: linear-gradient(90deg, #10b981, #6ee7b7); }
-
-    .kpi-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    .kpi-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .kpi-title {
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: var(--text-secondary);
-        letter-spacing: 0.5px;
-    }
-
-    .kpi-value {
-        font-size: 24px;
-        font-weight: 800;
-        color: var(--text-primary);
-        line-height: 1.2;
-        margin-bottom: 4px;
-    }
-
-    .kpi-subtext {
-        font-size: 11px;
-        color: var(--text-muted);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    /* Skeleton Loading State */
-    .skeleton-box {
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 37%, rgba(255, 255, 255, 0.05) 63%);
-        background-size: 400% 100%;
-        animation: skeleton-loading 1.4s ease infinite;
-        border-radius: 4px;
-        display: inline-block;
-    }
-
-    @keyframes skeleton-loading {
-        0% { background-position: 100% 50%; }
-        100% { background-position: 0 50%; }
-    }
-
-    /* Empty and Error State Banners */
-    .dashboard-banner {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 24px;
-        text-align: center;
-        margin-bottom: 24px;
-    }
-    .dashboard-banner.error {
-        border-color: rgba(239, 68, 68, 0.4);
-        background: rgba(239, 68, 68, 0.08);
-    }
-    .dashboard-banner.empty {
-        border-color: rgba(99, 102, 241, 0.3);
-        background: rgba(99, 102, 241, 0.05);
-    }
-
-    /* Responsive Chart Container Height Fixes */
-    .chart-panel-body {
-        position: relative;
-        height: 280px;
-        width: 100%;
-    }
-</style>
-
-<!-- Top Filter Control Bar -->
+<!-- Filter Control Bar -->
 <div class="filter-bar">
-    <!-- Date Range & Presets -->
     <div class="filter-group">
-        <span class="filter-label"><i class="far fa-calendar-alt"></i> Date Range</span>
-        <input type="date" id="filter-start-date" class="filter-control" onchange="applyFilters()">
-        <span style="color:var(--text-muted);">&ndash;</span>
-        <input type="date" id="filter-end-date" class="filter-control" onchange="applyFilters()">
-        
-        <div style="display:flex;gap:4px;margin-left:4px;">
+        <span class="form-label" style="margin-bottom:0;font-size:11px;text-transform:uppercase;color:var(--text-secondary);">Date Range:</span>
+        <div class="preset-btn-group">
             <button class="preset-btn" onclick="setPreset('today', this)">Today</button>
             <button class="preset-btn" onclick="setPreset('7d', this)">7D</button>
             <button class="preset-btn" onclick="setPreset('30d', this)">30D</button>
             <button class="preset-btn" onclick="setPreset('ytd', this)">YTD</button>
             <button class="preset-btn active" onclick="setPreset('all', this)">All</button>
         </div>
+        <input type="date" id="filter-start-date" class="form-control" style="width:130px;padding:4px 8px;font-size:12px;" onchange="applyFilters()">
+        <span style="color:var(--text-muted);">&ndash;</span>
+        <input type="date" id="filter-end-date" class="form-control" style="width:130px;padding:4px 8px;font-size:12px;" onchange="applyFilters()">
     </div>
 
-    <!-- Dropdowns & Search -->
     <div class="filter-group">
+        <select id="filter-risk" class="form-control" style="width:130px;padding:5px 10px;font-size:12px;" onchange="applyFilters()">
+            <option value="all">All Risk Levels</option>
+            <option value="low">Low (< 40)</option>
+            <option value="medium">Medium (40-69)</option>
+            <option value="high">High (70-89)</option>
+            <option value="critical">Critical (&ge; 90)</option>
+        </select>
+
+        <select id="filter-status" class="form-control" style="width:120px;padding:5px 10px;font-size:12px;" onchange="applyFilters()">
+            <option value="all">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="blocked">Blocked</option>
+            <option value="flagged">Flagged</option>
+        </select>
+
+        <div style="position:relative;display:inline-block;">
+            <input type="text" id="filter-search" class="form-control" placeholder="Search merchant, ID, card..." style="padding-left:28px;width:200px;font-size:12px;padding-top:5px;padding-bottom:5px;" oninput="onSearchInput()">
+            <i data-lucide="search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:13px;height:13px;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Inline Error State Banner -->
+<div id="dashboard-error-banner" class="ui-state-error-banner" style="display:none;">
+    <i data-lucide="alert-octagon" style="width:18px;height:18px;flex-shrink:0;"></i>
+    <div class="error-content">
+        <div class="error-title">Unable to fetch dashboard intelligence</div>
+        <div class="error-message" id="dashboard-error-message">Failed to connect to the telemetry backend. Please check network connectivity.</div>
+        <div class="error-action">
+            <button class="btn btn-secondary btn-sm" onclick="applyFilters(true)">
+                <i data-lucide="rotate-cw" style="width:12px;height:12px;"></i> Retry Connection
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 4 Principal KPI Cards -->
+<div class="kpi-grid-4">
+    <!-- Total Transactions -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Total Transactions</span>
+            <div class="kpi-icon-wrap"><i data-lucide="arrow-left-right"></i></div>
+        </div>
+        <div class="kpi-value" id="kpi-total-txns"><span class="skeleton-box" style="width:70px;height:26px;"></span></div>
+        <div class="kpi-footer">
+            <span class="kpi-trend neutral" id="kpi-subtext-total"><i data-lucide="layers" style="width:12px;height:12px;"></i> Processed volume</span>
+        </div>
+    </div>
+
+    <!-- Fraud Rate -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Fraud Rate</span>
+            <div class="kpi-icon-wrap"><i data-lucide="percent"></i></div>
+        </div>
+        <div class="kpi-value" id="kpi-fraud-rate"><span class="skeleton-box" style="width:65px;height:26px;"></span></div>
+        <div class="kpi-footer">
+            <span class="kpi-trend negative" id="kpi-subtext-rate"><i data-lucide="shield-alert" style="width:12px;height:12px;"></i> Risk percentage</span>
+        </div>
+    </div>
+
+    <!-- High Risk Transactions -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">High Risk Transactions</span>
+            <div class="kpi-icon-wrap"><i data-lucide="alert-triangle"></i></div>
+        </div>
+        <div class="kpi-value" id="kpi-fraud-txns"><span class="skeleton-box" style="width:60px;height:26px;"></span></div>
+        <div class="kpi-footer">
+            <span class="kpi-trend negative" id="kpi-subtext-highrisk"><i data-lucide="shield" style="width:12px;height:12px;"></i> Flagged or blocked</span>
+        </div>
+    </div>
+
+    <!-- Transaction Volume -->
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">Transaction Volume</span>
+            <div class="kpi-icon-wrap"><i data-lucide="dollar-sign"></i></div>
+        </div>
+        <div class="kpi-value" id="kpi-total-amount"><span class="skeleton-box" style="width:90px;height:26px;"></span></div>
+        <div class="kpi-footer">
+            <span class="kpi-trend positive" id="kpi-subtext-volume"><i data-lucide="trending-up" style="width:12px;height:12px;"></i> Total processed</span>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Metric Badges Strip -->
+<div class="kpi-sub-strip">
+    <div class="kpi-sub-card">
+        <div class="kpi-sub-label"><i data-lucide="shield-check" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;color:var(--success);margin-right:6px;"></i> Amount Protected</div>
+        <div class="kpi-sub-val" id="kpi-fraud-saved">$0.00</div>
+    </div>
+    <div class="kpi-sub-card">
+        <div class="kpi-sub-label"><i data-lucide="ban" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;color:var(--danger);margin-right:6px;"></i> Blocked Cards</div>
+        <div class="kpi-sub-val" id="kpi-blocked-cards">0</div>
+    </div>
+    <div class="kpi-sub-card">
+        <div class="kpi-sub-label"><i data-lucide="bell" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;color:var(--warning);margin-right:6px;"></i> Active Incident Alerts</div>
+        <div class="kpi-sub-val" id="kpi-unread-alerts">0</div>
+    </div>
+</div>
+
+<!-- 4 Restrained Charts Grid -->
+<div class="grid-2" style="margin-bottom:24px;">
+    <!-- 1. Transaction Activity -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="activity" style="width:16px;height:16px;color:var(--accent);"></i>
+                    <span>Transaction Activity</span>
+                </div>
+                <div class="sentinel-card-subtitle">Daily transaction frequency and volume distribution</div>
+            </div>
+            <span class="status-pill approved" style="font-size:10px;">Daily</span>
+        </div>
+        <div class="sentinel-card-body">
+            <div class="chart-card-body">
+                <canvas id="chart-daily-trends"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Fraud vs Genuine Ratio -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="pie-chart" style="width:16px;height:16px;color:var(--success);"></i>
+                    <span>Fraud vs Genuine Ratio</span>
+                </div>
+                <div class="sentinel-card-subtitle">Overall transaction safety classification breakdown</div>
+            </div>
+        </div>
+        <div class="sentinel-card-body">
+            <div class="chart-card-body">
+                <canvas id="chart-fraud-ratio"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px;">
+    <!-- 3. Risk Distribution -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="bar-chart" style="width:16px;height:16px;color:var(--warning);"></i>
+                    <span>Risk Score Distribution</span>
+                </div>
+                <div class="sentinel-card-subtitle">Volume segmented across ML risk score tiers</div>
+            </div>
+        </div>
+        <div class="sentinel-card-body">
+            <div class="chart-card-body">
+                <canvas id="chart-risk-dist"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Fraud Trend Timeline -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="trending-up" style="width:16px;height:16px;color:var(--danger);"></i>
+                    <span>Fraud Trend Timeline</span>
+                </div>
+                <div class="sentinel-card-subtitle">Monthly anomalous activity and anomaly trajectory</div>
+            </div>
+            <span class="status-pill pending" style="font-size:10px;">Monthly</span>
+        </div>
+        <div class="sentinel-card-body">
+            <div class="chart-card-body">
+                <canvas id="chart-monthly-trends"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Feed Table -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
         <div>
-            <span class="filter-label">Risk Level</span>
-            <select id="filter-risk" class="filter-control" onchange="applyFilters()">
-                <option value="all">All Risk Levels</option>
-                <option value="low">Low (&lt; 40)</option>
-                <option value="medium">Medium (40-69)</option>
-                <option value="high">High (70-89)</option>
-                <option value="critical">Critical (&ge; 90)</option>
-            </select>
-        </div>
-
-        <div>
-            <span class="filter-label">Status</span>
-            <select id="filter-status" class="filter-control" onchange="applyFilters()">
-                <option value="all">All Statuses</option>
-                <option value="fraud">Fraudulent</option>
-                <option value="genuine">Genuine</option>
-                <option value="flagged">Flagged</option>
-                <option value="blocked">Blocked</option>
-                <option value="approved">Approved</option>
-            </select>
-        </div>
-
-        <div>
-            <span class="filter-label">Search</span>
-            <div style="position:relative;display:inline-block;">
-                <input type="text" id="filter-search" class="filter-control" placeholder="Search holder, merchant..." style="padding-left:30px;width:190px;" oninput="onSearchInput()">
-                <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;"></i>
+            <div class="sentinel-card-title">
+                <i data-lucide="list-filter" style="width:16px;height:16px;color:var(--accent);"></i>
+                <span>Recent Transactions</span>
             </div>
+            <div class="sentinel-card-subtitle">Live stream of latest analyzed payment events</div>
         </div>
-
-        <button class="btn btn-outline" style="padding:8px 14px;" onclick="applyFilters(true)">
-            <i class="fas fa-sync-alt" id="refresh-icon"></i> Refresh
-        </button>
-    </div>
-</div>
-
-<!-- Error State Banner (Hidden by default) -->
-<div id="dashboard-error-banner" class="dashboard-banner error" style="display:none;">
-    <i class="fas fa-exclamation-triangle" style="font-size:32px;color:var(--danger);margin-bottom:12px;"></i>
-    <h4 style="font-size:16px;color:var(--text-primary);margin-bottom:6px;">Unable to load dashboard analytics</h4>
-    <p id="dashboard-error-message" style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Failed to fetch real-time data from the server.</p>
-    <button class="btn btn-primary btn-sm" onclick="applyFilters(true)"><i class="fas fa-redo"></i> Retry Connection</button>
-</div>
-
-<!-- Empty State Banner (Hidden by default) -->
-<div id="dashboard-empty-banner" class="dashboard-banner empty" style="display:none;">
-    <i class="fas fa-search-minus" style="font-size:32px;color:var(--primary-light);margin-bottom:12px;"></i>
-    <h4 style="font-size:16px;color:var(--text-primary);margin-bottom:6px;">No transactions match your criteria</h4>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Try adjusting your date range, risk thresholds, or search parameters.</p>
-    <button class="btn btn-outline btn-sm" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset Filters</button>
-</div>
-
-<!-- 6 KPI Cards Grid -->
-<div class="kpi-grid">
-    <div class="kpi-card purple">
-        <div class="kpi-header">
-            <span class="kpi-title">Total Transactions</span>
-            <div class="kpi-icon" style="color:var(--primary);"><i class="fas fa-receipt"></i></div>
-        </div>
-        <div class="kpi-value" id="kpi-total-txns"><span class="skeleton-box" style="width:70px;height:24px;"></span></div>
-        <div class="kpi-subtext" id="kpi-subtext-total"><i class="fas fa-filter"></i> Filtered dataset</div>
+        <a href="/transactions" class="btn btn-secondary btn-sm">
+            <span>View All Transactions</span>
+            <i data-lucide="arrow-right" style="width:13px;height:13px;"></i>
+        </a>
     </div>
 
-    <div class="kpi-card blue">
-        <div class="kpi-header">
-            <span class="kpi-title">Total Volume</span>
-            <div class="kpi-icon" style="color:var(--info);"><i class="fas fa-dollar-sign"></i></div>
-        </div>
-        <div class="kpi-value" id="kpi-total-amount"><span class="skeleton-box" style="width:90px;height:24px;"></span></div>
-        <div class="kpi-subtext"><i class="fas fa-chart-line"></i> Total transaction value</div>
-    </div>
-
-    <div class="kpi-card red">
-        <div class="kpi-header">
-            <span class="kpi-title">Fraudulent Txns</span>
-            <div class="kpi-icon" style="color:var(--danger);"><i class="fas fa-shield-virus"></i></div>
-        </div>
-        <div class="kpi-value" id="kpi-fraud-txns"><span class="skeleton-box" style="width:60px;height:24px;"></span></div>
-        <div class="kpi-subtext" id="kpi-subtext-fraud-saved"><i class="fas fa-coins"></i> Blocked fraud amount</div>
-    </div>
-
-    <div class="kpi-card orange">
-        <div class="kpi-header">
-            <span class="kpi-title">Fraud Rate</span>
-            <div class="kpi-icon" style="color:var(--warning);"><i class="fas fa-percent"></i></div>
-        </div>
-        <div class="kpi-value" id="kpi-fraud-rate"><span class="skeleton-box" style="width:65px;height:24px;"></span></div>
-        <div class="kpi-subtext" id="kpi-subtext-rate"><i class="fas fa-calculator"></i> Fraud vs total txns</div>
-    </div>
-
-    <div class="kpi-card yellow">
-        <div class="kpi-header">
-            <span class="kpi-title">High-Risk Txns</span>
-            <div class="kpi-icon" style="color:var(--warning);"><i class="fas fa-fire"></i></div>
-        </div>
-        <div class="kpi-value" id="kpi-high-risk-txns"><span class="skeleton-box" style="width:60px;height:24px;"></span></div>
-        <div class="kpi-subtext"><i class="fas fa-exclamation-circle"></i> Risk score &ge; 70</div>
-    </div>
-
-    <div class="kpi-card green">
-        <div class="kpi-header">
-            <span class="kpi-title">Blocked Actions</span>
-            <div class="kpi-icon" style="color:var(--success);"><i class="fas fa-user-shield"></i></div>
-        </div>
-        <div class="kpi-value" id="kpi-blocked-txns"><span class="skeleton-box" style="width:60px;height:24px;"></span></div>
-        <div class="kpi-subtext"><i class="fas fa-lock"></i> Auto-blocked transactions</div>
-    </div>
-</div>
-
-<!-- Action Control Buttons -->
-<div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;">
-    <button class="btn btn-primary" onclick="openProcessModal()">
-        <i class="fas fa-plus-circle"></i> Process New Transaction
-    </button>
-    <button class="btn btn-outline" onclick="simulateTransactions(10)">
-        <i class="fas fa-play"></i> Simulate 10 Txns
-    </button>
-    <button class="btn btn-outline" onclick="simulateTransactions(50)">
-        <i class="fas fa-bolt"></i> Simulate 50 Txns
-    </button>
-    <a href="/analytics" class="btn btn-outline" style="margin-left:auto;">
-        <i class="fas fa-file-export"></i> Analytics & Reports Center
-    </a>
-</div>
-
-<!-- 8 Financial Analytics Charts Grid -->
-<!-- Row 1: Fraud vs Genuine & Daily Trend -->
-<div class="grid-2" style="margin-bottom:24px;">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-chart-pie" style="color:var(--primary-light);margin-right:8px;"></i> 1. Fraud vs Genuine Ratio</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartFraudVsGenuine"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-chart-line" style="color:var(--danger);margin-right:8px;"></i> 2. Daily Fraud Trend</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartTrendsByDay"></canvas>
-            </div>
+    <div class="sentinel-card-body no-padding">
+        <div class="data-table-container">
+            <table class="data-table" id="dashboard-txns-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date & Time</th>
+                        <th>Merchant</th>
+                        <th>Amount</th>
+                        <th>Location</th>
+                        <th>Risk Level</th>
+                        <th>Fraud Score</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dashboard-txns-body">
+                    <tr><td colspan="9" style="padding:24px;text-align:center;"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Row 2: Monthly Trend & Risk Distribution -->
-<div class="grid-2" style="margin-bottom:24px;">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-calendar-alt" style="color:var(--info);margin-right:8px;"></i> 3. Monthly Fraud Trend</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartTrendsByMonth"></canvas>
+<!-- Transaction Analysis Modal (Investigation Workflow) -->
+<div class="modal-overlay" id="process-modal" role="dialog" aria-modal="true" aria-labelledby="modal-analysis-title">
+    <div class="modal-box" style="max-width:600px;">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-analysis-title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="shield-check" style="width:18px;height:18px;color:var(--accent);"></i>
+                <span>Analyze Transaction</span>
             </div>
+            <button class="drawer-close" onclick="closeProcessModal()" aria-label="Close modal">
+                <i data-lucide="x" style="width:15px;height:15px;"></i>
+            </button>
         </div>
-    </div>
 
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-chart-bar" style="color:var(--warning);margin-right:8px;"></i> 4. Risk Score Distribution</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartRiskDistribution"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Row 3: Hourly Pattern & Transaction Amount Distribution -->
-<div class="grid-2" style="margin-bottom:24px;">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-clock" style="color:var(--primary-light);margin-right:8px;"></i> 5. Hourly Fraud Pattern (00-23h)</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartHourlyPattern"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-layer-group" style="color:var(--success);margin-right:8px;"></i> 6. Transaction Amount Ranges</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartAmountDistribution"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Row 4: Top Fraud Categories & High-Risk Locations -->
-<div class="grid-2" style="margin-bottom:24px;">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-tags" style="color:var(--warning);margin-right:8px;"></i> 7. Top Fraud Categories</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartTopCategories"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-map-marked-alt" style="color:var(--danger);margin-right:8px;"></i> 8. High-Risk Locations</h3>
-        </div>
-        <div class="panel-body">
-            <div class="chart-panel-body">
-                <canvas id="chartHighRiskLocations"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Grid: Recent Transactions Stream & Alerts -->
-<div class="grid-2">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-stream" style="color:var(--info);margin-right:8px;"></i> Filtered Transaction Activity</h3>
-            <a href="/transactions" class="btn btn-xs btn-outline">View All Transactions</a>
-        </div>
-        <div class="panel-body no-padding">
-            <div style="overflow-x:auto;">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Card Holder</th>
-                            <th>Amount</th>
-                            <th>Merchant</th>
-                            <th>Location</th>
-                            <th>Risk Score</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-transactions-tbody">
-                        <tr><td colspan="7"><div class="spinner"></div></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-bell" style="color:var(--warning);margin-right:8px;"></i> Security Alerts & System Triggers</h3>
-            <a href="/alerts" class="btn btn-xs btn-outline">View Alerts</a>
-        </div>
-        <div class="panel-body no-padding" id="recent-alerts-container">
-            <div class="spinner"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Process Transaction Modal -->
-<div class="modal-overlay" id="process-modal">
-    <div class="modal">
-        <h3><i class="fas fa-credit-card" style="color:var(--primary-light);margin-right:10px;"></i>Process New Transaction</h3>
         <form id="process-form" onsubmit="processTransaction(event)">
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Card Number</label>
-                    <input class="form-control" name="card_number" placeholder="****-****-****-1234" required>
+            <div class="modal-body">
+                <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px;">
+                    Submit payment parameters to execute real-time ML risk scoring and heuristic rule evaluation.
+                </p>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="pt-merchant">Merchant Name <span style="color:var(--danger);">*</span></label>
+                        <input type="text" class="form-control" id="pt-merchant" placeholder="e.g. Stripe Payments Inc" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pt-amount">Amount (USD) <span style="color:var(--danger);">*</span></label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="pt-amount" placeholder="0.00" required>
+                    </div>
                 </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="pt-category">Category</label>
+                        <select class="form-control" id="pt-category">
+                            <option value="Online Shopping">Online Shopping</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Travel">Travel & Airlines</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Restaurant">Dining & Food</option>
+                            <option value="Gas Station">Gas & Fuel</option>
+                            <option value="Grocery">Grocery</option>
+                            <option value="Subscription">Digital Subscription</option>
+                            <option value="Financial">Financial Services</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="pt-location">Location / City</label>
+                        <input type="text" class="form-control" id="pt-location" placeholder="e.g. San Francisco, US">
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Card Holder</label>
-                    <input class="form-control" name="card_holder" placeholder="John Smith" required>
+                    <label class="form-label" for="pt-card">Card Number <span class="form-label-hint">(16-digit PAN)</span></label>
+                    <input type="text" class="form-control mono-cell" id="pt-card" placeholder="4532 •••• •••• 8892" maxlength="19">
+                </div>
+
+                <!-- Analysis Forensic Results Panel -->
+                <div id="process-result" style="display:none;margin-top:16px;padding:16px;border-radius:var(--radius-card);border:1px solid var(--border-color);background-color:var(--bg-surface-secondary);">
+                    <!-- Dynamic analysis results injected here -->
                 </div>
             </div>
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Amount ($)</label>
-                    <input class="form-control" type="number" step="0.01" name="amount" placeholder="100.00" required>
-                </div>
-                <div class="form-group">
-                    <label>Merchant</label>
-                    <input class="form-control" name="merchant" placeholder="Amazon" required>
-                </div>
-            </div>
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Category</label>
-                    <select class="form-control" name="category" required>
-                        <option value="">Select category</option>
-                        <option value="Online Shopping">Online Shopping</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Restaurant">Restaurant</option>
-                        <option value="Gas Station">Gas Station</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Grocery">Grocery</option>
-                        <option value="Subscription">Subscription</option>
-                        <option value="Gift Cards">Gift Cards</option>
-                        <option value="Cryptocurrency">Cryptocurrency</option>
-                        <option value="Wire Transfer">Wire Transfer</option>
-                        <option value="Gaming">Gaming</option>
-                        <option value="Transportation">Transportation</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Location</label>
-                    <input class="form-control" name="location" placeholder="New York, USA" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Device Type</label>
-                <select class="form-control" name="device_type">
-                    <option value="Desktop Chrome">Desktop Chrome</option>
-                    <option value="Mobile Safari">Mobile Safari</option>
-                    <option value="Mobile Android">Mobile Android</option>
-                    <option value="Desktop Firefox">Desktop Firefox</option>
-                    <option value="Tablet">Tablet</option>
-                    <option value="Unknown">Unknown</option>
-                    <option value="VPN">VPN</option>
-                </select>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-outline" onclick="closeProcessModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Analyze & Process</button>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeProcessModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="pt-submit-btn">
+                    <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+                    <span>Analyze Transaction</span>
+                </button>
             </div>
         </form>
-
-        <div id="process-result" style="display:none;margin-top:24px;padding:20px;border-radius:12px;border:1px solid var(--border);"></div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Global Chart Instances Registry
-    const charts = {
-        fraudVsGenuine: null,
-        trendsByDay: null,
-        trendsByMonth: null,
-        riskDistribution: null,
-        hourlyPattern: null,
-        amountDistribution: null,
-        topCategories: null,
-        highRiskLocations: null
-    };
+    // State management
+    let dashboardData = null;
+    let charts = {};
+    let searchDebounce = null;
 
-    let activeAbortController = null;
-    let searchDebounceTimer = null;
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboardData();
+    });
 
-    // Preset Date Helper
-    function setPreset(type, btn) {
+    function setPreset(preset, btn) {
         document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
 
+        const now = new Date();
         const startInput = document.getElementById('filter-start-date');
         const endInput = document.getElementById('filter-end-date');
 
-        const today = new Date();
-        const formatDate = (d) => d.toISOString().split('T')[0];
-
-        endInput.value = formatDate(today);
-
-        if (type === 'today') {
-            startInput.value = formatDate(today);
-        } else if (type === '7d') {
-            const d = new Date();
-            d.setDate(d.getDate() - 7);
-            startInput.value = formatDate(d);
-        } else if (type === '30d') {
-            const d = new Date();
-            d.setDate(d.getDate() - 30);
-            startInput.value = formatDate(d);
-        } else if (type === 'ytd') {
-            startInput.value = `${today.getFullYear()}-01-01`;
-        } else if (type === 'all') {
+        if (preset === 'all') {
             startInput.value = '';
             endInput.value = '';
+        } else if (preset === 'today') {
+            startInput.value = now.toISOString().split('T')[0];
+            endInput.value = now.toISOString().split('T')[0];
+        } else if (preset === '7d') {
+            const past = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            startInput.value = past.toISOString().split('T')[0];
+            endInput.value = now.toISOString().split('T')[0];
+        } else if (preset === '30d') {
+            const past = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            startInput.value = past.toISOString().split('T')[0];
+            endInput.value = now.toISOString().split('T')[0];
+        } else if (preset === 'ytd') {
+            startInput.value = `${now.getFullYear()}-01-01`;
+            endInput.value = now.toISOString().split('T')[0];
         }
 
         applyFilters();
+    }
+
+    function onSearchInput() {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+            applyFilters();
+        }, 300);
     }
 
     function resetFilters() {
@@ -604,488 +394,392 @@
         document.getElementById('filter-risk').value = 'all';
         document.getElementById('filter-status').value = 'all';
         document.getElementById('filter-search').value = '';
-        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.preset-btn')[4].classList.add('active');
-        applyFilters();
+        setPreset('all', document.querySelector('.preset-btn:last-child'));
     }
 
-    function onSearchInput() {
-        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(() => {
-            applyFilters();
-        }, 300);
-    }
-
-    // Fetch and apply filters with AbortController deduplication & UIState integration
-    async function applyFilters(spinIcon = false) {
+    async function applyFilters(isManualRefresh = false) {
         const refreshIcon = document.getElementById('refresh-icon');
-        if (spinIcon && refreshIcon) refreshIcon.classList.add('fa-spin');
-
-        if (activeAbortController) {
-            activeAbortController.abort();
-        }
-        activeAbortController = new AbortController();
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
         const startDate = document.getElementById('filter-start-date').value;
         const endDate = document.getElementById('filter-end-date').value;
-        const riskLevel = document.getElementById('filter-risk').value;
+        const risk = document.getElementById('filter-risk').value;
         const status = document.getElementById('filter-status').value;
-        const search = document.getElementById('filter-search').value;
+        const search = document.getElementById('filter-search').value.trim();
 
         const params = new URLSearchParams();
         if (startDate) params.append('start_date', startDate);
         if (endDate) params.append('end_date', endDate);
-        if (riskLevel !== 'all') params.append('risk_level', riskLevel);
-        if (status !== 'all') params.append('status', status);
+        if (risk && risk !== 'all') params.append('risk', risk);
+        if (status && status !== 'all') params.append('status', status);
         if (search) params.append('search', search);
 
-        // Hide banners
-        const errBanner = document.getElementById('dashboard-error-banner');
-        const emptyBanner = document.getElementById('dashboard-empty-banner');
-        if (errBanner) errBanner.style.display = 'none';
-        if (emptyBanner) emptyBanner.style.display = 'none';
+        await loadDashboardData(params.toString(), isManualRefresh);
+
+        if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+    }
+
+    async function loadDashboardData(queryString = '', showFeedback = false) {
+        const errorBanner = document.getElementById('dashboard-error-banner');
+        if (errorBanner) errorBanner.style.display = 'none';
 
         try {
-            const data = await (window.UIState ? UIState.apiCall(`/api/dashboard/overview?${params.toString()}`, { signal: activeAbortController.signal }) : fetch(`/api/dashboard/overview?${params.toString()}`, { signal: activeAbortController.signal }).then(r => r.json()));
-            renderDashboardData(data, { startDate, endDate, riskLevel, status, search });
-        } catch (error) {
-            if (error.name === 'AbortError') return; // Request aborted due to new user input
-            console.error('Error loading dashboard overview:', error);
-            if (errBanner) {
-                const msgEl = document.getElementById('dashboard-error-message');
-                if (msgEl) msgEl.textContent = error.message || 'Failed to fetch dashboard data.';
-                errBanner.style.display = 'block';
+            const url = `/api/dashboard/overview${queryString ? '?' + queryString : ''}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch dashboard telemetry`);
+            const data = await res.json();
+            dashboardData = data;
+
+            renderKPIs(data.kpi);
+            renderCharts(data.charts);
+            renderRecentTransactions(data.recent_transactions);
+
+            document.getElementById('last-updated-text').textContent = new Date().toLocaleTimeString();
+            if (showFeedback) {
+                Sentinel.showToast('Dashboard metrics refreshed', 'success');
             }
-        } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+        } catch (err) {
+            console.error('Dashboard Error:', err);
+            if (errorBanner) {
+                errorBanner.style.display = 'flex';
+                document.getElementById('dashboard-error-message').textContent = err.message || 'Telemetry connection failed.';
+            }
+            Sentinel.showToast('Failed to load dashboard data', 'error');
         }
     }
 
-    function renderDashboardData(data, filterParams = {}) {
-        const kpi = data.kpi;
-        const cData = data.charts;
+    function renderKPIs(k) {
+        if (!k) return;
+        document.getElementById('kpi-total-txns').textContent = Sentinel.formatNumber(k.total_transactions || 0);
+        document.getElementById('kpi-fraud-rate').textContent = `${(k.fraud_rate || 0).toFixed(1)}%`;
+        document.getElementById('kpi-fraud-txns').textContent = Sentinel.formatNumber(k.fraud_transactions || 0);
+        document.getElementById('kpi-total-amount').textContent = Sentinel.formatCurrency(k.total_amount || 0);
 
-        // Check empty dataset state
-        if (!kpi.total_transactions) {
-            const hasFilters = filterParams.search || filterParams.startDate || filterParams.endDate || (filterParams.status && filterParams.status !== 'all') || (filterParams.riskLevel && filterParams.riskLevel !== 'all');
-            const emptyBanner = document.getElementById('dashboard-empty-banner');
-            if (emptyBanner && !hasFilters) {
-                emptyBanner.style.display = 'block';
-            }
-        }
+        document.getElementById('kpi-fraud-saved').textContent = Sentinel.formatCurrency(k.fraud_amount_saved || 0);
+        document.getElementById('kpi-blocked-cards').textContent = Sentinel.formatNumber(k.blocked_cards || 0);
+        document.getElementById('kpi-unread-alerts').textContent = Sentinel.formatNumber(k.unread_alerts || 0);
 
-        // Render KPI Cards
-        document.getElementById('kpi-total-txns').textContent = formatNumber(kpi.total_transactions);
-        document.getElementById('kpi-total-amount').textContent = formatCurrency(kpi.total_amount);
-        document.getElementById('kpi-fraud-txns').textContent = formatNumber(kpi.fraudulent_transactions);
-        document.getElementById('kpi-fraud-rate').textContent = `${kpi.fraud_rate}%`;
-        document.getElementById('kpi-high-risk-txns').textContent = formatNumber(kpi.high_risk_transactions);
-        document.getElementById('kpi-blocked-txns').textContent = formatNumber(kpi.blocked_transactions);
-
-        document.getElementById('kpi-subtext-fraud-saved').innerHTML = `<i class="fas fa-shield-alt" style="color:var(--success);"></i> ${formatCurrency(kpi.fraud_amount_saved)} prevented`;
-        document.getElementById('kpi-subtext-rate').innerHTML = `<i class="fas fa-info-circle"></i> ${kpi.fraud_rate > 5 ? '<span style="color:var(--danger)">Elevated risk</span>' : '<span style="color:var(--success)">Normal risk</span>'}`;
-
-        // Chart 1: Fraud vs Genuine (Doughnut)
-        renderChartFraudVsGenuine(cData.fraud_vs_genuine);
-
-        // Chart 2: Daily Fraud Trend (Combo Line/Bar)
-        renderChartTrendsByDay(cData.trends_by_day);
-
-        // Chart 3: Monthly Fraud Trend (Bar)
-        renderChartTrendsByMonth(cData.trends_by_month);
-
-        // Chart 4: Risk Distribution (Bar)
-        renderChartRiskDistribution(cData.risk_distribution);
-
-        // Chart 5: Hourly Pattern (Line/Area)
-        renderChartHourlyPattern(cData.hourly_pattern);
-
-        // Chart 6: Transaction Amount Distribution (Bar)
-        renderChartAmountDistribution(cData.amount_distribution);
-
-        // Chart 7: Top Categories (Horizontal Bar)
-        renderChartTopCategories(cData.top_categories);
-
-        // Chart 8: High-Risk Locations (Bar)
-        renderChartHighRiskLocations(cData.high_risk_locations);
-
-        // Render Recent Activity Tables
-        renderRecentTransactions(data.recent_transactions, filterParams);
-        renderRecentAlerts(data.recent_alerts);
-    }
-
-    // Chart 1: Fraud vs Genuine
-    function renderChartFraudVsGenuine(data) {
-        const ctx = document.getElementById('chartFraudVsGenuine').getContext('2d');
-        if (charts.fraudVsGenuine) charts.fraudVsGenuine.destroy();
-
-        const hasData = (data.genuine_count + data.fraud_count) > 0;
-        charts.fraudVsGenuine = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Genuine Transactions', 'Fraudulent Transactions'],
-                datasets: [{
-                    data: hasData ? [data.genuine_count, data.fraud_count] : [1, 0],
-                    backgroundColor: hasData ? ['#10b981', '#ef4444'] : ['#334155', '#334155'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter' } } },
-                    tooltip: {
-                        enabled: hasData,
-                        callbacks: {
-                            label: (ctx) => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw / (data.genuine_count + data.fraud_count || 1)) * 100).toFixed(1)}%)`
-                        }
-                    }
-                },
-                cutout: '70%'
-            }
-        });
-    }
-
-    // Chart 2: Daily Fraud Trend
-    function renderChartTrendsByDay(data) {
-        const ctx = document.getElementById('chartTrendsByDay').getContext('2d');
-        if (charts.trendsByDay) charts.trendsByDay.destroy();
-
-        charts.trendsByDay = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.day),
-                datasets: [
-                    {
-                        type: 'line',
-                        label: 'Fraud Count',
-                        data: data.map(d => d.fraud),
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        fill: true,
-                        yAxisID: 'y'
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Total Txns',
-                        data: data.map(d => d.total),
-                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                        borderRadius: 4,
-                        yAxisID: 'y'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b', precision: 0 }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    // Chart 3: Monthly Fraud Trend
-    function renderChartTrendsByMonth(data) {
-        const ctx = document.getElementById('chartTrendsByMonth').getContext('2d');
-        if (charts.trendsByMonth) charts.trendsByMonth.destroy();
-
-        charts.trendsByMonth = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.month),
-                datasets: [
-                    {
-                        label: 'Total Txns',
-                        data: data.map(d => d.total),
-                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                        borderRadius: 4
-                    },
-                    {
-                        label: 'Fraud Count',
-                        data: data.map(d => d.fraud),
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b', precision: 0 }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    // Chart 4: Risk Distribution
-    function renderChartRiskDistribution(data) {
-        const ctx = document.getElementById('chartRiskDistribution').getContext('2d');
-        if (charts.riskDistribution) charts.riskDistribution.destroy();
-
-        charts.riskDistribution = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.range),
-                datasets: [{
-                    label: 'Transaction Count',
-                    data: data.map(d => d.count),
-                    backgroundColor: [
-                        '#10b981', // 0-20
-                        '#3b82f6', // 20-40
-                        '#f59e0b', // 40-60
-                        '#f97316', // 60-80
-                        '#ef4444'  // 80-100
-                    ],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b', precision: 0 }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    // Chart 5: Hourly Fraud Pattern
-    function renderChartHourlyPattern(data) {
-        const ctx = document.getElementById('chartHourlyPattern').getContext('2d');
-        if (charts.hourlyPattern) charts.hourlyPattern.destroy();
-
-        charts.hourlyPattern = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map(d => d.hour),
-                datasets: [
-                    {
-                        label: 'Total Volume',
-                        data: data.map(d => d.total),
-                        borderColor: '#6366f1',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: false
-                    },
-                    {
-                        label: 'Fraud Activity',
-                        data: data.map(d => d.fraud),
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b', precision: 0 }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    // Chart 6: Amount Distribution
-    function renderChartAmountDistribution(data) {
-        const ctx = document.getElementById('chartAmountDistribution').getContext('2d');
-        if (charts.amountDistribution) charts.amountDistribution.destroy();
-
-        charts.amountDistribution = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.range),
-                datasets: [
-                    {
-                        label: 'Total Count',
-                        data: data.map(d => d.count),
-                        backgroundColor: 'rgba(129, 140, 248, 0.6)',
-                        borderRadius: 4
-                    },
-                    {
-                        label: 'Fraud Count',
-                        data: data.map(d => d.fraud_count),
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b', precision: 0 }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    // Chart 7: Top Categories
-    function renderChartTopCategories(data) {
-        const ctx = document.getElementById('chartTopCategories').getContext('2d');
-        if (charts.topCategories) charts.topCategories.destroy();
-
-        charts.topCategories = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.category),
-                datasets: [
-                    {
-                        label: 'Total Txns',
-                        data: data.map(d => d.total),
-                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                        borderRadius: 4
-                    },
-                    {
-                        label: 'Fraud Count',
-                        data: data.map(d => d.fraud_count),
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { ticks: { color: '#64748b', precision: 0 }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true },
-                    y: { ticks: { color: '#94a3b8' }, grid: { display: false } }
-                }
-            }
-        });
-    }
-
-    // Chart 8: High-Risk Locations
-    function renderChartHighRiskLocations(data) {
-        const ctx = document.getElementById('chartHighRiskLocations').getContext('2d');
-        if (charts.highRiskLocations) charts.highRiskLocations.destroy();
-
-        charts.highRiskLocations = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(d => d.location),
-                datasets: [
-                    {
-                        label: 'Fraud Count',
-                        data: data.map(d => d.fraud_count),
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                        borderRadius: 4
-                    },
-                    {
-                        label: 'Avg Risk Score (%)',
-                        data: data.map(d => d.avg_risk),
-                        backgroundColor: 'rgba(245, 158, 11, 0.7)',
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    x: { ticks: { color: '#64748b' }, grid: { display: false } },
-                    y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51, 65, 85, 0.3)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    // Render Recent Transactions
-    // Render Recent Transactions
-    function renderRecentTransactions(transactions, filterParams = {}) {
-        const tbody = document.getElementById('recent-transactions-tbody');
-        if (!transactions || !transactions.length) {
-            const hasFilters = filterParams.search || filterParams.startDate || filterParams.endDate || (filterParams.status && filterParams.status !== 'all') || (filterParams.riskLevel && filterParams.riskLevel !== 'all');
-            if (hasFilters && window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="7">${UIState.renderNoResults({ query: filterParams.search, onClear: 'resetFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
-            } else if (window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="7">${UIState.renderEmptyState({ icon: 'fa-receipt', title: 'No Transactions Found', message: 'Transactions will appear here once processed.', primaryAction: { label: 'Process Transaction', onClick: 'openProcessModal()', icon: 'fa-plus' } })}</td></tr>`;
+        // Sidebar alert badge
+        const alertBadge = document.getElementById('alert-badge');
+        if (alertBadge) {
+            const unread = k.unread_alerts || 0;
+            if (unread > 0) {
+                alertBadge.textContent = unread;
+                alertBadge.style.display = 'inline-block';
             } else {
-                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found.</p></div></td></tr>';
+                alertBadge.style.display = 'none';
             }
-            return;
+        }
+    }
+
+    function renderCharts(c) {
+        if (!c) return;
+        const isDark = Sentinel.getTheme() === 'dark';
+        const gridColor = isDark ? '#242723' : '#ECEEEA';
+
+        // 1. Daily Trends Chart
+        const dailyCtx = document.getElementById('chart-daily-trends');
+        if (dailyCtx) {
+            if (charts.daily) charts.daily.destroy();
+            const dTrends = c.trends_by_day || [];
+            charts.daily = new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: dTrends.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Total Volume',
+                            data: dTrends.map(d => d.total),
+                            borderColor: '#2457D6',
+                            backgroundColor: isDark ? 'rgba(67, 119, 246, 0.1)' : 'rgba(36, 87, 214, 0.06)',
+                            fill: true,
+                            tension: 0.25,
+                            pointRadius: 3,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Fraud Flagged',
+                            data: dTrends.map(d => d.fraud),
+                            borderColor: '#C63D45',
+                            backgroundColor: isDark ? 'rgba(224, 83, 91, 0.1)' : 'rgba(198, 61, 69, 0.08)',
+                            fill: true,
+                            tension: 0.25,
+                            pointRadius: 3,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: gridColor }, beginAtZero: true }
+                    }
+                }
+            });
         }
 
-        tbody.innerHTML = transactions.map(t => {
-            const riskClass = t.fraud_score >= 80 ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
-            const riskColor = riskClass === 'low' ? 'var(--success)' : (riskClass === 'medium' ? 'var(--warning)' : 'var(--danger)');
+        // 2. Fraud Ratio Chart
+        const ratioCtx = document.getElementById('chart-fraud-ratio');
+        if (ratioCtx) {
+            if (charts.ratio) charts.ratio.destroy();
+            const r = c.fraud_ratio || { genuine: 95, fraud: 5 };
+            charts.ratio = new Chart(ratioCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Genuine Payments', 'Fraudulent Attempts'],
+                    datasets: [{
+                        data: [r.genuine || 0, r.fraud || 0],
+                        backgroundColor: ['#16845B', '#C63D45'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
 
-            return `
+        // 3. Risk Score Distribution
+        const riskCtx = document.getElementById('chart-risk-dist');
+        if (riskCtx) {
+            if (charts.risk) charts.risk.destroy();
+            const rd = c.risk_distribution || [];
+            charts.risk = new Chart(riskCtx, {
+                type: 'bar',
+                data: {
+                    labels: rd.map(r => r.tier),
+                    datasets: [{
+                        label: 'Transactions',
+                        data: rd.map(r => r.count),
+                        backgroundColor: ['#16845B', '#4377F6', '#B7791F', '#C63D45'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: gridColor }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // 4. Monthly Trends Chart
+        const monthCtx = document.getElementById('chart-monthly-trends');
+        if (monthCtx) {
+            if (charts.month) charts.month.destroy();
+            const mTrends = c.trends_by_month || [];
+            charts.month = new Chart(monthCtx, {
+                type: 'line',
+                data: {
+                    labels: mTrends.map(m => m.month),
+                    datasets: [{
+                        label: 'Fraud Incidents',
+                        data: mTrends.map(m => m.fraud),
+                        borderColor: '#C63D45',
+                        backgroundColor: isDark ? 'rgba(224, 83, 91, 0.1)' : 'rgba(198, 61, 69, 0.08)',
+                        fill: true,
+                        tension: 0.25,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#C63D45',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: gridColor }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+    }
+
+    function renderRecentTransactions(txns) {
+        const tbody = document.getElementById('dashboard-txns-body');
+        if (!tbody) return;
+
+        if (!txns || txns.length === 0) {
+            tbody.innerHTML = `
                 <tr>
-                    <td class="mono">${t.transaction_id}</td>
-                    <td>${t.card_holder || 'Unknown'}</td>
-                    <td style="font-weight:600;">${formatCurrency(t.amount)}</td>
-                    <td>${t.merchant || '-'}</td>
-                    <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;"></i>${t.location || '-'}</td>
-                    <td>
-                        <div class="score-meter">
-                            <span style="font-weight:600;color:${riskColor};">${t.fraud_score}%</span>
-                            <div class="score-bar">
-                                <div class="score-fill ${riskClass}" style="width:${t.fraud_score}%"></div>
+                    <td colspan="9" style="padding:0;">
+                        <div class="ui-state-empty">
+                            <div class="empty-icon-wrap"><i data-lucide="receipt"></i></div>
+                            <div class="empty-title">No transactions found</div>
+                            <div class="empty-desc">No events matched your search or date criteria. Try adjusting your filters.</div>
+                            <div class="empty-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Reset Filters</button>
+                                <button class="btn btn-primary btn-sm" onclick="openProcessModal()">Analyze Transaction</button>
                             </div>
                         </div>
                     </td>
-                    <td><span class="badge-status ${t.status}">${t.status}</span></td>
                 </tr>
             `;
-        }).join('');
-    }
-
-    // Render Alerts
-    function renderRecentAlerts(alerts) {
-        const container = document.getElementById('recent-alerts-container');
-        if (!alerts || !alerts.length) {
-            if (window.UIState) {
-                container.innerHTML = UIState.renderEmptyState({
-                    icon: 'fa-shield-check',
-                    title: 'All Clear',
-                    message: 'No security alerts or anomalous triggers recorded at this time.'
-                });
-            } else {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No security alerts recorded.</p></div>';
-            }
+            Sentinel.initIcons();
             return;
         }
 
-        container.innerHTML = alerts.map(a => `
-            <div class="alert-item">
-                <div class="alert-icon ${a.severity}">
-                    <i class="fas fa-${a.severity === 'critical' ? 'skull-crossbones' : a.severity === 'high' ? 'exclamation-triangle' : 'info-circle'}"></i>
-                </div>
-                <div class="alert-content">
-                    <div class="alert-title">${a.severity.toUpperCase()} - ${(a.alert_type || 'ALERT').replace('_', ' ')}</div>
-                    <div class="alert-message">${a.message}</div>
-                    <div class="alert-time"><i class="far fa-clock"></i> ${new Date(a.created_at).toLocaleString()}</div>
-                </div>
-                <span class="badge-risk ${a.severity}">${a.severity}</span>
-            </div>
-        `).join('');
+        tbody.innerHTML = txns.map(t => {
+            const score = t.fraud_score || 0;
+            let riskClass = 'low';
+            let riskLabel = 'Low';
+            if (score >= 80) { riskClass = 'critical'; riskLabel = 'Critical'; }
+            else if (score >= 50) { riskClass = 'high'; riskLabel = 'High'; }
+            else if (score >= 20) { riskClass = 'medium'; riskLabel = 'Medium'; }
+
+            const statusClass = (t.status || 'approved').toLowerCase();
+
+            return `
+                <tr class="clickable-row" onclick="inspectTransaction('${t.transaction_id}')">
+                    <td class="mono-cell" style="font-weight:600;color:var(--accent);">${t.transaction_id}</td>
+                    <td style="color:var(--text-secondary);font-size:12px;">${Sentinel.formatDate(t.timestamp)}</td>
+                    <td><strong style="color:var(--text-primary);">${t.merchant || 'Unknown Merchant'}</strong></td>
+                    <td style="font-weight:600;color:var(--text-primary);">${Sentinel.formatCurrency(t.amount)}</td>
+                    <td style="color:var(--text-secondary);">${t.location || '—'}</td>
+                    <td><span class="risk-pill ${riskClass}">${riskLabel}</span></td>
+                    <td>
+                        <div class="score-meter">
+                            <div class="score-bar-track">
+                                <div class="score-bar-fill ${riskClass}" style="width:${Math.min(score, 100)}%;"></div>
+                            </div>
+                            <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;">${score.toFixed(1)}%</span>
+                        </div>
+                    </td>
+                    <td><span class="status-pill ${statusClass}">${(t.status || 'Approved').toUpperCase()}</span></td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-outline btn-xs" onclick="event.stopPropagation(); inspectTransaction('${t.transaction_id}')" title="Inspect investigation details">
+                            <i data-lucide="eye" style="width:12px;height:12px;"></i> Inspect
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        Sentinel.initIcons();
     }
 
-    // Process Transaction Modal Logic
+    // Inspect Transaction in Detail Drawer
+    async function inspectTransaction(txnId) {
+        try {
+            const res = await fetch(`/api/transactions/${txnId}/details`);
+            if (!res.ok) throw new Error('Transaction details not found');
+            const txn = await res.json();
+
+            const score = txn.fraud_score || 0;
+            let riskBadgeClass = 'low';
+            if (score >= 80) riskBadgeClass = 'critical';
+            else if (score >= 50) riskBadgeClass = 'high';
+            else if (score >= 20) riskBadgeClass = 'medium';
+
+            const drawerHtml = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle);">
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Transaction ID</div>
+                        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text-primary);">${txn.transaction_id}</div>
+                    </div>
+                    <span class="status-pill ${(txn.status || 'approved').toLowerCase()}" style="font-size:12px;padding:4px 12px;">
+                        ${(txn.status || 'Approved').toUpperCase()}
+                    </span>
+                </div>
+
+                <!-- Key Metrics Grid -->
+                <div class="grid-2" style="margin-bottom:20px;">
+                    <div style="padding:12px;background:var(--bg-surface-secondary);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Amount</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--text-primary);">${Sentinel.formatCurrency(txn.amount)}</div>
+                    </div>
+                    <div style="padding:12px;background:var(--bg-surface-secondary);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Risk Score</div>
+                        <div style="font-size:20px;font-weight:700;color:${score >= 50 ? 'var(--danger)' : 'var(--success)'};">${score.toFixed(1)}% <span class="risk-pill ${riskBadgeClass}" style="font-size:10px;">${riskBadgeClass}</span></div>
+                    </div>
+                </div>
+
+                <!-- Transaction Details Table -->
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px;">Forensic Information</h4>
+                    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Merchant</td><td style="padding:8px 0;font-weight:600;text-align:right;">${txn.merchant || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Category</td><td style="padding:8px 0;text-align:right;">${txn.category || 'General'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Card Number</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.card_number || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Cardholder</td><td style="padding:8px 0;text-align:right;">${txn.card_holder || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Location</td><td style="padding:8px 0;text-align:right;">${txn.location || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">IP Address</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.ip_address || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Timestamp</td><td style="padding:8px 0;text-align:right;">${Sentinel.formatDate(txn.timestamp)}</td></tr>
+                    </table>
+                </div>
+
+                <!-- Risk Factors List -->
+                ${txn.risk_factors && txn.risk_factors.length > 0 ? `
+                    <div style="margin-bottom:20px;">
+                        <h4 style="font-size:13px;font-weight:600;color:var(--danger);margin-bottom:8px;">Identified Risk Factors</h4>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            ${txn.risk_factors.map(rf => `
+                                <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--danger-light);border:1px solid var(--danger-border);border-radius:6px;font-size:12px;color:var(--danger);">
+                                    <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;margin-top:2px;"></i>
+                                    <span>${rf}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div style="padding:12px;background:var(--success-light);border:1px solid var(--success-border);border-radius:6px;font-size:12px;color:var(--success);margin-bottom:20px;">
+                        <i data-lucide="check-circle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;"></i> No anomalous risk factors flagged.
+                    </div>
+                `}
+            `;
+
+            const footerHtml = `
+                <button class="btn btn-secondary btn-sm" onclick="Sentinel.copyToClipboard('${txn.transaction_id}', 'Transaction ID copied')">
+                    <i data-lucide="copy" style="width:12px;height:12px;"></i> Copy ID
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="resolveTransaction('${txn.transaction_id}', 'approved')">
+                    <i data-lucide="check" style="width:12px;height:12px;"></i> Approve
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="resolveTransaction('${txn.transaction_id}', 'blocked')">
+                    <i data-lucide="ban" style="width:12px;height:12px;"></i> Block
+                </button>
+            `;
+
+            Sentinel.openDrawer(`Investigation: ${txn.transaction_id}`, drawerHtml, footerHtml);
+        } catch (e) {
+            Sentinel.showToast('Unable to open transaction details', 'error');
+        }
+    }
+
+    async function resolveTransaction(txnId, status) {
+        try {
+            const res = await fetch(`/api/transactions/${txnId}/review`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            });
+            if (!res.ok) throw new Error('Failed to update status');
+            Sentinel.showToast(`Transaction marked as ${status}`, 'success');
+            Sentinel.closeDrawer();
+            applyFilters();
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Action failed', 'error');
+        }
+    }
+
+    // Modal Workflow Controls
     function openProcessModal() {
         document.getElementById('process-modal').classList.add('active');
         document.getElementById('process-result').style.display = 'none';
+        document.getElementById('pt-merchant').focus();
     }
 
     function closeProcessModal() {
@@ -1094,85 +788,87 @@
 
     async function processTransaction(e) {
         e.preventDefault();
-        const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (window.UIState) {
-            UIState.setButtonLoading(submitBtn, true, 'Analyzing Transaction...');
-        } else {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        }
+        const submitBtn = document.getElementById('pt-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="btn-spinner"></span> Analyzing...`;
 
-        const data = Object.fromEntries(new FormData(form));
-        data.amount = parseFloat(data.amount);
+        const merchant = document.getElementById('pt-merchant').value.trim();
+        const amount = parseFloat(document.getElementById('pt-amount').value);
+        const category = document.getElementById('pt-category').value;
+        const location = document.getElementById('pt-location').value.trim();
+        const cardNum = document.getElementById('pt-card').value.trim() || '4532111122228892';
+
         const resultDiv = document.getElementById('process-result');
 
         try {
-            const result = await (window.UIState ? UIState.apiCall('/api/transactions/process', {
-                method: 'POST',
-                body: JSON.stringify(data)
-            }) : fetch('/api/transactions/process', {
+            const res = await fetch('/api/transactions/process', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-                credentials: 'include'
-            }).then(r => r.json()));
+                body: JSON.stringify({
+                    merchant: merchant,
+                    amount: amount,
+                    category: category,
+                    location: location,
+                    card_number: cardNum
+                })
+            });
 
-            const isFraud = result.is_fraud;
-            const score = result.fraud_score;
-            let verdict = score >= 65 ? 'Fraudulent' : (score >= 40 ? 'Suspicious' : 'Genuine');
-            let vColor = score >= 65 ? 'var(--danger)' : (score >= 40 ? 'var(--warning)' : 'var(--success)');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Analysis failed');
+
+            const isFraud = data.is_fraud;
+            const score = data.fraud_score || 0;
+            const riskLevel = data.risk_level || (isFraud ? 'High' : (score > 40 ? 'Medium' : 'Low'));
 
             resultDiv.style.display = 'block';
-            resultDiv.style.background = 'rgba(0,0,0,0.3)';
-            resultDiv.style.borderColor = vColor;
             resultDiv.innerHTML = `
-                <div style="font-size:18px;font-weight:700;color:${vColor};margin-bottom:8px;">Verdict: ${verdict} (${score}%)</div>
-                <div style="font-size:12px;color:var(--text-muted);">Transaction ID: ${result.transaction_id} | Risk Level: ${(result.risk_level || '').toUpperCase()}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div>
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-muted);">Risk Decision</div>
+                        <div style="font-size:15px;font-weight:700;color:${isFraud ? 'var(--danger)' : 'var(--success)'};">
+                            ${isFraud ? 'Transaction Blocked &bull; Fraud Alert' : (score > 40 ? 'Transaction Flagged &bull; Elevated Risk' : 'Transaction Approved &bull; Low Risk')}
+                        </div>
+                    </div>
+                    <span class="status-pill ${isFraud ? 'blocked' : (score > 40 ? 'flagged' : 'approved')}" style="font-size:11px;padding:3px 8px;">
+                        ${riskLevel} (${score.toFixed(1)}%)
+                    </span>
+                </div>
+
+                <div class="grid-2" style="margin-bottom:12px;font-size:12px;">
+                    <div><strong>Fraud Probability:</strong> ${score.toFixed(1)}%</div>
+                    <div><strong>ML Model Score:</strong> ${(data.ml_probability * 100 || score).toFixed(1)}%</div>
+                </div>
+
+                ${data.risk_factors && data.risk_factors.length > 0 ? `
+                    <div style="font-size:12px;color:var(--danger);margin-top:8px;">
+                        <strong>Key Risk Factors:</strong>
+                        <ul style="margin:4px 0 0 16px;">
+                            ${data.risk_factors.map(rf => `<li>${rf}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">
+                    Transaction Ledger ID: <strong class="mono-cell" style="color:var(--accent);">${data.transaction_id}</strong>
+                </div>
             `;
-            showToast(`${verdict}: Transaction ${result.transaction_id}`, isFraud ? 'error' : 'success');
-            applyFilters();
+
+            Sentinel.showToast(isFraud ? 'High risk transaction blocked' : 'Transaction approved', isFraud ? 'warning' : 'success');
+            loadDashboardData('', false);
         } catch (err) {
             resultDiv.style.display = 'block';
-            resultDiv.style.background = 'rgba(239,68,68,0.1)';
-            resultDiv.style.borderColor = 'rgba(239,68,68,0.3)';
-            resultDiv.innerHTML = `<div style="color:var(--danger);font-weight:600;"><i class="fas fa-times-circle"></i> ${err.message || 'Validation error'}</div>`;
+            resultDiv.innerHTML = `
+                <div style="color:var(--danger);font-size:13px;">
+                    <i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;"></i>
+                    <strong>Error:</strong> ${err.message}
+                </div>
+            `;
+            Sentinel.showToast(err.message, 'error');
         } finally {
-            if (window.UIState) {
-                UIState.setButtonLoading(submitBtn, false);
-            } else {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-search"></i> Analyze & Process';
-            }
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i data-lucide="sparkles" style="width:14px;height:14px;"></i> <span>Analyze Transaction</span>`;
+            Sentinel.initIcons();
         }
     }
-
-    // Simulate Transactions
-    async function simulateTransactions(count) {
-        showToast(`Simulating ${count} transactions...`, 'info');
-        try {
-            const result = await fetch('/api/simulate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ count }),
-                credentials: 'include'
-            }).then(res => res.json());
-
-            showToast(`${count} transactions simulated! ${result.fraud_detected || 0} fraud detected.`, result.fraud_detected > 0 ? 'warning' : 'success');
-            applyFilters();
-        } catch (e) {
-            showToast('Simulation failed', 'error');
-        }
-    }
-
-    // Close modal on outside click
-    document.getElementById('process-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeProcessModal();
-    });
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        applyFilters();
-    });
 </script>
 {% endblock %}

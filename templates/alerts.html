@@ -1,185 +1,324 @@
 {% extends "base.html" %}
 
-{% block title %}Alerts{% endblock %}
-{% block page_title %}Security Alerts{% endblock %}
+{% block title %}Fraud Alerts &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Fraud Alerts{% endblock %}
 
 {% block content %}
-<div style="display:flex;gap:12px;margin-bottom:24px;">
-    <button class="btn btn-outline" onclick="markAllRead()">
-        <i class="fas fa-check-double"></i> Mark All as Read
-    </button>
-    <button class="btn btn-outline" onclick="loadAlerts()">
-        <i class="fas fa-sync-alt"></i> Refresh
-    </button>
-</div>
-
-<!-- Alert Stats -->
-<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
-    <div class="stat-card red">
-        <div class="stat-label">Critical Alerts</div>
-        <div class="stat-value" id="critical-count">0</div>
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Fraud Alerts</h1>
+        <p class="page-header-subtitle">Real-time threat triage, anomaly queue, and incident response</p>
     </div>
-    <div class="stat-card yellow">
-        <div class="stat-label">High Alerts</div>
-        <div class="stat-value" id="high-count">0</div>
-    </div>
-    <div class="stat-card blue">
-        <div class="stat-label">Medium Alerts</div>
-        <div class="stat-value" id="medium-count">0</div>
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="markAllRead()" id="mark-all-read-btn">
+            <i data-lucide="check-check" style="width:14px;height:14px;"></i>
+            <span>Mark All as Read</span>
+        </button>
+        <button class="btn btn-secondary" onclick="loadAlerts(true)">
+            <i data-lucide="refresh-cw" id="alert-refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh Queue</span>
+        </button>
     </div>
 </div>
 
-<!-- Alerts List -->
-<div class="panel">
-    <div class="panel-header">
-        <h3><i class="fas fa-shield-exclamation" style="color:var(--danger);margin-right:8px;"></i> All Alerts</h3>
-        <span style="color:var(--text-muted);font-size:13px;" id="alert-count">Loading...</span>
+<!-- Alert Stats Grid -->
+<div class="kpi-grid-4" style="margin-bottom:24px;">
+    <div class="kpi-card" style="border-left:3px solid var(--danger);">
+        <div class="kpi-top">
+            <span class="kpi-label" style="color:var(--danger);">Critical Severity</span>
+            <div class="kpi-icon-wrap" style="background:var(--danger-light);color:var(--danger);"><i data-lucide="alert-octagon"></i></div>
+        </div>
+        <div class="kpi-value" id="critical-count">0</div>
+        <div class="kpi-footer"><span class="kpi-trend negative">Immediate action</span></div>
     </div>
-    <div class="panel-body no-padding" id="alerts-list">
-        <div class="spinner"></div>
+
+    <div class="kpi-card" style="border-left:3px solid var(--warning);">
+        <div class="kpi-top">
+            <span class="kpi-label" style="color:var(--warning);">High Severity</span>
+            <div class="kpi-icon-wrap" style="background:var(--warning-light);color:var(--warning);"><i data-lucide="alert-triangle"></i></div>
+        </div>
+        <div class="kpi-value" id="high-count">0</div>
+        <div class="kpi-footer"><span class="kpi-trend negative">Elevated anomalies</span></div>
+    </div>
+
+    <div class="kpi-card" style="border-left:3px solid var(--accent);">
+        <div class="kpi-top">
+            <span class="kpi-label" style="color:var(--accent);">Medium Severity</span>
+            <div class="kpi-icon-wrap" style="background:var(--accent-light);color:var(--accent);"><i data-lucide="info"></i></div>
+        </div>
+        <div class="kpi-value" id="medium-count">0</div>
+        <div class="kpi-footer"><span class="kpi-trend neutral">Behavioral shifts</span></div>
+    </div>
+
+    <div class="kpi-card" style="border-left:3px solid var(--success);">
+        <div class="kpi-top">
+            <span class="kpi-label" style="color:var(--success);">Active Queue</span>
+            <div class="kpi-icon-wrap" style="background:var(--success-light);color:var(--success);"><i data-lucide="shield-check"></i></div>
+        </div>
+        <div class="kpi-value" id="total-alerts-count">0</div>
+        <div class="kpi-footer"><span class="kpi-trend positive">Surveillance live</span></div>
+    </div>
+</div>
+
+<!-- Investigation Queue Panel -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div class="sentinel-card-title">
+            <i data-lucide="list-ordered" style="width:16px;height:16px;color:var(--accent);"></i>
+            <span>Investigation Queue</span>
+        </div>
+        <div class="filter-group">
+            <select class="form-control" id="severity-filter" style="width:140px;font-size:12px;padding:5px 10px;" onchange="filterAlerts()">
+                <option value="all">All Severities</option>
+                <option value="critical">Critical Only</option>
+                <option value="high">High Only</option>
+                <option value="medium">Medium Only</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="sentinel-card-body no-padding" id="alerts-list">
+        <div style="padding:32px;text-align:center;"><div class="spinner"></div></div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Utility function for API calls
-    async function apiCall(url, options = {}) {
+    let rawAlerts = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAlerts();
+    });
+
+    async function loadAlerts(isManualRefresh = false) {
+        const refreshIcon = document.getElementById('alert-refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+        const container = document.getElementById('alerts-list');
+
         try {
-            const response = await fetch(url, {
-                method: options.method || 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                body: options.body || undefined,
-                credentials: 'include'
-            });
+            const res = await fetch('/api/alerts');
+            if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch security alerts`);
+            const data = await res.json();
+            rawAlerts = data.alerts || [];
 
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return null;
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            updateCounts(rawAlerts);
+            filterAlerts();
 
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
+            if (isManualRefresh) {
+                Sentinel.showToast('Alerts queue refreshed', 'success');
             }
-            return await response.text();
-        } catch (error) {
-            console.error('API Error:', error);
-            showToast(`Error: ${error.message}`, 'error');
-            throw error;
+        } catch (err) {
+            console.error('Alerts load error:', err);
+            container.innerHTML = `
+                <div style="padding:24px;text-align:center;color:var(--danger);">
+                    <i data-lucide="alert-octagon" style="width:20px;height:20px;display:inline-block;vertical-align:-4px;"></i>
+                    Failed to fetch alerts. <button class="btn btn-outline btn-xs" onclick="loadAlerts()">Retry</button>
+                </div>
+            `;
+            Sentinel.initIcons();
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         }
     }
 
-    async function loadAlerts() {
+    function updateCounts(alerts) {
+        const crit = alerts.filter(a => (a.severity || '').toLowerCase() === 'critical').length;
+        const high = alerts.filter(a => (a.severity || '').toLowerCase() === 'high').length;
+        const med = alerts.filter(a => (a.severity || '').toLowerCase() === 'medium').length;
+
+        document.getElementById('critical-count').textContent = crit;
+        document.getElementById('high-count').textContent = high;
+        document.getElementById('medium-count').textContent = med;
+        document.getElementById('total-alerts-count').textContent = alerts.length;
+    }
+
+    function filterAlerts() {
+        const filter = document.getElementById('severity-filter').value.toLowerCase();
+        let list = rawAlerts;
+        if (filter !== 'all') {
+            list = rawAlerts.filter(a => (a.severity || '').toLowerCase() === filter);
+        }
+        renderAlerts(list);
+    }
+
+    function renderAlerts(alerts) {
         const container = document.getElementById('alerts-list');
-        if (container && window.UIState) {
-            UIState.showLoading(container, 'spinner');
+        if (!container) return;
+
+        if (!alerts || alerts.length === 0) {
+            container.innerHTML = `
+                <div class="ui-state-empty">
+                    <div class="empty-icon-wrap"><i data-lucide="shield-check" style="width:24px;height:24px;color:var(--success);"></i></div>
+                    <div class="empty-title">Investigation Queue Clear</div>
+                    <div class="empty-desc">No active fraud alerts match your criteria. System health is optimal.</div>
+                </div>
+            `;
+            Sentinel.initIcons();
+            return;
         }
 
-        try {
-            const data = await apiCall('/api/alerts');
-            const alerts = data.alerts || [];
+        container.innerHTML = alerts.map(a => {
+            const sev = (a.severity || 'Medium').toLowerCase();
+            let sevClass = 'medium';
+            if (sev === 'critical') sevClass = 'critical';
+            else if (sev === 'high') sevClass = 'high';
+            else sevClass = 'medium';
 
-            const alertCount = document.getElementById('alert-count');
-            const critCount = document.getElementById('critical-count');
-            const highCount = document.getElementById('high-count');
-            const medCount = document.getElementById('medium-count');
-
-            if (alertCount) alertCount.textContent = `${alerts.length} alerts`;
-            if (critCount) critCount.textContent = alerts.filter(a => (a.severity || '').toLowerCase() === 'critical').length;
-            if (highCount) highCount.textContent = alerts.filter(a => (a.severity || '').toLowerCase() === 'high').length;
-            if (medCount) medCount.textContent = alerts.filter(a => (a.severity || '').toLowerCase() === 'medium').length;
-
-            if (!alerts.length) {
-                if (window.UIState) {
-                    container.innerHTML = UIState.renderEmptyState({
-                        icon: 'fa-shield-check',
-                        title: 'All Clear!',
-                        message: 'No security alerts or anomalous activity flagged at this time.',
-                        primaryAction: { label: 'Refresh Alerts', onClick: 'loadAlerts()', icon: 'fa-rotate-right' }
-                    });
-                } else {
-                    container.innerHTML = `
-                        <div class="empty-state" style="padding:60px;">
-                            <i class="fas fa-check-circle" style="color:var(--success);"></i>
-                            <p style="font-size:16px;margin-top:12px;">All clear! No alerts at this time.</p>
-                        </div>
-                    `;
-                }
-                return;
-            }
-
-            container.innerHTML = alerts.map(a => `
-                <div class="alert-item ${a.is_read ? '' : 'unread'}" style="${!a.is_read ? 'background:rgba(99,102,241,0.03);' : ''}">
-                    <div class="alert-icon ${(a.severity || 'info').toLowerCase()}">
-                        <i class="fas fa-${
-                            (a.severity || '').toLowerCase() === 'critical' ? 'skull-crossbones' :
-                            (a.severity || '').toLowerCase() === 'high' ? 'exclamation-triangle' : 'info-circle'
-                        }"></i>
-                    </div>
-                    <div class="alert-content" style="flex:1;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                            <span class="badge-risk ${(a.severity || 'info').toLowerCase()}">${a.severity}</span>
-                            <span style="font-size:12px;color:var(--text-muted);">${(a.alert_type || 'ALERT').replace(/_/g, ' ').toUpperCase()}</span>
-                            ${!a.is_read ? '<span style="width:8px;height:8px;background:var(--primary);border-radius:50%;"></span>' : ''}
-                        </div>
-                        <div class="alert-title" style="font-size:14px;">${a.message}</div>
-                        <div style="display:flex;align-items:center;gap:16px;margin-top:8px;">
-                            <span class="alert-time"><i class="far fa-clock" style="margin-right:4px;"></i>${a.created_at ? new Date(a.created_at).toLocaleString() : 'Recent'}</span>
-                            <span class="mono" style="font-size:11px;color:var(--text-muted);">${a.transaction_id || ''}</span>
+            return `
+                <div class="alert-queue-item" style="background:${a.is_read ? 'transparent' : 'var(--bg-surface-secondary)'};">
+                    <div class="alert-item-left">
+                        <span class="risk-pill ${sevClass}" style="font-size:10px;padding:2px 8px;">
+                            ${(a.severity || 'Alert').toUpperCase()}
+                        </span>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;color:var(--text-primary);margin-bottom:2px;">
+                                ${a.message || 'Suspicious payment pattern flagged'}
+                            </div>
+                            <div style="font-size:11px;color:var(--text-secondary);display:flex;gap:12px;align-items:center;">
+                                <span>Txn ID: <strong class="mono-cell" style="color:var(--accent);">${a.transaction_id || 'N/A'}</strong></span>
+                                <span>&bull;</span>
+                                <span>Type: ${a.alert_type || 'ANOMALY'}</span>
+                                <span>&bull;</span>
+                                <span>${Sentinel.formatDate(a.created_at)}</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:8px;">
+
+                    <div style="display:flex;align-items:center;gap:8px;">
                         ${!a.is_read ? `
-                            <button class="btn btn-xs btn-outline" onclick="markRead(${a.id})" title="Mark as read">
-                                <i class="fas fa-check"></i>
+                            <button class="btn btn-outline btn-xs" onclick="markRead(${a.id})" title="Mark as reviewed">
+                                <i data-lucide="check" style="width:12px;height:12px;"></i> Mark Read
+                            </button>
+                        ` : '<span style="font-size:11px;color:var(--text-muted);"><i data-lucide="check" style="width:11px;height:11px;display:inline-block;vertical-align:-1px;"></i> Reviewed</span>'}
+                        
+                        ${a.transaction_id ? `
+                            <button class="btn btn-secondary btn-xs" onclick="inspectAlertTxn('${a.transaction_id}')" title="Investigate transaction">
+                                <i data-lucide="eye" style="width:12px;height:12px;"></i> Review
                             </button>
                         ` : ''}
                     </div>
                 </div>
-            `).join('');
+            `;
+        }).join('');
 
-        } catch (e) {
-            console.error('Error loading alerts:', e);
-            if (container && window.UIState) {
-                container.innerHTML = UIState.renderErrorState({
-                    title: 'Unable to Load Security Alerts',
-                    message: e.message || 'Failed to retrieve alert notifications.',
-                    onRetry: 'loadAlerts()'
-                });
-            }
-        }
+        Sentinel.initIcons();
     }
 
     async function markRead(alertId) {
         try {
-            await apiCall(`/api/alerts/${alertId}/read`, { method: 'POST' });
-            showToast('Alert marked as read', 'success');
+            const res = await fetch(`/api/alerts/${alertId}/read`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to mark alert as read');
+            Sentinel.showToast('Alert marked as read', 'success');
             loadAlerts();
-            updateAlertBadge();
-        } catch (e) {}
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Action failed', 'error');
+        }
     }
 
     async function markAllRead() {
+        const unreadAlerts = rawAlerts.filter(a => !a.is_read);
+        if (unreadAlerts.length === 0) {
+            Sentinel.showToast('All alerts are already marked as read', 'info');
+            return;
+        }
+
         try {
-            const data = await apiCall('/api/alerts');
-            const unread = (data.alerts || []).filter(a => !a.is_read);
-            for (const alert of unread) {
-                await fetch(`/api/alerts/${alert.id}/read`, { method: 'POST' });
+            for (const a of unreadAlerts) {
+                await fetch(`/api/alerts/${a.id}/read`, { method: 'POST' });
             }
-            showToast('All alerts marked as read', 'success');
+            Sentinel.showToast('All alerts marked as read', 'success');
             loadAlerts();
-            updateAlertBadge();
-        } catch (e) {}
+        } catch (e) {
+            Sentinel.showToast('Failed to mark all alerts', 'error');
+        }
     }
 
-    loadAlerts();
-    setInterval(loadAlerts, 30000);
+    async function inspectAlertTxn(txnId) {
+        try {
+            const res = await fetch(`/api/transactions/${txnId}/details`);
+            if (!res.ok) throw new Error('Record not found');
+            const txn = await res.json();
+
+            const score = txn.fraud_score || 0;
+            let riskBadgeClass = 'low';
+            if (score >= 80) riskBadgeClass = 'critical';
+            else if (score >= 50) riskBadgeClass = 'high';
+            else if (score >= 20) riskBadgeClass = 'medium';
+
+            const drawerHtml = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle);">
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Investigation Target</div>
+                        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text-primary);">${txn.transaction_id}</div>
+                    </div>
+                    <span class="status-pill ${(txn.status || 'approved').toLowerCase()}" style="font-size:12px;padding:4px 12px;">
+                        ${(txn.status || 'Approved').toUpperCase()}
+                    </span>
+                </div>
+
+                <div class="grid-2" style="margin-bottom:20px;">
+                    <div style="padding:12px;background:var(--bg-surface-secondary);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Amount</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--text-primary);">${Sentinel.formatCurrency(txn.amount)}</div>
+                    </div>
+                    <div style="padding:12px;background:var(--bg-surface-secondary);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Risk Score</div>
+                        <div style="font-size:20px;font-weight:700;color:${score >= 50 ? 'var(--danger)' : 'var(--success)'};">${score.toFixed(1)}% <span class="risk-pill ${riskBadgeClass}" style="font-size:10px;">${riskBadgeClass}</span></div>
+                    </div>
+                </div>
+
+                <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:20px;">
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Merchant</td><td style="padding:8px 0;font-weight:600;text-align:right;">${txn.merchant}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Card Number</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.card_number}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Cardholder</td><td style="padding:8px 0;text-align:right;">${txn.card_holder || '—'}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Location</td><td style="padding:8px 0;text-align:right;">${txn.location || '—'}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Timestamp</td><td style="padding:8px 0;text-align:right;">${Sentinel.formatDate(txn.timestamp)}</td></tr>
+                </table>
+
+                ${txn.risk_factors && txn.risk_factors.length > 0 ? `
+                    <div style="margin-bottom:20px;">
+                        <h4 style="font-size:13px;font-weight:600;color:var(--danger);margin-bottom:8px;">Identified Risk Factors</h4>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            ${txn.risk_factors.map(rf => `
+                                <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--danger-light);border:1px solid var(--danger-border);border-radius:6px;font-size:12px;color:var(--danger);">
+                                    <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;margin-top:2px;"></i>
+                                    <span>${rf}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            const footerHtml = `
+                <button class="btn btn-secondary btn-sm" onclick="Sentinel.closeDrawer()">Close</button>
+                <button class="btn btn-danger btn-sm" onclick="blockAlertTxn('${txn.transaction_id}')">
+                    <i data-lucide="ban" style="width:12px;height:12px;"></i> Block Card
+                </button>
+            `;
+
+            Sentinel.openDrawer(`Investigation: ${txn.transaction_id}`, drawerHtml, footerHtml);
+        } catch (e) {
+            Sentinel.showToast('Unable to inspect transaction', 'error');
+        }
+    }
+
+    async function blockAlertTxn(txnId) {
+        try {
+            await fetch(`/api/transactions/${txnId}/review`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'blocked' })
+            });
+            Sentinel.showToast('Transaction and card blocked', 'warning');
+            Sentinel.closeDrawer();
+            loadAlerts();
+        } catch (e) {
+            Sentinel.showToast('Failed to block transaction', 'error');
+        }
+    }
 </script>
 {% endblock %}

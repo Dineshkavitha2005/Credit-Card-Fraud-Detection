@@ -1,11 +1,17 @@
 import os
-from flask import Blueprint, request, jsonify, send_file, current_app
+from flask import Blueprint, render_template, request, jsonify, send_file, current_app
 from flask_login import login_required, current_user
 from app.extensions import db, audit_logger, EventType
 from app.models.report import Report
 from app.services.reporting import ReportingService
 
 reports_bp = Blueprint('reports', __name__)
+
+@reports_bp.route('/reports', methods=['GET'])
+@login_required
+def reports_page():
+    """Render reports studio management page."""
+    return render_template('reports.html', user=current_user)
 
 @reports_bp.route('/api/reports/generate', methods=['POST'])
 @login_required

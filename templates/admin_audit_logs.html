@@ -1,512 +1,360 @@
 {% extends 'base.html' %}
 
-{% block title %}Security Audit Logs{% endblock %}
-{% block page_title %}Security & Administrative Audit Logs{% endblock %}
-
-{% block extra_styles %}
-<style>
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    .metric-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 16px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .metric-icon {
-        width: 44px; height: 44px;
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 18px; flex-shrink: 0;
-    }
-    .event-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .event-badge.login { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .event-badge.logout { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
-    .event-badge.failed_login { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .event-badge.registration { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
-    .event-badge.password_change { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
-    .event-badge.transaction_submission { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
-    .event-badge.fraud_detection { background: rgba(239, 68, 68, 0.25); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); font-weight:700; }
-    .event-badge.admin_user_change { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .event-badge.account_block { background: rgba(225, 29, 72, 0.2); color: #fda4af; border: 1px solid rgba(225, 29, 72, 0.4); }
-    .event-badge.account_unblock { background: rgba(20, 184, 166, 0.15); color: #5eead4; border: 1px solid rgba(20, 184, 166, 0.3); }
-    .event-badge.report_generation { background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.3); }
-    .event-badge.report_download { background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); }
-    .event-badge.suspicious_activity { background: rgba(234, 179, 8, 0.2); color: #fef08a; border: 1px solid rgba(234, 179, 8, 0.4); }
-    .event-badge.api_auth_failure { background: rgba(244, 63, 94, 0.2); color: #fecdd3; border: 1px solid rgba(244, 63, 94, 0.4); }
-
-    .status-pill {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-    .status-pill.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .status-pill.failure { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
-
-    /* Modal styling */
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(4px);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 1000;
-        opacity: 0; visibility: hidden;
-        transition: all 0.2s ease;
-    }
-    .modal-overlay.active {
-        opacity: 1; visibility: visible;
-    }
-    .modal-container {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        width: 90%; max-width: 650px;
-        max-height: 85vh;
-        display: flex; flex-direction: column;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-    }
-    .modal-header {
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border);
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .modal-body {
-        padding: 20px;
-        overflow-y: auto;
-    }
-    .json-code {
-        background: #090d16;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 14px;
-        color: #e2e8f0;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 13px;
-        white-space: pre-wrap;
-        word-break: break-all;
-    }
-</style>
-{% endblock %}
+{% block title %}Audit Logs &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
 
 {% block content %}
-<!-- Overview Stats -->
-<div class="stats-grid">
-    <div class="metric-card">
-        <div class="metric-icon" style="background:rgba(99,102,241,0.15);color:var(--primary-light);">
-            <i class="fas fa-list-check"></i>
-        </div>
-        <div>
-            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Total Audit Logs</div>
-            <div style="font-size:22px;font-weight:700;" id="metricTotal">0</div>
-        </div>
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Audit Logs</h1>
+        <p class="page-header-subtitle">Immutable security ledger, administrative operations, and authentication telemetry</p>
     </div>
-    <div class="metric-card">
-        <div class="metric-icon" style="background:rgba(239,68,68,0.15);color:var(--danger-light);">
-            <i class="fas fa-user-xmark"></i>
-        </div>
-        <div>
-            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Failed Logins</div>
-            <div style="font-size:22px;font-weight:700;" id="metricFailedLogins">0</div>
-        </div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-icon" style="background:rgba(245,158,11,0.15);color:var(--warning-light);">
-            <i class="fas fa-shield-cat"></i>
-        </div>
-        <div>
-            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Fraud Detections</div>
-            <div style="font-size:22px;font-weight:700;" id="metricFraudDetections">0</div>
-        </div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-icon" style="background:rgba(244,63,94,0.15);color:#fecdd3;">
-            <i class="fas fa-lock"></i>
-        </div>
-        <div>
-            <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Auth Failures</div>
-            <div style="font-size:22px;font-weight:700;" id="metricAuthFailures">0</div>
-        </div>
-    </div>
-</div>
-
-<!-- Filters Panel -->
-<div class="panel" style="margin-bottom:24px;">
-    <div class="panel-header">
-        <h3><i class="fas fa-filter" style="color:var(--primary);margin-right:8px;"></i> Audit Log Filters</h3>
-        <div style="display:flex;gap:8px;">
-            <button class="btn btn-outline btn-sm" onclick="exportAuditLogs('csv')">
-                <i class="fas fa-file-csv"></i> Export CSV
-            </button>
-            <button class="btn btn-outline btn-sm" onclick="exportAuditLogs('json')">
-                <i class="fas fa-code"></i> Export JSON
-            </button>
-        </div>
-    </div>
-    <div class="panel-body" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:16px;align-items:end;">
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Search</label>
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="filterSearch" class="form-control" placeholder="IP, User, Resource, Text...">
-            </div>
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Event Category</label>
-            <select id="filterEventType" class="form-control">
-                <option value="all">All Events</option>
-                <option value="login">Login</option>
-                <option value="logout">Logout</option>
-                <option value="failed_login">Failed Login</option>
-                <option value="registration">Registration</option>
-                <option value="password_change">Password Change</option>
-                <option value="transaction_submission">Transaction Submission</option>
-                <option value="fraud_detection">Fraud Detection</option>
-                <option value="admin_user_change">Admin User Change</option>
-                <option value="account_block">Account Block</option>
-                <option value="account_unblock">Account Unblock</option>
-                <option value="report_generation">Report Generation</option>
-                <option value="report_download">Report Download</option>
-                <option value="suspicious_activity">Suspicious Activity</option>
-                <option value="api_auth_failure">API Auth Failure</option>
-            </select>
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Status</label>
-            <select id="filterStatus" class="form-control">
-                <option value="all">All Statuses</option>
-                <option value="success">Success</option>
-                <option value="failure">Failure</option>
-            </select>
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">From Date</label>
-            <input type="date" id="filterStartDate" class="form-control">
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">To Date</label>
-            <input type="date" id="filterEndDate" class="form-control">
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Per Page</label>
-            <select id="filterPerPage" class="form-control">
-                <option value="10">10 per page</option>
-                <option value="25" selected>25 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
-            </select>
-        </div>
-    </div>
-    <div style="padding:0 20px 16px 20px;display:flex;gap:10px;">
-        <button class="btn btn-primary btn-sm" onclick="applyFilters()">
-            <i class="fas fa-filter"></i> Apply Filters
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="exportAuditLogs()">
+            <i data-lucide="download" style="width:14px;height:14px;"></i>
+            <span>Export CSV</span>
         </button>
-        <button class="btn btn-outline btn-sm" onclick="resetFilters()">
-            <i class="fas fa-rotate-left"></i> Reset
+        <button class="btn btn-secondary" onclick="loadAuditLogs(true)">
+            <i data-lucide="refresh-cw" id="audit-refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh Logs</span>
         </button>
     </div>
 </div>
 
-<!-- Logs Data Table -->
-<div class="panel">
-    <div class="panel-header">
-        <h3><i class="fas fa-shield-halved" style="color:var(--primary);margin-right:8px;"></i> Security Event Stream</h3>
-        <span style="color:var(--text-muted);font-size:13px;" id="tableSummary">Loading event stream...</span>
+<!-- Key Event Counters Grid -->
+<div class="kpi-grid-4" style="margin-bottom:20px;">
+    <div class="kpi-card" style="min-height:85px;padding:12px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Recorded Events</span>
+            <div class="kpi-icon-wrap"><i data-lucide="list-checks"></i></div>
+        </div>
+        <div class="kpi-value" id="stat-audit-total" style="font-size:20px;">0</div>
     </div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Event ID</th>
-                    <th>Event Type</th>
-                    <th>User ID</th>
-                    <th>Target Resource</th>
-                    <th>IP Address</th>
-                    <th>User Agent</th>
-                    <th>Status</th>
-                    <th>Timestamp</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="logsTableBody">
-                <tr>
-                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
-                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Fetching audit records...
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="kpi-card" style="min-height:85px;padding:12px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Auth Events</span>
+            <div class="kpi-icon-wrap"><i data-lucide="key-round"></i></div>
+        </div>
+        <div class="kpi-value" id="stat-audit-auth" style="font-size:20px;">0</div>
     </div>
-    <div class="pagination" id="paginationControls">
-        <!-- Pagination injected dynamically -->
+    <div class="kpi-card" style="min-height:85px;padding:12px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Fraud Triggers</span>
+            <div class="kpi-icon-wrap"><i data-lucide="shield-alert"></i></div>
+        </div>
+        <div class="kpi-value" id="stat-audit-fraud" style="font-size:20px;">0</div>
+    </div>
+    <div class="kpi-card" style="min-height:85px;padding:12px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Account Blocks</span>
+            <div class="kpi-icon-wrap"><i data-lucide="user-x"></i></div>
+        </div>
+        <div class="kpi-value" id="stat-audit-blocks" style="font-size:20px;">0</div>
     </div>
 </div>
 
-<!-- Metadata Inspector Modal -->
-<div class="modal-overlay" id="metadataModal">
-    <div class="modal-container">
-        <div class="modal-header">
-            <div>
-                <h4 style="font-size:16px;font-weight:700;" id="modalTitle">Audit Metadata</h4>
-                <span style="font-size:12px;color:var(--text-muted);" id="modalSubTitle">ID: AUD-000000</span>
-            </div>
-            <button class="btn btn-outline btn-xs" onclick="closeMetadataModal()">
-                <i class="fas fa-times"></i>
-            </button>
+<!-- Filters Toolbar -->
+<div class="filter-bar">
+    <div class="filter-group">
+        <div style="position:relative;display:inline-block;">
+            <input type="text" id="audit-search" class="form-control" placeholder="Search user, IP, target..." style="padding-left:28px;width:240px;font-size:12px;padding-top:6px;padding-bottom:6px;" oninput="onSearchInput()">
+            <i data-lucide="search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:13px;height:13px;"></i>
         </div>
-        <div class="modal-body">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">Safe Metadata Payload (Sanitized)</span>
-                <button class="btn btn-outline btn-xs" onclick="copyMetadataJSON()">
-                    <i class="fas fa-copy"></i> Copy JSON
-                </button>
-            </div>
-            <div class="json-code" id="modalJSONContent">{}</div>
+
+        <select id="event-type-filter" class="form-control" style="width:160px;font-size:12px;padding:6px 10px;" onchange="loadAuditLogs()">
+            <option value="">All Event Types</option>
+            <option value="successful_login">Successful Login</option>
+            <option value="failed_login">Failed Login</option>
+            <option value="fraud_detection">Fraud Detection</option>
+            <option value="card_blocked">Card Blocked</option>
+            <option value="account_block">Account Blocked</option>
+            <option value="report_generation">Report Generated</option>
+        </select>
+
+        <select id="status-filter" class="form-control" style="width:120px;font-size:12px;padding:6px 10px;" onchange="loadAuditLogs()">
+            <option value="">All Outcomes</option>
+            <option value="success">Success</option>
+            <option value="failure">Failure</option>
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <div style="display:flex;align-items:center;gap:4px;">
+            <input type="date" id="date-from" class="form-control" style="width:125px;font-size:12px;padding:5px 8px;" onchange="loadAuditLogs()">
+            <span style="color:var(--text-muted);">&ndash;</span>
+            <input type="date" id="date-to" class="form-control" style="width:125px;font-size:12px;padding:5px 8px;" onchange="loadAuditLogs()">
         </div>
+        <button class="btn btn-outline btn-sm" onclick="clearAuditFilters()" title="Reset filters">
+            <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i> Clear
+        </button>
+    </div>
+</div>
+
+<!-- Audit Trail Table -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div class="sentinel-card-title">
+            <i data-lucide="history" style="width:16px;height:16px;color:var(--accent);"></i>
+            <span>Forensic Event Stream</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);" id="audit-summary-text">Loading audit logs...</div>
+    </div>
+
+    <div class="sentinel-card-body no-padding">
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Event Action</th>
+                        <th>Actor</th>
+                        <th>Target Resource</th>
+                        <th>IP Address</th>
+                        <th>Outcome</th>
+                        <th style="text-align:right;">Payload</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-table-body">
+                    <tr><td colspan="7" style="padding:28px;text-align:center;"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="sentinel-pagination" id="audit-pagination" style="display:none;">
+        <div id="audit-page-info">Showing records...</div>
+        <div class="pagination-pages" id="audit-page-buttons"></div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_scripts %}
+{% block scripts %}
 <script>
-    let currentPage = 1;
-    let currentLogsData = [];
+    let auditState = {
+        page: 1,
+        per_page: 20,
+        totalPages: 1,
+        logs: [],
+        debounce: null
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
-        loadAuditLogs(1);
-
-        // Attach event listeners for real-time filter updates
-        document.getElementById('filterSearch').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') applyFilters();
-        });
-        document.getElementById('filterEventType').addEventListener('change', applyFilters);
-        document.getElementById('filterStatus').addEventListener('change', applyFilters);
-        document.getElementById('filterPerPage').addEventListener('change', applyFilters);
+        loadAuditLogs();
     });
 
-    function resetAuditFilters() {
-        const sInput = document.getElementById('filterSearch');
-        const evSelect = document.getElementById('filterEventType');
-        const stSelect = document.getElementById('filterStatus');
-        const sdInput = document.getElementById('filterStartDate');
-        const edInput = document.getElementById('filterEndDate');
-        const ppSelect = document.getElementById('filterPerPage');
-
-        if (sInput) sInput.value = '';
-        if (evSelect) evSelect.value = 'all';
-        if (stSelect) stSelect.value = 'all';
-        if (sdInput) sdInput.value = '';
-        if (edInput) edInput.value = '';
-        if (ppSelect) ppSelect.value = '25';
-        loadAuditLogs(1);
+    function onSearchInput() {
+        clearTimeout(auditState.debounce);
+        auditState.debounce = setTimeout(() => {
+            auditState.page = 1;
+            loadAuditLogs();
+        }, 300);
     }
 
-    async function loadAuditLogs(page = 1) {
-        currentPage = page;
-        const search = document.getElementById('filterSearch').value.trim();
-        const eventType = document.getElementById('filterEventType').value;
-        const status = document.getElementById('filterStatus').value;
-        const startDate = document.getElementById('filterStartDate').value;
-        const endDate = document.getElementById('filterEndDate').value;
-        const perPage = document.getElementById('filterPerPage').value;
+    function clearAuditFilters() {
+        document.getElementById('audit-search').value = '';
+        document.getElementById('event-type-filter').value = '';
+        document.getElementById('status-filter').value = '';
+        document.getElementById('date-from').value = '';
+        document.getElementById('date-to').value = '';
+        auditState.page = 1;
+        loadAuditLogs();
+    }
+
+    async function loadAuditLogs(isManualRefresh = false) {
+        const refreshIcon = document.getElementById('audit-refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+        const tbody = document.getElementById('audit-table-body');
+        const summary = document.getElementById('audit-summary-text');
+
+        const search = document.getElementById('audit-search').value.trim();
+        const eventType = document.getElementById('event-type-filter').value;
+        const status = document.getElementById('status-filter').value;
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
 
         const params = new URLSearchParams({
-            page: page,
-            per_page: perPage
+            page: auditState.page,
+            per_page: auditState.per_page
         });
         if (search) params.append('search', search);
-        if (eventType !== 'all') params.append('event_type', eventType);
-        if (status !== 'all') params.append('status', status);
-        if (startDate) params.append('start_date', startDate);
-        if (endDate) params.append('end_date', endDate);
-
-        const tbody = document.getElementById('logsTableBody');
-        if (window.UIState && tbody) {
-            UIState.showLoading(tbody, 'table', { cols: 9, rows: 6 });
-        } else if (tbody) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
-                        <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading audit records...
-                    </td>
-                </tr>
-            `;
-        }
+        if (eventType) params.append('event_type', eventType);
+        if (status) params.append('status', status);
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
 
         try {
-            const data = await (window.UIState ? UIState.apiCall(`/api/admin/audit-logs?${params.toString()}`) : fetch(`/api/admin/audit-logs?${params.toString()}`).then(r => r.json()));
-            currentLogsData = data.logs || [];
+            const res = await fetch(`/api/admin/audit-logs?${params.toString()}`);
+            if (!res.ok) throw new Error('Failed to retrieve audit trail');
+            const data = await res.json();
+
+            const logs = data.logs || [];
+            auditState.logs = logs;
+            auditState.totalPages = data.pages || 1;
+
+            if (summary) summary.textContent = `${Sentinel.formatNumber(data.total || 0)} total audit records`;
 
             // Update stats
-            if (data.stats) {
-                const metTot = document.getElementById('metricTotal');
-                const metFail = document.getElementById('metricFailedLogins');
-                const metFraud = document.getElementById('metricFraudDetections');
-                const metAuth = document.getElementById('metricAuthFailures');
+            document.getElementById('stat-audit-total').textContent = Sentinel.formatNumber(data.total || 0);
+            document.getElementById('stat-audit-auth').textContent = Sentinel.formatNumber(logs.filter(l => l.event_type && l.event_type.includes('login')).length);
+            document.getElementById('stat-audit-fraud').textContent = Sentinel.formatNumber(logs.filter(l => l.event_type === 'fraud_detection').length);
+            document.getElementById('stat-audit-blocks').textContent = Sentinel.formatNumber(logs.filter(l => l.event_type === 'account_block').length);
 
-                if (metTot) metTot.textContent = data.stats.total || data.total || 0;
-                if (metFail) metFail.textContent = data.stats.failed_logins || 0;
-                if (metFraud) metFraud.textContent = data.stats.fraud_detections || 0;
-                if (metAuth) metAuth.textContent = data.stats.auth_failures || 0;
-            }
-
-            renderTable(data.logs || [], { search, eventType, status, startDate, endDate });
-            renderPagination(data.page, data.pages, data.total, data.per_page);
-
-            const summary = document.getElementById('tableSummary');
-            if (summary) {
-                summary.textContent = `Showing ${(data.logs || []).length} of ${data.total || 0} audit events (Page ${data.page || 1} of ${data.pages || 1})`;
-            }
-
-        } catch (err) {
-            console.error('Audit logs error:', err);
-            if (tbody && window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderErrorState({ title: 'Unable to Load Audit Logs', message: err.message || 'Failed to retrieve administrative audit records.', onRetry: 'loadAuditLogs(1)' })}</td></tr>`;
-            }
-        }
-    }
-
-    function renderTable(logs, filterParams = {}) {
-        const tbody = document.getElementById('logsTableBody');
-        if (logs.length === 0) {
-            const hasFilters = filterParams.search || (filterParams.eventType && filterParams.eventType !== 'all') || (filterParams.status && filterParams.status !== 'all') || filterParams.startDate || filterParams.endDate;
-            if (hasFilters && window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderNoResults({ query: filterParams.search, onClear: 'resetAuditFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
-            } else if (window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderEmptyState({ icon: 'fa-shield-halved', title: 'No Audit Records', message: 'No administrative or security events recorded yet.' })}</td></tr>`;
-            } else {
+            if (logs.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
-                            No audit log entries match your search criteria.
+                        <td colspan="7" style="padding:0;">
+                            <div class="ui-state-empty">
+                                <div class="empty-icon-wrap"><i data-lucide="shield-check" style="width:24px;height:24px;"></i></div>
+                                <div class="empty-title">No audit log records found</div>
+                                <div class="empty-desc">No events matched your search or date criteria.</div>
+                            </div>
                         </td>
                     </tr>
                 `;
+                document.getElementById('audit-pagination').style.display = 'none';
+                Sentinel.initIcons();
+                return;
             }
+
+            tbody.innerHTML = logs.map((l, index) => {
+                const isSuccess = (l.status || '').toLowerCase() === 'success';
+                let eventBadgeClass = 'approved';
+                if (l.event_type === 'fraud_detection' || l.event_type === 'failed_login' || l.event_type === 'api_auth_failure') {
+                    eventBadgeClass = 'blocked';
+                } else if (l.event_type === 'account_block' || l.event_type === 'admin_user_change') {
+                    eventBadgeClass = 'flagged';
+                } else if (l.event_type === 'report_generation') {
+                    eventBadgeClass = 'reviewed';
+                }
+
+                return `
+                    <tr class="clickable-row" onclick="inspectPayload(${index})">
+                        <td style="color:var(--text-secondary);font-size:12px;">${Sentinel.formatDate(l.timestamp)}</td>
+                        <td>
+                            <span class="status-pill ${eventBadgeClass}" style="font-size:10px;text-transform:uppercase;">
+                                ${l.event_type.replace(/_/g, ' ')}
+                            </span>
+                        </td>
+                        <td><strong style="color:var(--text-primary);">${l.username || (l.user_id ? 'User #' + l.user_id : 'System')}</strong></td>
+                        <td class="mono-cell" style="font-size:11px;color:var(--text-secondary);">${l.target_resource || '—'}</td>
+                        <td class="mono-cell" style="font-size:11px;color:var(--text-muted);">${l.ip_address || '—'}</td>
+                        <td>
+                            <span class="status-pill ${isSuccess ? 'approved' : 'blocked'}">
+                                ${isSuccess ? 'SUCCESS' : 'FAILURE'}
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <button class="btn btn-outline btn-xs" onclick="event.stopPropagation(); inspectPayload(${index})" title="Inspect JSON payload">
+                                <i data-lucide="code" style="width:11px;height:11px;"></i> Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderPagination(data.page, data.pages, data.total, data.per_page);
+            Sentinel.initIcons();
+
+            if (isManualRefresh) {
+                Sentinel.showToast('Audit trail refreshed', 'success');
+            }
+        } catch (err) {
+            console.error('Audit logs error:', err);
+            tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--danger);">Error loading audit records.</td></tr>`;
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+        }
+    }
+
+    function renderPagination(page, pages, total, per_p) {
+        const wrapper = document.getElementById('audit-pagination');
+        const info = document.getElementById('audit-page-info');
+        const buttons = document.getElementById('audit-page-buttons');
+
+        if (!wrapper || pages <= 1) {
+            if (wrapper) wrapper.style.display = 'none';
             return;
         }
 
-        tbody.innerHTML = logs.map(log => {
-            const eventType = log.event_type || log.action || 'unknown';
-            const statusClass = log.status === 'success' ? 'success' : 'failure';
-            const formatTime = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
-            const userStr = log.user_id ? `<span style="font-weight:600;color:var(--primary-light);">User #${log.user_id}</span>` : '<span style="color:var(--text-muted);">Anonymous</span>';
-            const userAgentShort = log.user_agent ? (log.user_agent.length > 25 ? log.user_agent.substring(0, 25) + '...' : log.user_agent) : 'N/A';
+        wrapper.style.display = 'flex';
+        const start = ((page - 1) * per_p) + 1;
+        const end = Math.min(page * per_p, total);
+        info.textContent = `Showing ${start}–${end} of ${Sentinel.formatNumber(total)} events`;
 
-            return `
-                <tr>
-                    <td style="font-family:monospace;font-weight:600;color:var(--text-secondary);">${log.event_id || ('AUD-' + String(log.id).padStart(6, '0'))}</td>
-                    <td><span class="event-badge ${eventType}">${eventType.replace(/_/g, ' ')}</span></td>
-                    <td>${userStr}</td>
-                    <td style="font-family:monospace;font-size:12px;" title="${log.target_resource || ''}">${log.target_resource || '-'}</td>
-                    <td style="font-family:monospace;font-size:12px;">${log.ip_address || '-'}</td>
-                    <td style="font-size:12px;color:var(--text-muted);" title="${log.user_agent || ''}">${userAgentShort}</td>
-                    <td><span class="status-pill ${statusClass}">${log.status}</span></td>
-                    <td style="font-size:12px;color:var(--text-muted);">${formatTime}</td>
-                    <td>
-                        <button class="btn btn-outline btn-xs" onclick="inspectMetadata(${log.id})">
-                            <i class="fas fa-eye"></i> Metadata
-                        </button>
-                    </td>
-                </tr>
+        let btnsHtml = `
+            <button class="page-btn" ${page === 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})">
+                <i data-lucide="chevron-left" style="width:12px;height:12px;"></i>
+            </button>
+        `;
+
+        for (let p = Math.max(1, page - 2); p <= Math.min(pages, page + 2); p++) {
+            btnsHtml += `
+                <button class="page-btn ${p === page ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>
             `;
-        }).join('');
-    }
-
-    function renderPagination(page, pages, total, perPage) {
-        const container = document.getElementById('paginationControls');
-        if (pages <= 1) {
-            container.innerHTML = '';
-            return;
         }
 
-        let html = '';
-        html += `<button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="loadAuditLogs(${page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+        btnsHtml += `
+            <button class="page-btn" ${page === pages ? 'disabled' : ''} onclick="goToPage(${page + 1})">
+                <i data-lucide="chevron-right" style="width:12px;height:12px;"></i>
+            </button>
+        `;
 
-        for (let i = 1; i <= pages; i++) {
-            if (i === 1 || i === pages || (i >= page - 2 && i <= page + 2)) {
-                html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadAuditLogs(${i})">${i}</button>`;
-            } else if (i === page - 3 || i === page + 3) {
-                html += `<span style="color:var(--text-muted);padding:0 4px;">...</span>`;
-            }
-        }
-
-        html += `<button class="page-btn" ${page >= pages ? 'disabled' : ''} onclick="loadAuditLogs(${page + 1})"><i class="fas fa-chevron-right"></i></button>`;
-        container.innerHTML = html;
+        buttons.innerHTML = btnsHtml;
+        Sentinel.initIcons();
     }
 
-    function applyFilters() {
-        loadAuditLogs(1);
+    function goToPage(p) {
+        if (p < 1 || p > auditState.totalPages) return;
+        auditState.page = p;
+        loadAuditLogs();
     }
 
-    function resetFilters() {
-        document.getElementById('filterSearch').value = '';
-        document.getElementById('filterEventType').value = 'all';
-        document.getElementById('filterStatus').value = 'all';
-        document.getElementById('filterStartDate').value = '';
-        document.getElementById('filterEndDate').value = '';
-        document.getElementById('filterPerPage').value = '25';
-        loadAuditLogs(1);
-    }
-
-    function inspectMetadata(logId) {
-        const log = currentLogsData.find(l => l.id === logId);
+    function inspectPayload(index) {
+        const log = auditState.logs[index];
         if (!log) return;
 
-        document.getElementById('modalTitle').textContent = `Event Metadata: ${log.event_type}`;
-        document.getElementById('modalSubTitle').textContent = `Event ID: ${log.event_id} | Resource: ${log.target_resource}`;
-        
-        const detailsJSON = JSON.stringify(log.details || {}, null, 2);
-        document.getElementById('modalJSONContent').textContent = detailsJSON;
+        const drawerHtml = `
+            <div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-subtle);">
+                <div style="font-size:11px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Event Identifier</div>
+                <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--text-primary);">Audit Event #${log.id}</div>
+            </div>
 
-        document.getElementById('metadataModal').classList.add('active');
+            <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:20px;">
+                <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:6px 0;color:var(--text-secondary);">Event Type</td><td style="padding:6px 0;font-weight:600;text-align:right;">${log.event_type}</td></tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:6px 0;color:var(--text-secondary);">Status</td><td style="padding:6px 0;text-align:right;"><span class="status-pill ${(log.status || 'success').toLowerCase()}">${log.status}</span></td></tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:6px 0;color:var(--text-secondary);">Actor / User</td><td style="padding:6px 0;text-align:right;">${log.username || (log.user_id ? 'ID: ' + log.user_id : 'System')}</td></tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:6px 0;color:var(--text-secondary);">Target Resource</td><td style="padding:6px 0;font-family:var(--font-mono);text-align:right;">${log.target_resource || '—'}</td></tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:6px 0;color:var(--text-secondary);">IP Address</td><td style="padding:6px 0;font-family:var(--font-mono);text-align:right;">${log.ip_address || '—'}</td></tr>
+                <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:6px 0;color:var(--text-secondary);">Timestamp</td><td style="padding:6px 0;text-align:right;">${Sentinel.formatDate(log.timestamp)}</td></tr>
+            </table>
+
+            <h4 style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">Details Payload (JSON)</h4>
+            <pre style="background:var(--bg-surface-secondary);border:1px solid var(--border-color);border-radius:8px;padding:14px;font-family:var(--font-mono);font-size:12px;overflow-x:auto;color:var(--text-primary);line-height:1.4;">${JSON.stringify(log.details || {}, null, 2)}</pre>
+        `;
+
+        const footerHtml = `
+            <button class="btn btn-secondary btn-sm" onclick="Sentinel.closeDrawer()">
+                Done
+            </button>
+        `;
+
+        Sentinel.openDrawer(`Audit Forensics: #${log.id}`, drawerHtml, footerHtml);
     }
 
-    function closeMetadataModal() {
-        document.getElementById('metadataModal').classList.remove('active');
-    }
-
-    function copyMetadataJSON() {
-        const code = document.getElementById('modalJSONContent').textContent;
-        navigator.clipboard.writeText(code).then(() => {
-            showToast('Safe metadata copied to clipboard!', 'success');
-        });
-    }
-
-    function exportAuditLogs(format) {
-        const search = document.getElementById('filterSearch').value.trim();
-        const eventType = document.getElementById('filterEventType').value;
-        const status = document.getElementById('filterStatus').value;
-        const startDate = document.getElementById('filterStartDate').value;
-        const endDate = document.getElementById('filterEndDate').value;
-
-        const params = new URLSearchParams({ format: format });
+    function exportAuditLogs() {
+        const search = document.getElementById('audit-search').value.trim();
+        const eventType = document.getElementById('event-type-filter').value;
+        const status = document.getElementById('status-filter').value;
+        const params = new URLSearchParams({ format: 'csv' });
         if (search) params.append('search', search);
-        if (eventType !== 'all') params.append('event_type', eventType);
-        if (status !== 'all') params.append('status', status);
-        if (startDate) params.append('start_date', startDate);
-        if (endDate) params.append('end_date', endDate);
+        if (eventType) params.append('event_type', eventType);
+        if (status) params.append('status', status);
 
-        window.open(`/api/admin/audit-logs/export?${params.toString()}`, '_blank');
+        window.location.href = `/api/admin/audit-logs/export?${params.toString()}`;
+        Sentinel.showToast('Generating audit log export...', 'info');
     }
 </script>
 {% endblock %}

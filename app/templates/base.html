@@ -3,909 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}FraudShield{% endblock %} | Credit Card Fraud Detection</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>{% block title %}Sentinel{% endblock %} &mdash; Financial Security Platform</title>
+    
+    <!-- Typography: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Core Design System & UI States -->
+    <link rel="stylesheet" href="/static/css/sentinel.css">
+    <link rel="stylesheet" href="/static/css/ui-states.css">
+    
+    <!-- Chart.js & Lucide CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --danger: #ef4444;
-            --danger-light: #fca5a5;
-            --success: #10b981;
-            --success-light: #6ee7b7;
-            --warning: #f59e0b;
-            --warning-light: #fcd34d;
-            --info: #3b82f6;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-hover: #334155;
-            --bg-input: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border: #334155;
-            --sidebar-width: 260px;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: linear-gradient(180deg, #1a1f3c 0%, #0f172a 100%);
-            border-right: 1px solid var(--border);
-            padding: 24px 16px;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
-            margin-bottom: 32px;
-        }
-
-        .sidebar-brand .logo {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-        }
-
-        .sidebar-brand h1 {
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sidebar-brand span {
-            font-size: 11px;
-            color: var(--text-muted);
-            display: block;
-        }
-
-        .nav-section {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: var(--text-muted);
-            padding: 8px 12px;
-            margin-top: 8px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 9px 14px;
-            border-radius: 10px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-            margin-bottom: 2px;
-        }
-
-        .nav-link:hover {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--text-primary);
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15));
-            color: var(--primary-light);
-            box-shadow: inset 3px 0 0 var(--primary);
-        }
-
-        .nav-link i {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-size: 12px;
-            background: rgba(99, 102, 241, 0.12);
-            color: #818cf8;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover i {
-            background: rgba(99, 102, 241, 0.22);
-            color: #a5b4fc;
-        }
-
-        .nav-link.active i {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
-        }
-
-        .nav-link .badge {
-            margin-left: auto;
-            background: var(--danger);
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 10px;
-            min-width: 24px;
-            text-align: center;
-        }
-
-        .sidebar-footer {
-            margin-top: auto;
-            padding: 16px;
-            border-top: 1px solid var(--border);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-avatar {
-            width: 36px; height: 36px;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        .user-details { flex: 1; }
-        .user-details .name { font-size: 13px; font-weight: 600; }
-        .user-details .role { font-size: 11px; color: var(--text-muted); }
-
-        .logout-btn {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 18px;
-            transition: color 0.2s;
-        }
-        .logout-btn:hover { color: var(--danger); }
-
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
-        }
-
-        .topbar {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .topbar h2 {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .topbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .topbar-actions .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--success);
-        }
-
-        .status-dot {
-            width: 8px; height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        .content-area {
-            padding: 32px;
-        }
-
-        /* Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            border-radius: var(--radius) var(--radius) 0 0;
-        }
-
-        .stat-card.purple::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
-        .stat-card.red::before { background: linear-gradient(90deg, #ef4444, #f97316); }
-        .stat-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
-        .stat-card.blue::before { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-        .stat-card.yellow::before { background: linear-gradient(90deg, #f59e0b, #eab308); }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-            border-color: var(--primary);
-        }
-
-        .stat-card .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .stat-card .stat-icon {
-            width: 44px; height: 44px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-        }
-
-        .stat-card.purple .stat-icon { background: rgba(99,102,241,0.15); color: var(--primary-light); }
-        .stat-card.red .stat-icon { background: rgba(239,68,68,0.15); color: var(--danger); }
-        .stat-card.green .stat-icon { background: rgba(16,185,129,0.15); color: var(--success); }
-        .stat-card.blue .stat-icon { background: rgba(59,130,246,0.15); color: var(--info); }
-        .stat-card.yellow .stat-icon { background: rgba(245,158,11,0.15); color: var(--warning); }
-
-        .stat-card .stat-label {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .stat-card .stat-value {
-            font-size: 28px;
-            font-weight: 800;
-            margin-top: 4px;
-            line-height: 1.2;
-        }
-
-        .stat-card .stat-change {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 8px;
-            padding: 2px 8px;
-            border-radius: 6px;
-        }
-
-        .stat-change.up { background: rgba(16,185,129,0.15); color: var(--success); }
-        .stat-change.down { background: rgba(239,68,68,0.15); color: var(--danger); }
-
-        /* Panels */
-        .panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 24px;
-            overflow: hidden;
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .panel-header h3 {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .panel-body { padding: 24px; }
-        .panel-body.no-padding { padding: 0; }
-
-        /* Tables */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table th {
-            text-align: left;
-            padding: 12px 16px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            background: rgba(15, 23, 42, 0.5);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .data-table td {
-            padding: 14px 16px;
-            font-size: 13px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-            vertical-align: middle;
-        }
-
-        .data-table tr:hover td {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .data-table .mono {
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 12px;
-        }
-
-        /* Badges */
-        .badge-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-status.approved { background: rgba(16,185,129,0.15); color: var(--success); }
-        .badge-status.declined { background: rgba(239,68,68,0.15); color: var(--danger); }
-        .badge-status.pending { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .badge-status.blocked { background: rgba(239,68,68,0.25); color: #fca5a5; }
-
-        .badge-risk {
-            display: inline-flex;
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge-risk.low { background: rgba(16,185,129,0.15); color: var(--success); }
-        .badge-risk.medium { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .badge-risk.high { background: rgba(239,68,68,0.15); color: var(--danger); }
-        .badge-risk.critical { background: rgba(239,68,68,0.3); color: #fca5a5; }
-
-        /* Score Meter */
-        .score-meter {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .score-bar {
-            flex: 1;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            max-width: 80px;
-        }
-
-        .score-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.5s;
-        }
-
-        .score-fill.low { background: var(--success); }
-        .score-fill.medium { background: var(--warning); }
-        .score-fill.high { background: var(--danger); }
-        .score-fill.critical { background: linear-gradient(90deg, #ef4444, #dc2626); }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-        }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger), #dc2626);
-            color: white;
-        }
-        .btn-danger:hover { transform: translateY(-1px); }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning), #d97706);
-            color: white;
-        }
-        .btn-warning:hover { transform: translateY(-1px); }
-
-        .btn-info {
-            background: linear-gradient(135deg, var(--info), #2563eb);
-            color: white;
-        }
-        .btn-info:hover { transform: translateY(-1px); }
-
-        .btn-secondary {
-            background: var(--bg-card-hover);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-        }
-        .btn-secondary:hover { background: var(--border); }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-        }
-        .btn-outline:hover { border-color: var(--primary); color: var(--primary-light); }
-
-        .btn-sm { padding: 6px 14px; font-size: 12px; }
-        .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 14px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-
-        .form-control::placeholder { color: var(--text-muted); }
-
-        select.form-control {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 36px;
-        }
-
-        /* Search */
-        .search-box {
-            position: relative;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .search-box input {
-            padding-left: 40px;
-        }
-
-        /* Grid Layouts */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
-
-        /* Alert Cards */
-        .alert-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 16px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-            transition: background 0.2s;
-        }
-
-        .alert-item:hover { background: rgba(99, 102, 241, 0.05); }
-
-        .alert-item:last-child { border-bottom: none; }
-
-        .alert-icon {
-            width: 40px; height: 40px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .alert-icon.critical { background: rgba(239,68,68,0.2); color: var(--danger); }
-        .alert-icon.high { background: rgba(245,158,11,0.2); color: var(--warning); }
-        .alert-icon.medium { background: rgba(59,130,246,0.2); color: var(--info); }
-
-        .alert-content { flex: 1; }
-        .alert-content .alert-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-        .alert-content .alert-message { font-size: 12px; color: var(--text-muted); }
-        .alert-content .alert-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 20px;
-        }
-
-        .pagination button {
-            padding: 8px 14px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .pagination button:hover { border-color: var(--primary); color: var(--primary-light); }
-        .pagination button.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.active { display: flex; }
-
-        .modal {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            width: 90%;
-            max-width: 560px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-        }
-
-        .modal h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 24px;
-        }
-
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 300;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .toast {
-            padding: 14px 20px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            animation: slideIn 0.3s ease;
-            min-width: 300px;
-        }
-
-        .toast.success { background: #065f46; color: #6ee7b7; border: 1px solid #10b981; }
-        .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
-        .toast.warning { background: #78350f; color: #fcd34d; border: 1px solid #f59e0b; }
-        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Responsive */
-        .mobile-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .mobile-toggle { display: block; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-            .content-area { padding: 16px; }
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 40px auto;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            color: var(--text-muted);
-        }
-        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-        .empty-state p { font-size: 14px; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-        /* Chart container */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        /* Custom content styles */
-        {% block extra_styles %}{% endblock %}
-    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Sentinel Global Controller & UI States -->
+    <script src="/static/js/sentinel.js"></script>
+    <script src="/static/js/ui-states.js"></script>
+    
+    {% block extra_styles %}{% endblock %}
 </head>
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <div class="logo"><i class="fas fa-shield-halved"></i></div>
-            <div>
-                <h1>FraudShield</h1>
-                <span>Fraud Detection System</span>
-            </div>
-        </div>
-
-        <div class="nav-section">Main Menu</div>
-        <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
-            <i class="fas fa-chart-pie"></i> Dashboard
-        </a>
-        <a href="/transactions" class="nav-link {% if request.path == '/transactions' %}active{% endif %}">
-            <i class="fas fa-exchange-alt"></i> Transactions
-        </a>
-        <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">
-            <i class="fas fa-chart-bar"></i> Analytics
-        </a>
-        <a href="/alerts" class="nav-link {% if request.path == '/alerts' %}active{% endif %}">
-            <i class="fas fa-bell"></i> Alerts
-            <span class="badge" id="alert-badge" style="display:none;"></span>
-        </a>
-
-        <div class="nav-section">Account</div>
-        <a href="/cards" class="nav-link {% if request.path == '/cards' %}active{% endif %}">
-            <i class="fas fa-credit-card"></i> My Cards
-        </a>
-
-        <div class="nav-section">System</div>
-        <a href="/settings" class="nav-link {% if request.path == '/settings' %}active{% endif %}">
-            <i class="fas fa-cog"></i> Settings
-        </a>
-        {% if current_user.is_authenticated and current_user.role == 'admin' %}
-        <a href="/admin/users" class="nav-link {% if request.path == '/admin/users' %}active{% endif %}">
-            <i class="fas fa-users-cog"></i> User Management
-        </a>
-        <a href="/admin/audit-logs" class="nav-link {% if request.path == '/admin/audit-logs' %}active{% endif %}">
-            <i class="fas fa-shield-halved"></i> Audit Logs
-        </a>
-        {% endif %}
-
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">{{ (current_user.username[0] if current_user.is_authenticated and current_user.username else 'A')|upper }}</div>
-                <div class="user-details">
-                    <div class="name">{{ current_user.username if current_user.is_authenticated else 'Guest' }}</div>
-                    <div class="role">{{ (current_user.role if current_user.is_authenticated and current_user.role else 'user')|title }}</div>
+    <div class="app-container">
+        <!-- Compact Left Sidebar -->
+        <aside class="sentinel-sidebar" id="sentinel-sidebar" aria-label="Main Navigation">
+            <div class="sidebar-header">
+                <div class="brand-mark" title="Sentinel Financial Surveillance">S</div>
+                <div class="brand-info">
+                    <div class="brand-title">Sentinel</div>
+                    <div class="brand-badge">Security Console</div>
                 </div>
-                <a href="/logout" class="logout-btn" title="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Overview -->
+                <div class="nav-section-title">Overview</div>
+                <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
                 </a>
-            </div>
-        </div>
-    </aside>
 
-    <!-- Main -->
-    <div class="main-content">
-        <div class="topbar">
-            <div style="display:flex;align-items:center;gap:16px;">
-                <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h2>{% block page_title %}Dashboard{% endblock %}</h2>
-            </div>
-            <div class="topbar-actions">
-                <div class="status-indicator">
-                    <span class="status-dot"></span>
-                    System Online
+                <!-- Monitor -->
+                <div class="nav-section-title">Monitor</div>
+                <a href="/transactions" class="nav-item {% if request.path == '/transactions' %}active{% endif %}">
+                    <i data-lucide="arrow-left-right"></i>
+                    <span>Transactions</span>
+                </a>
+                <a href="/alerts" class="nav-item {% if request.path == '/alerts' %}active{% endif %}">
+                    <i data-lucide="shield-alert"></i>
+                    <span>Fraud Alerts</span>
+                    <span class="nav-badge" id="alert-badge" style="display:none;">0</span>
+                </a>
+                <a href="/analytics" class="nav-item {% if request.path == '/analytics' %}active{% endif %}">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytics</span>
+                </a>
+
+                <!-- Manage -->
+                <div class="nav-section-title">Manage</div>
+                <a href="/cards" class="nav-item {% if request.path == '/cards' %}active{% endif %}">
+                    <i data-lucide="credit-card"></i>
+                    <span>Cards</span>
+                </a>
+                {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                <a href="/admin/users" class="nav-item {% if request.path == '/admin/users' %}active{% endif %}">
+                    <i data-lucide="users"></i>
+                    <span>Users</span>
+                </a>
+                {% endif %}
+                <a href="/reports" class="nav-item {% if request.path == '/reports' %}active{% endif %}">
+                    <i data-lucide="file-text"></i>
+                    <span>Reports</span>
+                </a>
+
+                <!-- Security -->
+                {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                <div class="nav-section-title">Security</div>
+                <a href="/admin/audit-logs" class="nav-item {% if request.path == '/admin/audit-logs' %}active{% endif %}">
+                    <i data-lucide="shield-check"></i>
+                    <span>Audit Logs</span>
+                </a>
+                {% endif %}
+
+                <!-- System -->
+                <div class="nav-section-title">System</div>
+                <a href="/settings" class="nav-item {% if request.path == '/settings' %}active{% endif %}">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-pill">
+                    <div class="user-avatar">{{ (current_user.username[0] if current_user.is_authenticated and current_user.username else 'S')|upper }}</div>
+                    <div class="user-meta">
+                        <div class="user-name">{{ current_user.full_name or current_user.username if current_user.is_authenticated else 'Guest User' }}</div>
+                        <div class="user-role">{{ (current_user.role if current_user.is_authenticated and current_user.role else 'Viewer')|title }}</div>
+                    </div>
+                    <a href="/logout" class="btn-signout" title="Sign out of Sentinel" aria-label="Sign out">
+                        <i data-lucide="log-out" style="width:14px;height:14px;"></i>
+                    </a>
                 </div>
-                <span style="color:var(--text-muted);font-size:13px;" id="current-time"></span>
             </div>
-        </div>
+        </aside>
 
-        <div class="content-area">
-            {% block content %}{% endblock %}
+        <!-- Main Content Area -->
+        <div class="sentinel-main">
+            <!-- Offline Alert Banner -->
+            <div class="sentinel-offline-banner" id="sentinel-offline-banner" role="alert">
+                <i data-lucide="wifi-off" style="width:14px;height:14px;"></i>
+                <span>You are currently offline. Live surveillance and actions will synchronize once reconnected.</span>
+            </div>
+
+            <!-- Top Navigation Bar -->
+            <header class="sentinel-topbar">
+                <div class="topbar-left">
+                    <button class="mobile-menu-toggle" onclick="Sentinel.toggleSidebar()" aria-label="Toggle Navigation">
+                        <i data-lucide="menu" style="width:16px;height:16px;"></i>
+                    </button>
+                    <div class="topbar-breadcrumb">
+                        <span class="breadcrumb-root">Sentinel</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">{% block page_title %}Dashboard{% endblock %}</span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Status Indicator -->
+                    <div class="system-status-indicator" title="All detection systems active and operational">
+                        <span class="status-dot-pulse"></span>
+                        <span>Operational</span>
+                    </div>
+
+                    <!-- Global Quick Search Trigger -->
+                    <div class="quick-search-trigger" onclick="focusSearchInput()" title="Press / or click to search">
+                        <i data-lucide="search" style="width:13px;height:13px;"></i>
+                        <span>Search data...</span>
+                        <span class="kbd-shortcut">/</span>
+                    </div>
+
+                    <!-- Theme Toggle Button -->
+                    <button class="topbar-btn theme-toggle-btn" onclick="Sentinel.toggleTheme()" title="Switch Theme" aria-label="Toggle Dark/Light Theme">
+                        <i data-lucide="moon" style="width:15px;height:15px;"></i>
+                    </button>
+
+                    <!-- Notifications Dropdown Trigger -->
+                    <div style="position:relative;">
+                        <button class="topbar-btn" id="notif-toggle-btn" onclick="toggleNotifDropdown()" title="Notifications" aria-label="Notifications">
+                            <i data-lucide="bell" style="width:15px;height:15px;"></i>
+                            <span class="notification-badge-dot" id="notif-dot" style="display:none;"></span>
+                        </button>
+                        <!-- Notifications Dropdown Menu -->
+                        <div id="notif-dropdown" style="display:none;position:absolute;top:40px;right:0;width:320px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:210;padding:12px 0;">
+                            <div style="padding:4px 16px 10px 16px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;">
+                                <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Security Notifications</span>
+                                <a href="/alerts" style="font-size:11px;color:var(--accent);font-weight:500;">View alerts</a>
+                            </div>
+                            <div id="notif-dropdown-list" style="max-height:260px;overflow-y:auto;padding:8px 0;">
+                                <div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px;">No new alerts</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Profile Dropdown -->
+                    <div style="position:relative;">
+                        <button class="topbar-btn" id="user-menu-btn" onclick="toggleUserDropdown()" title="Account Settings" aria-label="Account Settings">
+                            <i data-lucide="user" style="width:15px;height:15px;"></i>
+                        </button>
+                        <div id="user-dropdown" style="display:none;position:absolute;top:40px;right:0;width:210px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:210;padding:6px 0;">
+                            <div style="padding:8px 14px;border-bottom:1px solid var(--border-subtle);">
+                                <div style="font-size:12px;font-weight:600;color:var(--text-primary);">{{ current_user.username if current_user.is_authenticated else 'Guest' }}</div>
+                                <div style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;">{{ current_user.email if current_user.is_authenticated else '' }}</div>
+                            </div>
+                            <a href="/cards" style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;color:var(--text-secondary);text-decoration:none;">
+                                <i data-lucide="credit-card" style="width:14px;height:14px;"></i> My Cards
+                            </a>
+                            <a href="/profile" style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;color:var(--text-secondary);text-decoration:none;">
+                                <i data-lucide="user-check" style="width:14px;height:14px;"></i> Account Profile
+                            </a>
+                            <a href="/settings" style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;color:var(--text-secondary);text-decoration:none;">
+                                <i data-lucide="settings" style="width:14px;height:14px;"></i> System Settings
+                            </a>
+                            <div style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
+                            <a href="/logout" style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;color:var(--danger);text-decoration:none;">
+                                <i data-lucide="log-out" style="width:14px;height:14px;"></i> Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content Viewport -->
+            <main class="sentinel-content" role="main">
+                {% block content %}{% endblock %}
+            </main>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toast-container"></div>
+    <!-- Toast Notification Host -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <!-- Detail Drawer Backdrop and Host -->
+    <div class="drawer-backdrop" id="sentinel-drawer-backdrop" role="dialog" aria-modal="true">
+        <div class="sentinel-drawer" id="sentinel-drawer-panel">
+            <div class="drawer-header">
+                <div class="drawer-title" id="sentinel-drawer-title">Details</div>
+                <button class="drawer-close" onclick="Sentinel.closeDrawer()" aria-label="Close Drawer">
+                    <i data-lucide="x" style="width:16px;height:16px;"></i>
+                </button>
+            </div>
+            <div class="drawer-body" id="sentinel-drawer-body"></div>
+            <div class="drawer-footer" id="sentinel-drawer-footer"></div>
+        </div>
+    </div>
 
     <script>
-        // Time display
-        function updateTime() {
-            const el = document.getElementById('current-time');
-            if (el) el.textContent = new Date().toLocaleString();
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        // Toast notification
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i>${message}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
-        }
-
-        // API helper
-        async function apiCall(url, options = {}) {
-            try {
-                const res = await fetch(url, {
-                    headers: { 'Content-Type': 'application/json', ...options.headers },
-                    ...options
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Request failed');
-                return data;
-            } catch (err) {
-                showToast(err.message, 'error');
-                throw err;
-            }
-        }
-
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-        }
-
-        // Format number
-        function formatNumber(num) {
-            return new Intl.NumberFormat('en-US').format(num);
-        }
-
-        // Alert badge
-        async function updateAlertBadge() {
-            try {
-                const data = await fetch('/api/alerts').then(r => r.json());
-                const unread = data.alerts.filter(a => !a.is_read).length;
-                const badge = document.getElementById('alert-badge');
-                if (badge) {
-                    if (unread > 0) {
-                        badge.textContent = unread;
-                        badge.style.display = 'inline';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
-            } catch (e) {}
-        }
-        updateAlertBadge();
-        setInterval(updateAlertBadge, 30000);
+        document.addEventListener('DOMContentLoaded', () => {
+            Sentinel.initIcons();
+        });
     </script>
-
     {% block scripts %}{% endblock %}
 </body>
 </html>

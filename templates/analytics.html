@@ -1,212 +1,153 @@
 {% extends "base.html" %}
 
-{% block title %}Analytics{% endblock %}
-{% block page_title %}Fraud Analytics{% endblock %}
+{% block title %}Analytics &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Analytics{% endblock %}
 
 {% block content %}
-<!-- Top Charts Row -->
+<!-- Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Analytics</h1>
+        <p class="page-header-subtitle">Behavioral velocity, category vulnerability, and risk distributions</p>
+    </div>
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="loadAnalyticsData(true)">
+            <i data-lucide="refresh-cw" id="analytics-refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh Analytics</span>
+        </button>
+    </div>
+</div>
+
+<!-- Charts Row 1: Category Vulnerability & Risk Distribution -->
 <div class="grid-2" style="margin-bottom:24px;">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-chart-pie" style="color:var(--primary-light);margin-right:8px;"></i> Fraud by Category</h3>
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="pie-chart" style="width:16px;height:16px;color:var(--accent);"></i>
+                    <span>Category Vulnerability</span>
+                </div>
+                <div class="sentinel-card-subtitle">Transaction volume & risk segmented by merchant category</div>
+            </div>
         </div>
-        <div class="panel-body">
-            <div class="chart-container" style="height:320px;">
+        <div class="sentinel-card-body">
+            <div class="chart-card-body" style="height:300px;">
                 <canvas id="categoryChart"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-chart-bar" style="color:var(--success);margin-right:8px;"></i> Risk Score Distribution</h3>
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="bar-chart-2" style="width:16px;height:16px;color:var(--warning);"></i>
+                    <span>Risk Score Distribution</span>
+                </div>
+                <div class="sentinel-card-subtitle">Volume spread across 5 risk score tiers</div>
+            </div>
         </div>
-        <div class="panel-body">
-            <div class="chart-container" style="height:320px;">
+        <div class="sentinel-card-body">
+            <div class="chart-card-body" style="height:300px;">
                 <canvas id="riskChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Hourly + Monthly -->
+<!-- Charts Row 2: Hourly Pattern & Monthly Trend -->
 <div class="grid-2" style="margin-bottom:24px;">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-clock" style="color:var(--warning);margin-right:8px;"></i> Hourly Transaction Pattern</h3>
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="clock" style="width:16px;height:16px;color:var(--accent);"></i>
+                    <span>24-Hour Velocity Pattern</span>
+                </div>
+                <div class="sentinel-card-subtitle">Transaction volume distribution across 24-hour diurnal cycle</div>
+            </div>
         </div>
-        <div class="panel-body">
-            <div class="chart-container" style="height:280px;">
+        <div class="sentinel-card-body">
+            <div class="chart-card-body" style="height:280px;">
                 <canvas id="hourlyChart"></canvas>
             </div>
         </div>
     </div>
 
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-calendar-alt" style="color:var(--info);margin-right:8px;"></i> Monthly Fraud Trend</h3>
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="trending-up" style="width:16px;height:16px;color:var(--danger);"></i>
+                    <span>Monthly Fraud Trajectory</span>
+                </div>
+                <div class="sentinel-card-subtitle">Monthly aggregate fraud incident tracking</div>
+            </div>
         </div>
-        <div class="panel-body">
-            <div class="chart-container" style="height:280px;">
+        <div class="sentinel-card-body">
+            <div class="chart-card-body" style="height:280px;">
                 <canvas id="monthlyChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Location + Merchants -->
+<!-- Tables Row: High Risk Locations & Top Fraud Merchants -->
 <div class="grid-2">
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-map-marker-alt" style="color:var(--danger);margin-right:8px;"></i> Top Fraud Locations</h3>
-        </div>
-        <div class="panel-body no-padding">
-            <table class="data-table" id="location-table">
-                <thead>
-                    <tr>
-                        <th>Location</th>
-                        <th>Total Txn</th>
-                        <th>Fraud</th>
-                        <th>Rate</th>
-                    </tr>
-                </thead>
-                <tbody id="location-tbody">
-                    <tr><td colspan="4"><div class="spinner"></div></td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-store" style="color:var(--warning);margin-right:8px;"></i> Top Fraudulent Merchants</h3>
-        </div>
-        <div class="panel-body no-padding">
-            <table class="data-table" id="merchant-table">
-                <thead>
-                    <tr>
-                        <th>Merchant</th>
-                        <th>Fraud Count</th>
-                        <th>Total Fraud Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="merchant-tbody">
-                    <tr><td colspan="3"><div class="spinner"></div></td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Reports Center Panel -->
-<div class="panel" style="margin-top:24px;">
-    <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;">
-        <h3><i class="fas fa-file-export" style="color:var(--primary-light);margin-right:8px;"></i> System Reporting & Export Center</h3>
-        <span class="badge" style="background:var(--primary);color:white;">Reporting Module Active</span>
-    </div>
-    <div class="panel-body">
-        <div style="display:grid;grid-template-columns:380px 1fr;gap:24px;">
-            <!-- Report Generator Form -->
-            <div style="background:rgba(30, 41, 59, 0.4);padding:20px;border-radius:12px;border:1px solid var(--border);">
-                <h4 style="font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text-primary);">
-                    <i class="fas fa-cog" style="color:var(--info);margin-right:6px;"></i> Configure & Generate New Report
-                </h4>
-                
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">Report Type</label>
-                        <select class="form-control" id="rep-type">
-                            <option value="pdf_transaction_report">PDF Transaction Report</option>
-                            <option value="csv_transaction_report">CSV Transaction Report</option>
-                            <option value="fraud_analysis_report">Fraud Analysis Report</option>
-                            <option value="dashboard_summary_report">Dashboard Summary Report</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">File Format</label>
-                        <select class="form-control" id="rep-format">
-                            <option value="pdf">PDF Document (.pdf)</option>
-                            <option value="csv">CSV Spreadsheet (.csv)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">Start Date</label>
-                        <input class="form-control" type="date" id="rep-date-from">
-                    </div>
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">End Date</label>
-                        <input class="form-control" type="date" id="rep-date-to">
-                    </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">Fraud Status</label>
-                        <select class="form-control" id="rep-status">
-                            <option value="all">All Transactions</option>
-                            <option value="genuine">Genuine Only</option>
-                            <option value="fraud">Fraudulent Only</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">Risk Level</label>
-                        <select class="form-control" id="rep-risk">
-                            <option value="all">All Risk Levels</option>
-                            <option value="low">Low Risk (&le; 0.3)</option>
-                            <option value="medium">Medium Risk (0.3 - 0.7)</option>
-                            <option value="high">High Risk (0.7 - 0.9)</option>
-                            <option value="critical">Critical (&gt; 0.9)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">Min Amount ($)</label>
-                        <input class="form-control" type="number" id="rep-min-amount" placeholder="0">
-                    </div>
-                    <div>
-                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">Max Amount ($)</label>
-                        <input class="form-control" type="number" id="rep-max-amount" placeholder="10000">
-                    </div>
-                </div>
-
-                {% if current_user.is_authenticated and current_user.role == 'admin' %}
-                <div style="margin-bottom:16px;">
-                    <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">User Filter (Admin Only)</label>
-                    <input class="form-control" type="text" id="rep-user-id" placeholder="Filter by User ID or Username">
-                </div>
-                {% endif %}
-
-                <button class="btn btn-primary" onclick="generateNewReport()" style="width:100%;">
-                    <i class="fas fa-file-pdf" style="margin-right:6px;"></i> Generate Secured Report
-                </button>
-            </div>
-
-            <!-- Generated Reports History Table -->
+    <!-- High Risk Locations -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
             <div>
-                <h4 style="font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text-primary);">
-                    <i class="fas fa-history" style="color:var(--success);margin-right:6px;"></i> Generated Reports History
-                </h4>
-                <div style="overflow:auto;max-height:480px;border:1px solid var(--border);border-radius:12px;">
-                    <table class="data-table" style="min-width:550px;">
-                        <thead>
-                            <tr>
-                                <th>Report Title</th>
-                                <th>Format</th>
-                                <th>Size</th>
-                                <th>Created</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reports-list-tbody">
-                            <tr><td colspan="5"><div class="spinner"></div></td></tr>
-                        </tbody>
-                    </table>
+                <div class="sentinel-card-title">
+                    <i data-lucide="map-pin" style="width:16px;height:16px;color:var(--danger);"></i>
+                    <span>High Risk Geographies</span>
                 </div>
+                <div class="sentinel-card-subtitle">Locations with elevated anomaly density</div>
+            </div>
+        </div>
+        <div class="sentinel-card-body no-padding">
+            <div class="data-table-container">
+                <table class="data-table" id="location-table">
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Anomalous Events</th>
+                            <th style="text-align:right;">Risk Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="location-tbody">
+                        <tr><td colspan="3" style="padding:24px;text-align:center;"><div class="spinner"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Fraud Merchants -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="store" style="width:16px;height:16px;color:var(--warning);"></i>
+                    <span>Top Flagged Merchants</span>
+                </div>
+                <div class="sentinel-card-subtitle">Entities with highest flagged risk events</div>
+            </div>
+        </div>
+        <div class="sentinel-card-body no-padding">
+            <div class="data-table-container">
+                <table class="data-table" id="merchant-table">
+                    <thead>
+                        <tr>
+                            <th>Merchant Name</th>
+                            <th>Incident Count</th>
+                            <th style="text-align:right;">Total Flagged</th>
+                        </tr>
+                    </thead>
+                    <tbody id="merchant-tbody">
+                        <tr><td colspan="3" style="padding:24px;text-align:center;"><div class="spinner"></div></td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -215,369 +156,219 @@
 
 {% block scripts %}
 <script>
-    // Utility function for API calls
-    async function apiCall(url, options = {}) {
-        try {
-            const response = await fetch(url, {
-                method: options.method || 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                body: options.body || undefined,
-                credentials: 'include'
-            });
+    let analyticsCharts = {};
 
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return null;
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAnalyticsData();
+    });
 
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
-            }
-            return await response.text();
-        } catch (error) {
-            console.error('API Error:', error);
-            showToast(`Error: ${error.message}`, 'error');
-            throw error;
-        }
-    }
-
-    const chartColors = {
-        primary: 'rgba(99, 102, 241, 0.8)',
-        danger: 'rgba(239, 68, 68, 0.8)',
-        success: 'rgba(16, 185, 129, 0.8)',
-        warning: 'rgba(245, 158, 11, 0.8)',
-        info: 'rgba(59, 130, 246, 0.8)',
-        purple: 'rgba(139, 92, 246, 0.8)',
-        pink: 'rgba(236, 72, 153, 0.8)',
-        cyan: 'rgba(6, 182, 212, 0.8)',
-    };
-
-    const chartBg = {
-        primary: 'rgba(99, 102, 241, 0.15)',
-        danger: 'rgba(239, 68, 68, 0.15)',
-        success: 'rgba(16, 185, 129, 0.15)',
-        warning: 'rgba(245, 158, 11, 0.15)',
-        info: 'rgba(59, 130, 246, 0.15)',
-    };
-
-    const defaultOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: '#64748b', font: { size: 11 } },
-                grid: { display: false }
-            },
-            y: {
-                ticks: { color: '#64748b', font: { size: 11 }, stepSize: 1, precision: 0 },
-                grid: { color: 'rgba(51,65,85,0.3)' },
-                beginAtZero: true,
-                suggestedMax: 5
-            }
-        }
-    };
-
-    async function loadGeneratedReports() {
-        const tbody = document.getElementById('reports-list-tbody');
-        if (!tbody) return;
-        try {
-            const data = await apiCall('/api/reports');
-            if (data && data.reports && data.reports.length) {
-                tbody.innerHTML = data.reports.map(r => {
-                    const sizeKb = (r.file_size / 1024).toFixed(1);
-                    const created = r.created_at ? new Date(r.created_at).toLocaleString() : 'N/A';
-                    const isPdf = r.file_format === 'pdf';
-                    return `
-                        <tr>
-                            <td>
-                                <div style="font-weight:600;font-size:13px;">${r.title}</div>
-                                <div style="font-size:11px;color:var(--text-muted);">Downloads: ${r.download_count}</div>
-                            </td>
-                            <td>
-                                <span class="badge" style="background:${isPdf ? '#7c3aed' : '#059669'};color:white;font-size:10px;">
-                                    ${r.file_format.toUpperCase()}
-                                </span>
-                            </td>
-                            <td>${sizeKb} KB</td>
-                            <td style="font-size:11px;color:var(--text-muted);">${created}</td>
-                            <td>
-                                <div style="display:flex;gap:6px;">
-                                    <a href="/api/reports/${r.id}/download" class="btn btn-sm btn-primary" title="Download Report">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteReportRecord(${r.id})" title="Delete Report">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } else {
-                if (window.UIState) {
-                    tbody.innerHTML = `<tr><td colspan="5">${UIState.renderEmptyState({ icon: 'fa-file-lines', title: 'No Reports Generated', message: 'Configure parameters and click "Generate Secured Report" to create your first report.' })}</td></tr>`;
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No generated reports yet</td></tr>';
-                }
-            }
-        } catch (e) {
-            console.error('Failed to load reports history', e);
-            if (tbody && window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="5">${UIState.renderErrorState({ title: 'Unable to Load Reports', message: e.message || 'Failed to fetch generated reports history.', onRetry: 'loadGeneratedReports()' })}</td></tr>`;
-            } else {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load reports history</td></tr>';
-            }
-        }
-    }
-
-    async function generateNewReport() {
-        const btn = document.querySelector('button[onclick="generateNewReport()"]');
-        if (window.UIState && btn) {
-            UIState.setButtonLoading(btn, true, 'Generating Secured Report...');
-        }
-
-        const type = document.getElementById('rep-type').value;
-        const format = document.getElementById('rep-format').value;
-        const dateFrom = document.getElementById('rep-date-from').value;
-        const dateTo = document.getElementById('rep-date-to').value;
-        const status = document.getElementById('rep-status').value;
-        const risk = document.getElementById('rep-risk').value;
-        const minAmount = document.getElementById('rep-min-amount').value;
-        const maxAmount = document.getElementById('rep-max-amount').value;
-        const userIdEl = document.getElementById('rep-user-id');
-        const userId = userIdEl ? userIdEl.value : '';
-
-        const payload = {
-            report_type: type,
-            format: format,
-            filters: {
-                date_from: dateFrom,
-                date_to: dateTo,
-                fraud_status: status,
-                risk_level: risk,
-                min_amount: minAmount,
-                max_amount: maxAmount,
-                user_id: userId
-            }
-        };
+    async function loadAnalyticsData(isManualRefresh = false) {
+        const refreshIcon = document.getElementById('analytics-refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
         try {
-            await apiCall('/api/reports/generate', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            showToast('Report generated successfully!', 'success');
-            loadGeneratedReports();
-        } catch (e) {
-            console.error('Report generation error:', e);
+            const res = await fetch('/api/dashboard/overview');
+            if (!res.ok) throw new Error('Failed to load analytics data');
+            const data = await res.json();
+            const c = data.charts || {};
+
+            renderCategoryChart(c.top_categories);
+            renderRiskChart(c.risk_distribution);
+            renderHourlyChart(c.hourly_pattern);
+            renderMonthlyChart(c.trends_by_month);
+            renderLocationsTable(c.high_risk_locations);
+            renderMerchantsTable(data.recent_transactions);
+
+            if (isManualRefresh) {
+                Sentinel.showToast('Analytics models refreshed', 'success');
+            }
+        } catch (err) {
+            console.error('Analytics load error:', err);
+            Sentinel.showToast('Failed to load analytics', 'error');
         } finally {
-            if (window.UIState && btn) {
-                UIState.setButtonLoading(btn, false);
-            }
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         }
     }
 
-    async function deleteReportRecord(reportId) {
-        if (!confirm('Are you sure you want to delete this report file?')) return;
-        try {
-            await apiCall(`/api/reports/${reportId}`, { method: 'DELETE' });
-            showToast('Report deleted successfully', 'success');
-            loadGeneratedReports();
-        } catch (e) {
-            console.error('Delete error', e);
-        }
+    function renderCategoryChart(categories) {
+        const ctx = document.getElementById('categoryChart');
+        if (!ctx || !window.Chart) return;
+        if (analyticsCharts.category) analyticsCharts.category.destroy();
+
+        const isDark = Sentinel.getTheme() === 'dark';
+        const cats = categories || [];
+        analyticsCharts.category = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: cats.length ? cats.map(c => c.category) : ['General', 'Retail', 'Online Shopping', 'Travel'],
+                datasets: [{
+                    data: cats.length ? cats.map(c => c.count) : [40, 25, 20, 15],
+                    backgroundColor: ['#2457D6', '#16845B', '#B7791F', '#C63D45', '#686C67'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
     }
 
-    async function loadAnalytics() {
-        try {
-            loadGeneratedReports();
-            const data = await apiCall('/api/analytics/overview');
+    function renderRiskChart(dist) {
+        const ctx = document.getElementById('riskChart');
+        if (!ctx || !window.Chart) return;
+        if (analyticsCharts.risk) analyticsCharts.risk.destroy();
 
-            // Show empty state helper
-            function showEmpty(canvasId, message) {
-                const canvas = document.getElementById(canvasId);
-                const container = canvas.parentElement;
-                canvas.style.display = 'none';
-                container.innerHTML = `<div class="empty-state" style="padding:40px;"><i class="fas fa-chart-bar"></i><p>${message}</p></div>`;
+        const isDark = Sentinel.getTheme() === 'dark';
+        const gridColor = isDark ? '#242723' : '#ECEEEA';
+        const data = dist || [];
+
+        analyticsCharts.risk = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.tier || d.level),
+                datasets: [{
+                    label: 'Transactions',
+                    data: data.map(d => d.count),
+                    backgroundColor: ['#16845B', '#4377F6', '#B7791F', '#C63D45', '#991B1B'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: gridColor }, beginAtZero: true }
+                }
             }
-
-            // Category Doughnut Chart
-            if (data.categories.length) {
-                const colorPalette = [chartColors.primary, chartColors.danger, chartColors.success,
-                    chartColors.warning, chartColors.info, chartColors.purple, chartColors.pink, chartColors.cyan];
-
-                new Chart(document.getElementById('categoryChart'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: data.categories.map(c => c.category),
-                        datasets: [{
-                            data: data.categories.map(c => c.fraud_count),
-                            backgroundColor: colorPalette.slice(0, data.categories.length),
-                            borderWidth: 0,
-                            hoverOffset: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '65%',
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 12 }
-                            }
-                        }
-                    }
-                });            } else {
-                showEmpty('categoryChart', 'No category data yet. Simulate transactions to see analytics.');            }
-
-            // Risk Distribution Bar Chart
-            if (data.risk_distribution.length) {
-                const riskColors = ['rgba(16,185,129,0.7)', 'rgba(59,130,246,0.7)',
-                    'rgba(245,158,11,0.7)', 'rgba(239,68,68,0.7)', 'rgba(220,38,38,0.8)'];
-
-                new Chart(document.getElementById('riskChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.risk_distribution.map(r => r.score_range),
-                        datasets: [{
-                            label: 'Transactions',
-                            data: data.risk_distribution.map(r => r.count),
-                            backgroundColor: riskColors,
-                            borderRadius: 8,
-                            borderSkipped: false
-                        }]
-                    },
-                    options: {
-                        ...defaultOptions,
-                        plugins: {
-                            ...defaultOptions.plugins,
-                            legend: { display: false }
-                        }
-                    }
-                });
-            } else {
-                showEmpty('riskChart', 'No risk data yet.');
-            }
-
-            // Hourly Line Chart
-            if (data.hourly.length) {
-                new Chart(document.getElementById('hourlyChart'), {
-                    type: 'line',
-                    data: {
-                        labels: data.hourly.map(h => `${h.hour}:00`),
-                        datasets: [
-                            {
-                                label: 'Total',
-                                data: data.hourly.map(h => h.total),
-                                borderColor: chartColors.primary,
-                                backgroundColor: chartBg.primary,
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 3
-                            },
-                            {
-                                label: 'Fraud',
-                                data: data.hourly.map(h => h.fraud_count),
-                                borderColor: chartColors.danger,
-                                backgroundColor: chartBg.danger,
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 3
-                            }
-                        ]
-                    },
-                    options: defaultOptions
-                });
-            } else {
-                showEmpty('hourlyChart', 'No hourly data yet.');
-            }
-
-            // Monthly Bar Chart
-            if (data.monthly.length) {
-                new Chart(document.getElementById('monthlyChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.monthly.map(m => m.month),
-                        datasets: [
-                            {
-                                label: 'Total Txn',
-                                data: data.monthly.map(m => m.total),
-                                backgroundColor: 'rgba(99,102,241,0.6)',
-                                borderRadius: 6,
-                                borderSkipped: false
-                            },
-                            {
-                                label: 'Fraud Txn',
-                                data: data.monthly.map(m => m.fraud_count),
-                                backgroundColor: 'rgba(239,68,68,0.7)',
-                                borderRadius: 6,
-                                borderSkipped: false
-                            }
-                        ]
-                    },
-                    options: defaultOptions
-                });
-            } else {
-                showEmpty('monthlyChart', 'No monthly data yet.');
-            }
-
-            // Location Table
-            const locTbody = document.getElementById('location-tbody');
-            if (data.locations.length) {
-                locTbody.innerHTML = data.locations.map(l => {
-                    const rate = l.total > 0 ? ((l.fraud_count / l.total) * 100).toFixed(1) : 0;
-                    return `
-                        <tr>
-                            <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:6px;"></i>${l.location}</td>
-                            <td>${l.total}</td>
-                            <td style="color:var(--danger);font-weight:600;">${l.fraud_count}</td>
-                            <td>
-                                <div class="score-meter">
-                                    <span style="font-weight:600;">${rate}%</span>
-                                    <div class="score-bar">
-                                        <div class="score-fill ${rate > 50 ? 'high' : rate > 25 ? 'medium' : 'low'}" style="width:${Math.min(rate, 100)}%"></div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } else {
-                locTbody.innerHTML = '<tr><td colspan="4" class="empty-state">No data yet</td></tr>';
-            }
-
-            // Merchant Table
-            const merTbody = document.getElementById('merchant-tbody');
-            if (data.top_merchants.length) {
-                merTbody.innerHTML = data.top_merchants.map(m => `
-                    <tr>
-                        <td><i class="fas fa-store" style="color:var(--text-muted);margin-right:6px;"></i>${m.merchant}</td>
-                        <td style="color:var(--danger);font-weight:600;">${m.fraud_count}</td>
-                        <td style="font-weight:600;">${formatCurrency(m.total_fraud_amount)}</td>
-                    </tr>
-                `).join('');
-            } else {
-                merTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No data yet</td></tr>';
-            }
-
-        } catch (e) {
-            console.error('Failed to load analytics', e);
-        }
+        });
     }
 
-    loadAnalytics();
+    function renderHourlyChart(hourly) {
+        const ctx = document.getElementById('hourlyChart');
+        if (!ctx || !window.Chart) return;
+        if (analyticsCharts.hourly) analyticsCharts.hourly.destroy();
+
+        const isDark = Sentinel.getTheme() === 'dark';
+        const gridColor = isDark ? '#242723' : '#ECEEEA';
+        const hData = hourly || Array.from({length: 24}, (_, i) => ({ hour: i, count: 0 }));
+
+        analyticsCharts.hourly = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: hData.map(h => `${h.hour}:00`),
+                datasets: [{
+                    label: 'Transactions',
+                    data: hData.map(h => h.count),
+                    backgroundColor: isDark ? '#4377F6' : '#2457D6',
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: gridColor }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    function renderMonthlyChart(monthly) {
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx || !window.Chart) return;
+        if (analyticsCharts.monthly) analyticsCharts.monthly.destroy();
+
+        const isDark = Sentinel.getTheme() === 'dark';
+        const gridColor = isDark ? '#242723' : '#ECEEEA';
+        const mData = monthly || [];
+
+        analyticsCharts.monthly = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: mData.map(m => m.month),
+                datasets: [{
+                    label: 'Fraud Cases',
+                    data: mData.map(m => m.fraud),
+                    borderColor: '#C63D45',
+                    backgroundColor: isDark ? 'rgba(224, 83, 91, 0.1)' : 'rgba(198, 61, 69, 0.08)',
+                    fill: true,
+                    tension: 0.25,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#C63D45',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: gridColor }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    function renderLocationsTable(locations) {
+        const tbody = document.getElementById('location-tbody');
+        if (!tbody) return;
+
+        const locs = locations || [];
+        if (locs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">No high risk locations identified</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = locs.map(l => `
+            <tr>
+                <td><strong style="color:var(--text-primary);">${l.location || 'Unknown Location'}</strong></td>
+                <td><span style="font-family:var(--font-mono);font-weight:600;">${l.count} events</span></td>
+                <td style="text-align:right;">
+                    <span class="risk-pill ${l.count > 5 ? 'critical' : 'high'}" style="font-size:10px;">Elevated</span>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderMerchantsTable(recentTxns) {
+        const tbody = document.getElementById('merchant-tbody');
+        if (!tbody) return;
+
+        const txns = recentTxns || [];
+        const merchantMap = {};
+        txns.forEach(t => {
+            if (t.is_fraud || (t.fraud_score || 0) >= 50) {
+                const m = t.merchant || 'Unknown Merchant';
+                if (!merchantMap[m]) merchantMap[m] = { count: 0, amount: 0 };
+                merchantMap[m].count += 1;
+                merchantMap[m].amount += t.amount || 0;
+            }
+        });
+
+        const list = Object.entries(merchantMap).sort((a, b) => b[1].count - a[1].count).slice(0, 5);
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">No anomalous merchant activity detected</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(([name, stats]) => `
+            <tr>
+                <td><strong style="color:var(--text-primary);">${name}</strong></td>
+                <td><span style="font-family:var(--font-mono);font-weight:600;">${stats.count} flagged</span></td>
+                <td style="text-align:right;font-weight:700;color:var(--danger);">${Sentinel.formatCurrency(stats.amount)}</td>
+            </tr>
+        `).join('');
+    }
 </script>
 {% endblock %}

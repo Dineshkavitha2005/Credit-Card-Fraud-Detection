@@ -1,462 +1,371 @@
 {% extends 'base.html' %}
 
-{% block title %}User Management{% endblock %}
+{% block title %}User Management &mdash; Sentinel Security{% endblock %}
 {% block page_title %}User Management{% endblock %}
 
 {% block content %}
-<!-- Search & Filters Panel -->
-<div class="panel" style="margin-bottom:24px;">
-    <div class="panel-header">
-        <h3><i class="fas fa-filter" style="color:var(--primary);margin-right:8px;"></i> Search & Filter Users</h3>
-        <span style="color:var(--text-muted);font-size:13px;" id="usersSummary">Loading...</span>
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">User Management</h1>
+        <p class="page-header-subtitle">Administrative governance, role-based access control, and identity lifecycle</p>
     </div>
-    <div class="panel-body" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;align-items:end;">
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Search</label>
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" class="form-control" placeholder="Search username, email, name...">
-            </div>
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Role</label>
-            <select id="roleFilter" class="form-control">
-                <option value="all">All Roles</option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-            </select>
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Status</label>
-            <select id="statusFilter" class="form-control">
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="blocked">Blocked</option>
-                <option value="verified">Verified</option>
-                <option value="unverified">Unverified</option>
-            </select>
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Rows per page</label>
-            <select id="perPageSelect" class="form-control">
-                <option value="10">10 per page</option>
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-            </select>
-        </div>
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="loadUsers(true)">
+            <i data-lucide="refresh-cw" id="users-refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh Accounts</span>
+        </button>
     </div>
 </div>
 
-<!-- Users Table Panel -->
-<div class="panel">
-    <div class="panel-header">
-        <h3><i class="fas fa-users-cog" style="color:var(--info);margin-right:8px;"></i> User Accounts</h3>
+<!-- Filters Toolbar -->
+<div class="filter-bar">
+    <div class="filter-group">
+        <div style="position:relative;display:inline-block;">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search username, email, name..." style="padding-left:28px;width:240px;font-size:12px;padding-top:6px;padding-bottom:6px;" oninput="onSearchInput()">
+            <i data-lucide="search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:13px;height:13px;"></i>
+        </div>
+
+        <select id="roleFilter" class="form-control" style="width:130px;font-size:12px;padding:6px 10px;" onchange="loadUsers()">
+            <option value="all">All Roles</option>
+            <option value="admin">Administrator</option>
+            <option value="user">Standard User</option>
+        </select>
+
+        <select id="statusFilter" class="form-control" style="width:130px;font-size:12px;padding:6px 10px;" onchange="loadUsers()">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="blocked">Blocked / Disabled</option>
+        </select>
     </div>
-    <div class="panel-body no-padding">
-        <div style="overflow-x:auto;">
+
+    <div class="filter-group">
+        <span style="font-size:12px;color:var(--text-muted);">Rows per page:</span>
+        <select id="perPageSelect" class="form-control" style="width:75px;font-size:12px;padding:5px 8px;" onchange="changePerPage()">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+        </select>
+    </div>
+</div>
+
+<!-- Users Table Card -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div class="sentinel-card-title">
+            <i data-lucide="users" style="width:16px;height:16px;color:var(--accent);"></i>
+            <span>Directory Accounts</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);" id="usersSummary">Loading accounts...</div>
+    </div>
+
+    <div class="sentinel-card-body no-padding">
+        <div class="data-table-container">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Username</th>
-                        <th>Email</th>
+                        <th>User Identity</th>
+                        <th>Email Address</th>
                         <th>Full Name</th>
-                        <th>Status</th>
-                        <th>Verified</th>
                         <th>Role</th>
+                        <th>Account Status</th>
                         <th>Registered</th>
-                        <th style="text-align:right;padding-right:20px;">Actions</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="userTableBody">
-                    <tr>
-                        <td colspan="8"><div class="spinner"></div></td>
-                    </tr>
+                    <tr><td colspan="7" style="padding:28px;text-align:center;"><div class="spinner"></div></td></tr>
                 </tbody>
             </table>
         </div>
     </div>
-    <div class="pagination" id="paginationControls"></div>
-</div>
 
-<!-- User Detail Modal -->
-<div class="modal-overlay" id="userDetailModal">
-    <div class="modal" style="max-width:680px;">
-        <h3 style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-            <span><i class="fas fa-id-card" style="color:var(--primary);margin-right:8px;"></i> User Details</span>
-            <button onclick="closeUserModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;"><i class="fas fa-times"></i></button>
-        </h3>
-        <div id="userDetailContent">Loading...</div>
-        <div class="modal-actions" style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px;">
-            <button class="btn btn-outline" onclick="closeUserModal()">Close</button>
-        </div>
+    <!-- Pagination -->
+    <div class="sentinel-pagination" id="users-pagination" style="display:none;">
+        <div id="users-page-info">Showing records...</div>
+        <div class="pagination-pages" id="users-page-buttons"></div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-const adminUserState = {
-    page: 1,
-    perPage: 10,
-    search: '',
-    role: 'all',
-    status: 'all'
-};
+    let userState = {
+        page: 1,
+        per_page: 20,
+        totalPages: 1,
+        debounce: null
+    };
 
-function escapeHtml(value) {
-    if (value == null) return '';
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function formatDate(value) {
-    if (!value) return 'N/A';
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString();
-}
-
-function formatDateTime(value) {
-    if (!value) return 'Never';
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? 'N/A' : date.toLocaleString();
-}
-
-function openUserModal() {
-    const modal = document.getElementById('userDetailModal');
-    if (modal) modal.classList.add('active');
-}
-
-function closeUserModal() {
-    const modal = document.getElementById('userDetailModal');
-    if (modal) modal.classList.remove('active');
-}
-
-async function loadUsers() {
-    const tbody = document.getElementById('userTableBody');
-    tbody.innerHTML = '<tr><td colspan="8"><div class="spinner"></div></td></tr>';
-
-    const params = new URLSearchParams({
-        page: adminUserState.page,
-        per_page: adminUserState.perPage,
-        search: adminUserState.search,
-        role: adminUserState.role,
-        status: adminUserState.status
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUsers();
     });
 
-    try {
-        const response = await fetch(`/api/admin/users?${params.toString()}`, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
+    function onSearchInput() {
+        clearTimeout(userState.debounce);
+        userState.debounce = setTimeout(() => {
+            userState.page = 1;
+            loadUsers();
+        }, 300);
+    }
+
+    function changePerPage() {
+        userState.per_page = parseInt(document.getElementById('perPageSelect').value) || 20;
+        userState.page = 1;
+        loadUsers();
+    }
+
+    async function loadUsers(isManualRefresh = false) {
+        const refreshIcon = document.getElementById('users-refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+        const tbody = document.getElementById('userTableBody');
+        const summary = document.getElementById('usersSummary');
+
+        const search = document.getElementById('searchInput').value.trim();
+        const role = document.getElementById('roleFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        const params = new URLSearchParams({
+            page: userState.page,
+            per_page: userState.per_page
         });
+        if (search) params.append('search', search);
+        if (role && role !== 'all') params.append('role', role);
+        if (status && status !== 'all') params.append('status', status);
 
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(payload.error || 'Failed to load users');
+        try {
+            const res = await fetch(`/api/admin/users?${params.toString()}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch user directory`);
+            const data = await res.json();
+
+            const users = data.users || [];
+            userState.totalPages = data.pages || 1;
+
+            if (summary) summary.textContent = `${Sentinel.formatNumber(data.total || 0)} total accounts`;
+
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="padding:0;">
+                            <div class="ui-state-empty">
+                                <div class="empty-icon-wrap"><i data-lucide="user-x" style="width:24px;height:24px;"></i></div>
+                                <div class="empty-title">No user records match filter</div>
+                                <div class="empty-desc">Try clearing your search query or selecting all roles.</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('users-pagination').style.display = 'none';
+                Sentinel.initIcons();
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const isAdmin = u.role === 'admin';
+                const isActive = u.is_active;
+
+                return `
+                    <tr class="clickable-row" onclick="openUserDrawer(${u.id})">
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="user-avatar" style="width:28px;height:28px;font-size:11px;">
+                                    ${(u.username || 'U')[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <strong style="color:var(--text-primary);font-size:13px;">${u.username}</strong>
+                                    <div class="mono-cell" style="font-size:10px;color:var(--text-muted);">ID: #${u.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-secondary);">${u.email}</td>
+                        <td style="color:var(--text-primary);">${u.full_name || '—'}</td>
+                        <td>
+                            <span class="status-pill ${isAdmin ? 'reviewed' : 'approved'}" style="font-size:10px;text-transform:uppercase;">
+                                ${u.role}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-pill ${isActive ? 'approved' : 'blocked'}">
+                                ${isActive ? 'Active' : 'Blocked'}
+                            </span>
+                        </td>
+                        <td style="color:var(--text-secondary);font-size:12px;">${Sentinel.formatDate(u.created_at)}</td>
+                        <td style="text-align:right;">
+                            <button class="btn btn-outline btn-xs" onclick="event.stopPropagation(); openUserDrawer(${u.id})" title="Manage user permissions">
+                                <i data-lucide="sliders" style="width:11px;height:11px;"></i> Manage
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderPagination(data.page, data.pages, data.total, data.per_page);
+            Sentinel.initIcons();
+
+            if (isManualRefresh) {
+                Sentinel.showToast('User directory refreshed', 'success');
+            }
+        } catch (err) {
+            console.error('Users error:', err);
+            tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--danger);">Error loading directory accounts.</td></tr>`;
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
         }
+    }
 
-        const { users = [], total = 0, page = 1, pages = 1, per_page = adminUserState.perPage } = payload;
-        adminUserState.page = Number(page) || 1;
-        adminUserState.perPage = Number(per_page) || adminUserState.perPage;
+    function renderPagination(page, pages, total, per_p) {
+        const wrapper = document.getElementById('users-pagination');
+        const info = document.getElementById('users-page-info');
+        const buttons = document.getElementById('users-page-buttons');
 
-        const summaryEl = document.getElementById('usersSummary');
-        if (summaryEl) {
-            summaryEl.textContent = `Showing ${users.length} of ${total} users · Page ${adminUserState.page} of ${pages || 1}`;
-        }
-
-        if (!users.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-users-slash"></i><p>No users match the current search filters.</p></td></tr>';
-            document.getElementById('paginationControls').innerHTML = '';
+        if (!wrapper || pages <= 1) {
+            if (wrapper) wrapper.style.display = 'none';
             return;
         }
 
-        tbody.innerHTML = users.map(user => {
-            const isCurrentUser = Boolean(user.is_current_user);
-            const isBlocked = Boolean(user.is_blocked);
-            const isVerified = Boolean(user.is_verified);
-            const role = (user.role || 'user').toLowerCase();
+        wrapper.style.display = 'flex';
+        const start = ((page - 1) * per_p) + 1;
+        const end = Math.min(page * per_p, total);
+        info.textContent = `Showing ${start}–${end} of ${Sentinel.formatNumber(total)} users`;
 
-            return `
-                <tr>
-                    <td>
-                        <strong style="color:var(--text-primary);">${escapeHtml(user.username)}</strong>
-                        ${isCurrentUser ? '<span class="badge-risk low" style="margin-left:6px;font-size:10px;padding:2px 6px;">You</span>' : ''}
-                    </td>
-                    <td class="mono" style="color:var(--text-secondary);">${escapeHtml(user.email)}</td>
-                    <td>${escapeHtml(user.full_name || 'N/A')}</td>
-                    <td>
-                        <span class="badge-status ${isBlocked ? 'declined' : 'approved'}">
-                            <i class="fas fa-${isBlocked ? 'ban' : 'check-circle'}"></i> ${isBlocked ? 'Blocked' : 'Active'}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge-status ${isVerified ? 'approved' : 'pending'}">
-                            ${isVerified ? 'Yes' : 'No'}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge-risk ${role === 'admin' ? 'critical' : 'low'}">
-                            ${escapeHtml(role.toUpperCase())}
-                        </span>
-                    </td>
-                    <td style="color:var(--text-muted);font-size:12px;">${formatDate(user.created_at)}</td>
-                    <td style="text-align:right;padding-right:20px;">
-                        <div style="display:inline-flex;gap:6px;align-items:center;justify-content:flex-end;">
-                            <button class="btn btn-xs btn-outline" onclick="viewUser(${user.id})" title="View Details">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            ${isBlocked ? 
-                                `<button class="btn btn-xs btn-success" onclick="unblockUser(${user.id})" ${isCurrentUser ? 'disabled' : ''} title="Unblock User">
-                                    <i class="fas fa-unlock"></i> Unblock
-                                 </button>` : 
-                                `<button class="btn btn-xs btn-danger" onclick="blockUser(${user.id})" ${isCurrentUser ? 'disabled' : ''} title="Block User">
-                                    <i class="fas fa-ban"></i> Block
-                                 </button>`
-                            }
-                            <button class="btn btn-xs btn-warning" onclick="resetPassword(${user.id})" title="Reset Password">
-                                <i class="fas fa-key"></i> Reset
-                            </button>
-                            <button class="btn btn-xs btn-outline" onclick="deactivateUser(${user.id})" ${isCurrentUser ? 'disabled' : ''} style="color:var(--danger);border-color:rgba(239,68,68,0.3);" title="Deactivate Account">
-                                <i class="fas fa-user-slash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-        // Pagination Rendering
-        const pagination = document.getElementById('paginationControls');
-        let paginationHtml = '';
-        if (pages > 1) {
-            paginationHtml += `<button ${adminUserState.page === 1 ? 'disabled' : ''} onclick="adminUserState.page=1;loadUsers();">First</button>`;
-            paginationHtml += `<button ${adminUserState.page === 1 ? 'disabled' : ''} onclick="adminUserState.page=${adminUserState.page - 1};loadUsers();">← Prev</button>`;
-
-            let startPage = Math.max(1, adminUserState.page - 2);
-            let endPage = Math.min(pages, startPage + 4);
-            if (endPage - startPage < 4) {
-                startPage = Math.max(1, endPage - 4);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                paginationHtml += `<button class="${i === adminUserState.page ? 'active' : ''}" onclick="adminUserState.page=${i};loadUsers();">${i}</button>`;
-            }
-
-            paginationHtml += `<button ${adminUserState.page === pages ? 'disabled' : ''} onclick="adminUserState.page=${adminUserState.page + 1};loadUsers();">Next →</button>`;
-            paginationHtml += `<button ${adminUserState.page === pages ? 'disabled' : ''} onclick="adminUserState.page=${pages};loadUsers();">Last</button>`;
-        }
-        pagination.innerHTML = paginationHtml;
-
-    } catch (error) {
-        console.error('Error loading users:', error);
-        tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-circle" style="color:var(--danger);"></i><p>Unable to load users.</p></td></tr>';
-        if (window.showToast) showToast(error.message, 'error');
-    }
-}
-
-async function viewUser(userId) {
-    try {
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.error || 'Failed to load user details');
-
-        const user = payload;
-        const isBlocked = Boolean(user.is_blocked);
-        const isVerified = Boolean(user.is_verified);
-        const isCurrentUser = Boolean(user.is_current_user);
-
-        const content = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-                <div style="background:var(--bg-dark);padding:16px;border-radius:10px;border:1px solid var(--border);">
-                    <p style="margin-bottom:8px;font-size:13px;"><strong style="color:var(--text-muted);">Username:</strong> <span style="color:var(--text-primary);font-weight:600;">${escapeHtml(user.username)}</span></p>
-                    <p style="margin-bottom:8px;font-size:13px;"><strong style="color:var(--text-muted);">Email:</strong> <span class="mono" style="color:var(--text-primary);">${escapeHtml(user.email)}</span></p>
-                    <p style="margin-bottom:8px;font-size:13px;"><strong style="color:var(--text-muted);">Full Name:</strong> ${escapeHtml(user.full_name || 'N/A')}</p>
-                    <p style="margin-bottom:8px;font-size:13px;"><strong style="color:var(--text-muted);">Phone:</strong> ${escapeHtml(user.phone || 'N/A')}</p>
-                    <p style="margin-bottom:0;font-size:13px;"><strong style="color:var(--text-muted);">Address:</strong> ${escapeHtml(user.address || 'N/A')}</p>
-                </div>
-                <div style="background:var(--bg-dark);padding:16px;border-radius:10px;border:1px solid var(--border);">
-                    <p style="margin-bottom:8px;font-size:13px;">
-                        <strong style="color:var(--text-muted);">Status:</strong> 
-                        <span class="badge-status ${isBlocked ? 'declined' : 'approved'}">${isBlocked ? 'Blocked' : 'Active'}</span>
-                    </p>
-                    <p style="margin-bottom:8px;font-size:13px;">
-                        <strong style="color:var(--text-muted);">Verified:</strong> 
-                        <span class="badge-status ${isVerified ? 'approved' : 'pending'}">${isVerified ? 'Yes' : 'No'}</span>
-                    </p>
-                    <p style="margin-bottom:8px;font-size:13px;">
-                        <strong style="color:var(--text-muted);">Role:</strong> 
-                        <span class="badge-risk ${user.role === 'admin' ? 'critical' : 'low'}">${escapeHtml(user.role).toUpperCase()}</span>
-                    </p>
-                    <p style="margin-bottom:8px;font-size:13px;"><strong style="color:var(--text-muted);">Registered:</strong> ${formatDateTime(user.created_at)}</p>
-                    <p style="margin-bottom:0;font-size:13px;"><strong style="color:var(--text-muted);">Last Login:</strong> ${formatDateTime(user.last_login)}</p>
-                </div>
-            </div>
-            ${isCurrentUser ? '<div style="background:rgba(99,102,241,0.15);color:var(--primary-light);padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:16px;"><i class="fas fa-shield-alt"></i> This is your logged-in administrator account.</div>' : ''}
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="btn btn-sm btn-primary" onclick="updateUserRole(${user.id}, '${user.role === 'admin' ? 'user' : 'admin'}')">
-                    <i class="fas fa-user-shield"></i> Switch Role to ${user.role === 'admin' ? 'User' : 'Admin'}
-                </button>
-                <button class="btn btn-sm btn-${isBlocked ? 'success' : 'danger'}" onclick="${isBlocked ? `unblockUser(${user.id})` : `blockUser(${user.id})`}" ${isCurrentUser ? 'disabled' : ''}>
-                    <i class="fas fa-${isBlocked ? 'unlock' : 'ban'}"></i> ${isBlocked ? 'Unblock User' : 'Block User'}
-                </button>
-                <button class="btn btn-sm btn-warning" onclick="resetPassword(${user.id})">
-                    <i class="fas fa-key"></i> Reset Password
-                </button>
-                <button class="btn btn-sm btn-outline" onclick="deactivateUser(${user.id})" ${isCurrentUser ? 'disabled' : ''} style="color:var(--danger);border-color:rgba(239,68,68,0.3);">
-                    <i class="fas fa-user-slash"></i> Deactivate
-                </button>
-            </div>
+        let btnsHtml = `
+            <button class="page-btn" ${page === 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})">
+                <i data-lucide="chevron-left" style="width:12px;height:12px;"></i>
+            </button>
         `;
 
-        document.getElementById('userDetailContent').innerHTML = content;
-        openUserModal();
-    } catch (error) {
-        console.error('Error loading user details:', error);
-        if (window.showToast) showToast(error.message, 'error');
+        for (let p = Math.max(1, page - 2); p <= Math.min(pages, page + 2); p++) {
+            btnsHtml += `
+                <button class="page-btn ${p === page ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>
+            `;
+        }
+
+        btnsHtml += `
+            <button class="page-btn" ${page === pages ? 'disabled' : ''} onclick="goToPage(${page + 1})">
+                <i data-lucide="chevron-right" style="width:12px;height:12px;"></i>
+            </button>
+        `;
+
+        buttons.innerHTML = btnsHtml;
+        Sentinel.initIcons();
     }
-}
 
-async function updateUserRole(userId, role) {
-    if (!confirm(`Change this user's role to ${role}?`)) return;
-    try {
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            method: 'PATCH',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ role })
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.error || 'Failed to update user role');
-
-        if (window.showToast) showToast('User role updated successfully', 'success');
-        closeUserModal();
+    function goToPage(p) {
+        if (p < 1 || p > userState.totalPages) return;
+        userState.page = p;
         loadUsers();
-    } catch (error) {
-        console.error('Error updating user role:', error);
-        if (window.showToast) showToast(error.message, 'error');
     }
-}
 
-async function blockUser(userId) {
-    if (!confirm('Block this user? They will be unable to log in.')) return;
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/block`, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ reason: 'Admin action' })
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.error || 'Failed to block user');
+    // Right-Side User Detail Drawer
+    async function openUserDrawer(userId) {
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`);
+            if (!res.ok) throw new Error('Failed to retrieve user record');
+            const u = await res.json();
 
-        if (window.showToast) showToast('User blocked successfully', 'success');
-        closeUserModal();
-        loadUsers();
-    } catch (error) {
-        console.error('Error blocking user:', error);
-        if (window.showToast) showToast(error.message, 'error');
+            const drawerHtml = `
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle);">
+                    <div class="user-avatar" style="width:44px;height:44px;font-size:16px;">
+                        ${(u.username || 'U')[0].toUpperCase()}
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:16px;font-weight:700;color:var(--text-primary);">${u.username}</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">${u.email}</div>
+                    </div>
+                    <span class="status-pill ${u.is_active ? 'approved' : 'blocked'}">
+                        ${u.is_active ? 'Active' : 'Blocked'}
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="ud-fullname" value="${u.full_name || ''}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="ud-email" value="${u.email || ''}">
+                </div>
+
+                <div class="grid-2" style="margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Access Role</label>
+                        <select class="form-control" id="ud-role">
+                            <option value="user" ${u.role === 'user' ? 'selected' : ''}>Standard User</option>
+                            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrator</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Status</label>
+                        <select class="form-control" id="ud-active">
+                            <option value="1" ${u.is_active ? 'selected' : ''}>Active (Authorized)</option>
+                            <option value="0" ${!u.is_active ? 'selected' : ''}>Blocked (Disabled)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;padding:16px;background:var(--bg-surface-secondary);border-radius:8px;border:1px solid var(--border-subtle);">
+                    <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Administrative Operations</div>
+                    <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Generate a secure temporary password token for credential recovery.</p>
+                    <button class="btn btn-outline btn-sm" onclick="resetUserPassword(${u.id})">
+                        <i data-lucide="key" style="width:12px;height:12px;"></i> Force Password Reset
+                    </button>
+                    <div id="temp-password-box" style="display:none;margin-top:10px;padding:8px 12px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:6px;font-family:var(--font-mono);font-size:12px;"></div>
+                </div>
+            `;
+
+            const footerHtml = `
+                <button class="btn btn-secondary btn-sm" onclick="Sentinel.closeDrawer()">Cancel</button>
+                <button class="btn btn-primary btn-sm" onclick="saveUserUpdates(${u.id})">
+                    <i data-lucide="save" style="width:12px;height:12px;"></i> Save Changes
+                </button>
+            `;
+
+            Sentinel.openDrawer(`User Account: #${u.id}`, drawerHtml, footerHtml);
+        } catch (e) {
+            Sentinel.showToast('Unable to open user record', 'error');
+        }
     }
-}
 
-async function unblockUser(userId) {
-    if (!confirm('Unblock this user?')) return;
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/unblock`, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.error || 'Failed to unblock user');
+    async function saveUserUpdates(userId) {
+        const payload = {
+            full_name: document.getElementById('ud-fullname').value.trim(),
+            email: document.getElementById('ud-email').value.trim(),
+            role: document.getElementById('ud-role').value,
+            is_active: document.getElementById('ud-active').value === '1'
+        };
 
-        if (window.showToast) showToast('User unblocked successfully', 'success');
-        closeUserModal();
-        loadUsers();
-    } catch (error) {
-        console.error('Error unblocking user:', error);
-        if (window.showToast) showToast(error.message, 'error');
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to update user');
+
+            Sentinel.showToast('User updated successfully', 'success');
+            Sentinel.closeDrawer();
+            loadUsers();
+        } catch (err) {
+            Sentinel.showToast(err.message, 'error');
+        }
     }
-}
 
-async function deactivateUser(userId) {
-    if (!confirm('Deactivate this user account? Login will be disabled.')) return;
-    try {
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            method: 'DELETE',
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json' }
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.error || 'Failed to deactivate user');
+    async function resetUserPassword(userId) {
+        try {
+            const res = await fetch(`/api/admin/users/${userId}/reset-password`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Reset failed');
 
-        if (window.showToast) showToast('User deactivated successfully', 'success');
-        closeUserModal();
-        loadUsers();
-    } catch (error) {
-        console.error('Error deactivating user:', error);
-        if (window.showToast) showToast(error.message, 'error');
+            const box = document.getElementById('temp-password-box');
+            box.style.display = 'block';
+            box.innerHTML = `Temp Password: <strong>${data.temporary_password}</strong>`;
+            Sentinel.showToast('Temporary password generated', 'success');
+        } catch (e) {
+            Sentinel.showToast(e.message, 'error');
+        }
     }
-}
-
-async function resetPassword(userId) {
-    if (!confirm('Reset password for this user?')) return;
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.error || 'Failed to reset password');
-
-        if (window.showToast) showToast('Password reset email/instructions triggered', 'success');
-    } catch (error) {
-        console.error('Error resetting password:', error);
-        if (window.showToast) showToast(error.message, 'error');
-    }
-}
-
-// Event Listeners for Search & Filters
-let searchDebounceTimeout;
-document.getElementById('searchInput').addEventListener('input', function (event) {
-    clearTimeout(searchDebounceTimeout);
-    searchDebounceTimeout = setTimeout(() => {
-        adminUserState.search = event.target.value.trim();
-        adminUserState.page = 1;
-        loadUsers();
-    }, 300);
-});
-
-document.getElementById('roleFilter').addEventListener('change', function (event) {
-    adminUserState.role = event.target.value;
-    adminUserState.page = 1;
-    loadUsers();
-});
-
-document.getElementById('statusFilter').addEventListener('change', function (event) {
-    adminUserState.status = event.target.value;
-    adminUserState.page = 1;
-    loadUsers();
-});
-
-document.getElementById('perPageSelect').addEventListener('change', function (event) {
-    adminUserState.perPage = Number(event.target.value) || 10;
-    adminUserState.page = 1;
-    loadUsers();
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById('perPageSelect').value = String(adminUserState.perPage);
-    loadUsers();
-});
 </script>
 {% endblock %}

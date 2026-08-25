@@ -1,599 +1,474 @@
 {% extends "base.html" %}
 
-{% block title %}Transactions{% endblock %}
-{% block page_title %}Transaction History{% endblock %}
+{% block title %}Transactions &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Transactions{% endblock %}
 
 {% block content %}
-<!-- Statistics Cards -->
-<div class="grid-4" style="margin-bottom:24px;">
-    <div class="stat-card" id="stat-total">
-        <div class="stat-icon" style="background:var(--info-light);color:var(--info);">
-            <i class="fas fa-exchange-alt"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Total Transactions</div>
-        </div>
+<!-- Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Transactions</h1>
+        <p class="page-header-subtitle">Search, filter, and audit payment streams and risk scores</p>
     </div>
-    <div class="stat-card" id="stat-amount">
-        <div class="stat-icon" style="background:var(--success-light);color:var(--success);">
-            <i class="fas fa-dollar-sign"></i>
+    <div class="page-header-actions">
+        <div class="preset-btn-group" style="margin-right:4px;">
+            <button class="preset-btn" onclick="exportData('csv')" title="Export filtered rows to CSV">
+                <i data-lucide="download" style="width:13px;height:13px;display:inline-block;vertical-align:-1px;"></i> CSV
+            </button>
+            <button class="preset-btn" onclick="exportData('pdf')" title="Export filtered rows to PDF report">
+                <i data-lucide="file-text" style="width:13px;height:13px;display:inline-block;vertical-align:-1px;"></i> PDF
+            </button>
         </div>
-        <div class="stat-content">
-            <div class="stat-value">$0</div>
-            <div class="stat-label">Total Amount</div>
-        </div>
-    </div>
-    <div class="stat-card" id="stat-fraud">
-        <div class="stat-icon" style="background:var(--danger-light);color:var(--danger);">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Fraud Cases</div>
-        </div>
-    </div>
-    <div class="stat-card" id="stat-rate">
-        <div class="stat-icon" style="background:var(--warning-light);color:var(--warning);">
-            <i class="fas fa-percent"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-value">0%</div>
-            <div class="stat-label">Fraud Rate</div>
-        </div>
-    </div>
-</div>
-
-<!-- Advanced Filters Section -->
-<div class="panel" style="margin-bottom:24px;">
-    <div class="panel-header">
-        <h3><i class="fas fa-filter" style="color:var(--primary);margin-right:8px;"></i> Filters & Search</h3>
-        <button class="btn btn-sm btn-outline" id="toggle-filters" onclick="toggleFilters()" title="Toggle Filters">
-            <i class="fas fa-chevron-down"></i>
+        <button class="btn btn-secondary" onclick="loadTransactions(true)">
+            <i data-lucide="refresh-cw" id="tx-refresh-icon" style="width:14px;height:14px;"></i>
+            <span>Refresh</span>
         </button>
     </div>
-    <div class="panel-body" id="filters-container" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
-        <!-- Search Box -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Search</label>
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input class="form-control" id="search-input" placeholder="Merchant, ID, holder..." onkeyup="debounceSearch()">
-            </div>
-        </div>
+</div>
 
-        <!-- Date Range -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">From Date</label>
-            <input class="form-control" id="date-from" type="date" onchange="loadTransactions()">
+<!-- Transaction Statistics Strip -->
+<div class="kpi-grid-4" style="margin-bottom:20px;">
+    <div class="kpi-card" style="min-height:90px;padding:14px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Ledger Volume</span>
+            <div class="kpi-icon-wrap"><i data-lucide="receipt"></i></div>
         </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">To Date</label>
-            <input class="form-control" id="date-to" type="date" onchange="loadTransactions()">
+        <div class="kpi-value" id="stat-total" style="font-size:22px;">0</div>
+        <div class="kpi-footer"><span class="kpi-trend neutral">Total recorded events</span></div>
+    </div>
+    <div class="kpi-card" style="min-height:90px;padding:14px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Total Value</span>
+            <div class="kpi-icon-wrap"><i data-lucide="dollar-sign"></i></div>
         </div>
-
-        <!-- Status Filter -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Status</label>
-            <select class="form-control" id="status-filter" onchange="loadTransactions()">
-                <option value="">All Status</option>
-                <option value="fraud">⚠️ Fraud Detected</option>
-                <option value="safe">✓ Safe</option>
-                <option value="approved">✓ Approved</option>
-                <option value="declined">✗ Declined</option>
-            </select>
+        <div class="kpi-value" id="stat-amount" style="font-size:22px;">$0.00</div>
+        <div class="kpi-footer"><span class="kpi-trend positive">Processed value</span></div>
+    </div>
+    <div class="kpi-card" style="min-height:90px;padding:14px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Fraud Incidents</span>
+            <div class="kpi-icon-wrap"><i data-lucide="shield-alert"></i></div>
         </div>
-
-        <!-- Category Filter -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Category</label>
-            <select class="form-control" id="category-filter" onchange="loadTransactions()">
-                <option value="">All Categories</option>
-                <option value="Online Shopping">Online Shopping</option>
-                <option value="Retail">Retail</option>
-                <option value="Restaurant">Restaurant</option>
-                <option value="Gas Station">Gas Station</option>
-                <option value="Travel">Travel</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Grocery">Grocery</option>
-                <option value="Subscription">Subscription</option>
-            </select>
+        <div class="kpi-value" id="stat-fraud" style="font-size:22px;">0</div>
+        <div class="kpi-footer"><span class="kpi-trend negative">High risk detections</span></div>
+    </div>
+    <div class="kpi-card" style="min-height:90px;padding:14px 16px;">
+        <div class="kpi-top">
+            <span class="kpi-label">Fraud Rate</span>
+            <div class="kpi-icon-wrap"><i data-lucide="percent"></i></div>
         </div>
-
-        <!-- Amount Range -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Min Amount ($)</label>
-            <input class="form-control" id="amount-min" type="number" placeholder="0" onchange="loadTransactions()">
-        </div>
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Max Amount ($)</label>
-            <input class="form-control" id="amount-max" type="number" placeholder="10000" onchange="loadTransactions()">
-        </div>
-
-        <!-- Sorting -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Sort By</label>
-            <select class="form-control" id="sort-by" onchange="loadTransactions()">
-                <option value="timestamp">Date (Latest)</option>
-                <option value="amount">Amount (High to Low)</option>
-                <option value="fraud_score">Risk Score (High to Low)</option>
-            </select>
-        </div>
-
-        <!-- Risk Level Filter -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Risk Level</label>
-            <select class="form-control" id="risk-level-filter" onchange="loadTransactions()">
-                <option value="all">All Risk Levels</option>
-                <option value="low">Low Risk (&le; 0.3)</option>
-                <option value="medium">Medium Risk (0.3 - 0.7)</option>
-                <option value="high">High Risk (0.7 - 0.9)</option>
-                <option value="critical">Critical (&gt; 0.9)</option>
-            </select>
-        </div>
-
-        <!-- Export Format -->
-        <div>
-            <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Export Format</label>
-            <select class="form-control" id="export-format">
-                <option value="csv">CSV File</option>
-                <option value="pdf">PDF Document</option>
-            </select>
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display:flex;gap:8px;align-items:flex-end;">
-            <button class="btn btn-outline" onclick="resetFilters()" style="flex:1;">
-                <i class="fas fa-redo"></i> Reset
-            </button>
-            <button class="btn btn-primary" onclick="exportTransactions()" style="flex:1;">
-                <i class="fas fa-download"></i> Export
-            </button>
-        </div>
+        <div class="kpi-value" id="stat-rate" style="font-size:22px;">0.0%</div>
+        <div class="kpi-footer"><span class="kpi-trend neutral">Incident ratio</span></div>
     </div>
 </div>
 
-<!-- Transactions Table -->
-<div class="panel">
-    <div class="panel-header">
-        <h3><i class="fas fa-list-alt" style="color:var(--info);margin-right:8px;"></i> Transaction Details</h3>
-        <span style="color:var(--text-muted);font-size:13px;" id="txn-count">Loading...</span>
+<!-- Advanced Filter Panel -->
+<div class="filter-bar">
+    <div class="filter-group">
+        <div style="position:relative;display:inline-block;">
+            <input type="text" class="form-control" id="search-input" placeholder="Search ID, merchant, card..." style="padding-left:28px;width:240px;font-size:12px;padding-top:6px;padding-bottom:6px;" oninput="onSearchInput()">
+            <i data-lucide="search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:13px;height:13px;"></i>
+        </div>
+
+        <select class="form-control" id="status-filter" style="width:130px;font-size:12px;padding:6px 10px;" onchange="loadTransactions()">
+            <option value="">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="blocked">Blocked</option>
+            <option value="declined">Declined</option>
+            <option value="pending">Pending</option>
+        </select>
+
+        <select class="form-control" id="fraud-filter" style="width:130px;font-size:12px;padding:6px 10px;" onchange="loadTransactions()">
+            <option value="all">All Risk Tiers</option>
+            <option value="true">Fraudulent Only</option>
+            <option value="false">Genuine Only</option>
+        </select>
+
+        <select class="form-control" id="category-filter" style="width:140px;font-size:12px;padding:6px 10px;" onchange="loadTransactions()">
+            <option value="">All Categories</option>
+            <option value="Online Shopping">Online Shopping</option>
+            <option value="Retail">Retail</option>
+            <option value="Restaurant">Dining & Food</option>
+            <option value="Gas Station">Gas & Fuel</option>
+            <option value="Travel">Travel & Airlines</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Grocery">Grocery</option>
+            <option value="Subscription">Subscription</option>
+        </select>
     </div>
-    <div class="panel-body no-padding">
-        <div style="overflow-x:auto;">
+
+    <div class="filter-group">
+        <div style="display:flex;align-items:center;gap:4px;">
+            <input type="date" id="date-from" class="form-control" style="width:125px;font-size:12px;padding:5px 8px;" onchange="loadTransactions()">
+            <span style="color:var(--text-muted);">&ndash;</span>
+            <input type="date" id="date-to" class="form-control" style="width:125px;font-size:12px;padding:5px 8px;" onchange="loadTransactions()">
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()" title="Reset all filters">
+            <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i> Clear
+        </button>
+    </div>
+</div>
+
+<!-- Transactions Table Card -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div class="sentinel-card-title">
+            <i data-lucide="table" style="width:16px;height:16px;color:var(--accent);"></i>
+            <span>Transaction Ledger</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);" id="table-record-count">Loading records...</div>
+    </div>
+
+    <div class="sentinel-card-body no-padding">
+        <div class="data-table-container">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Date/Time</th>
                         <th>Transaction ID</th>
+                        <th>Timestamp</th>
+                        <th>Cardholder & Card</th>
                         <th>Merchant</th>
-                        <th>Amount</th>
                         <th>Category</th>
-                        <th>Location</th>
+                        <th>Amount</th>
                         <th>Risk Score</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="txn-tbody">
-                    <tr><td colspan="9"><div class="spinner"></div></td></tr>
+                <tbody id="transactions-tbody">
+                    <tr><td colspan="9" style="padding:28px;text-align:center;"><div class="spinner"></div></td></tr>
                 </tbody>
             </table>
         </div>
     </div>
-    <div class="pagination" id="pagination"></div>
-</div>
 
-<!-- Transaction Detail Modal -->
-<div class="modal-overlay" id="detail-modal">
-    <div class="modal" style="max-width:720px;">
-        <div id="detail-content"></div>
-        <div class="modal-actions">
-            <button class="btn btn-outline" onclick="closeDetailModal()">Close</button>
-        </div>
+    <!-- Pagination Footer -->
+    <div class="sentinel-pagination" id="pagination-wrapper" style="display:none;">
+        <div id="pagination-info">Showing 0 to 0 of 0 transactions</div>
+        <div class="pagination-pages" id="pagination-buttons"></div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
     let currentPage = 1;
-    let searchTimeout;
-    const PAGE_SIZE = 20;
+    let totalPages = 1;
+    let perPage = 20;
+    let searchDebounce = null;
 
-    // Utility function for API calls
-    async function apiCall(url, options = {}) {
-        try {
-            const response = await fetch(url, {
-                method: options.method || 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                body: options.body || undefined,
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return null;
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
-            }
-            return await response.text();
-        } catch (error) {
-            console.error('API Error:', error);
-            showToast(`Error: ${error.message}`, 'error');
-            throw error;
-        }
-    }
-
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
-        loadTransactions();
         loadStatistics();
+        loadTransactions();
     });
 
-    function toggleFilters() {
-        const container = document.getElementById('filters-container');
-        container.style.display = container.style.display === 'none' ? 'grid' : 'none';
+    function onSearchInput() {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+            currentPage = 1;
+            loadTransactions();
+        }, 300);
     }
 
-    function resetFilters() {
+    function clearFilters() {
         document.getElementById('search-input').value = '';
+        document.getElementById('status-filter').value = '';
+        document.getElementById('fraud-filter').value = 'all';
+        document.getElementById('category-filter').value = '';
         document.getElementById('date-from').value = '';
         document.getElementById('date-to').value = '';
-        document.getElementById('status-filter').value = '';
-        document.getElementById('category-filter').value = '';
-        document.getElementById('amount-min').value = '';
-        document.getElementById('amount-max').value = '';
-        document.getElementById('sort-by').value = 'timestamp';
         currentPage = 1;
         loadTransactions();
     }
 
-    function debounceSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => { currentPage = 1; loadTransactions(); }, 300);
-    }
-
-    async function loadTransactions() {
-        const tbody = document.getElementById('txn-tbody');
-        if (window.UIState && tbody) {
-            UIState.showLoading(tbody, 'table', { cols: 9, rows: 6 });
-        }
-
-        const search = document.getElementById('search-input')?.value || '';
-        const dateFrom = document.getElementById('date-from')?.value || '';
-        const dateTo = document.getElementById('date-to')?.value || '';
-        const status = document.getElementById('status-filter')?.value || '';
-        const category = document.getElementById('category-filter')?.value || '';
-        const amountMin = document.getElementById('amount-min')?.value || '';
-        const amountMax = document.getElementById('amount-max')?.value || '';
-        const sortBy = document.getElementById('sort-by')?.value || 'timestamp';
-        const riskLevel = document.getElementById('risk-level-filter')?.value || 'all';
-
-        const params = new URLSearchParams({
-            page: currentPage,
-            per_page: PAGE_SIZE,
-            search,
-            date_from: dateFrom,
-            date_to: dateTo,
-            status,
-            category,
-            amount_min: amountMin,
-            amount_max: amountMax,
-            risk_level: riskLevel,
-            sort_by: sortBy,
-            sort_order: 'DESC'
-        });
-
-        try {
-            const data = await apiCall(`/api/transactions/history?${params}`);
-            const countEl = document.getElementById('txn-count');
-            if (countEl) countEl.textContent = `${data.total || (data.transactions ? data.transactions.length : 0)} transactions found`;
-            renderTransactions(data.transactions || [], { search, dateFrom, dateTo, status, category, amountMin, amountMax, riskLevel });
-            renderPagination(data.page || 1, data.total_pages || (data.pages || 1));
-        } catch (e) {
-            console.error('Error loading transactions:', e);
-            if (tbody && window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderErrorState({ title: 'Unable to Load Transactions', message: e.message || 'Could not fetch transaction history.', onRetry: 'loadTransactions()' })}</td></tr>`;
-            }
-        }
-    }
-
     async function loadStatistics() {
         try {
-            const data = await apiCall('/api/transactions/statistics');
-            
-            // Update stat cards
-            const totalVal = data.total_transactions != null ? data.total_transactions : (data.total_count || 0);
-            const amtVal = data.total_amount != null ? data.total_amount : 0;
-            const fraudVal = data.fraud_count != null ? data.fraud_count : 0;
-            const rateVal = data.fraud_rate != null ? data.fraud_rate : 0;
-
-            const statTotal = document.getElementById('stat-total');
-            const statAmount = document.getElementById('stat-amount');
-            const statFraud = document.getElementById('stat-fraud');
-            const statRate = document.getElementById('stat-rate');
-
-            if (statTotal) statTotal.querySelector('.stat-value').textContent = Number(totalVal).toLocaleString();
-            if (statAmount) statAmount.querySelector('.stat-value').textContent = formatCurrency(amtVal);
-            if (statFraud) statFraud.querySelector('.stat-value').textContent = Number(fraudVal).toLocaleString();
-            if (statRate) statRate.querySelector('.stat-value').textContent = rateVal + '%';
-        } catch (e) {
-            console.error('Error loading statistics:', e);
-        }
-    }
-
-    function renderTransactions(transactions, filterParams = {}) {
-        const tbody = document.getElementById('txn-tbody');
-        if (!transactions.length) {
-            const hasFilters = filterParams.search || filterParams.dateFrom || filterParams.dateTo || (filterParams.status && filterParams.status !== 'all') || (filterParams.category && filterParams.category !== '') || filterParams.amountMin || filterParams.amountMax || (filterParams.riskLevel && filterParams.riskLevel !== 'all');
-            
-            if (hasFilters && window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderNoResults({ query: filterParams.search, onClear: 'resetFilters()', clearLabel: 'Reset Filters' })}</td></tr>`;
-            } else if (window.UIState) {
-                tbody.innerHTML = `<tr><td colspan="9">${UIState.renderEmptyState({ icon: 'fa-receipt', title: 'No Transactions Found', message: 'Your transaction activity will appear here once you make or process a transaction.', primaryAction: { label: 'Refresh', onClick: 'loadTransactions()', icon: 'fa-rotate-right' } })}</td></tr>`;
-            } else {
-                tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found</p></div></td></tr>';
-            }
-            return;
-        }
-
-        tbody.innerHTML = transactions.map(t => {
-            const riskLevel = t.is_fraud ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
-            const statusEmoji = t.is_fraud ? '⚠️' : (t.status === 'approved' ? '✓' : '✗');
-            const timestamp = t.timestamp ? new Date(t.timestamp).toLocaleString() : 'N/A';
-            
-            return `
-                <tr>
-                    <td style="font-size:12px;color:var(--text-muted);">${timestamp}</td>
-                    <td class="mono" style="font-family:monospace;font-size:11px;letter-spacing:1px;">${t.transaction_id}</td>
-                    <td style="font-weight:600;">${t.merchant || '-'}</td>
-                    <td style="font-weight:600;color:${t.is_fraud ? 'var(--danger)' : 'var(--success)'};">${formatCurrency(t.amount)}</td>
-                    <td><span style="font-size:11px;color:var(--text-muted);">${t.category || '-'}</span></td>
-                    <td><i class="fas fa-map-marker-alt" style="color:var(--text-muted);margin-right:4px;font-size:11px;"></i><span style="font-size:11px;">${t.location || '-'}</span></td>
-                    <td>
-                        <span style="font-weight:700;font-size:12px;color:${riskLevel === 'low' ? 'var(--success)' : riskLevel === 'medium' ? 'var(--warning)' : riskLevel === 'high' ? 'var(--warning)' : 'var(--danger)'};">
-                            ${t.fraud_score != null ? t.fraud_score + '%' : '0%'}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge-status ${t.is_fraud ? 'fraud' : t.status}" style="font-size:11px;">
-                            ${statusEmoji} ${t.is_fraud ? 'Fraud' : t.status}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-xs btn-outline" onclick="showTransactionDetail('${t.transaction_id}')" title="View Details">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    async function showTransactionDetail(transactionId) {
-        try {
-            const data = await apiCall(`/api/transactions/${transactionId}/details`);
-            const t = data.transaction;
-            const alerts = data.alerts;
-            
-            const riskLevel = t.is_fraud ? 'critical' : (t.fraud_score >= 65 ? 'high' : (t.fraud_score >= 40 ? 'medium' : 'low'));
-            const riskColor = riskLevel === 'low' ? 'var(--success)' : riskLevel === 'medium' ? 'var(--warning)' : 'var(--danger)';
-            
-            let alertsHtml = '';
-            if (alerts.length > 0) {
-                alertsHtml = `
-                    <div style="margin-top:20px;padding:20px;background:var(--danger-light);border-radius:8px;border:1px solid var(--danger-lighter);">
-                        <h4 style="color:var(--danger);margin-bottom:12px;">
-                            <i class="fas fa-exclamation-circle"></i> Security Alerts (${alerts.length})
-                        </h4>
-                        ${alerts.map(a => `
-                            <div style="margin-bottom:12px;padding:10px;background:white;border-radius:6px;border-left:4px solid var(--danger);">
-                                <div style="font-weight:600;color:var(--danger);">${a.severity.toUpperCase()}</div>
-                                <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">${a.message}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-
-            const riskFactors = Array.isArray(t.risk_factors) ? t.risk_factors : [];
-            
-            document.getElementById('detail-content').innerHTML = `
-                <h3 style="margin-bottom:16px;">
-                    <i class="fas fa-receipt" style="color:var(--info);margin-right:8px;"></i>
-                    Transaction Details
-                </h3>
-                
-                <div style="background:var(--surface-secondary);padding:16px;border-radius:8px;margin-bottom:16px;">
-                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
-                        <div>
-                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Transaction ID</div>
-                            <div style="font-family:monospace;font-weight:600;font-size:13px;">${t.transaction_id}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Timestamp</div>
-                            <div style="font-weight:600;">${new Date(t.timestamp).toLocaleString()}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Merchant</div>
-                            <div style="font-weight:600;">${t.merchant}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">Category</div>
-                            <div style="font-weight:600;">${t.category}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
-                    <div style="background:var(--success-light);padding:16px;border-radius:8px;text-align:center;">
-                        <div style="font-size:24px;font-weight:700;color:var(--success);">${formatCurrency(t.amount)}</div>
-                        <div style="font-size:12px;color:var(--success);margin-top:4px;">Amount</div>
-                    </div>
-                    <div style="background:var(--info-light);padding:16px;border-radius:8px;text-align:center;">
-                        <div style="font-size:24px;font-weight:700;color:var(--info);">${t.location}</div>
-                        <div style="font-size:12px;color:var(--info);margin-top:4px;">Location</div>
-                    </div>
-                    <div style="background:${riskLevel === 'low' ? 'var(--success-light)' : 'var(--danger-light)'};padding:16px;border-radius:8px;text-align:center;">
-                        <div style="font-size:24px;font-weight:700;color:${riskColor};">${t.fraud_score}%</div>
-                        <div style="font-size:12px;${riskColor};margin-top:4px;">Risk Score</div>
-                    </div>
-                </div>
-
-                <div style="background:var(--surface-secondary);padding:16px;border-radius:8px;margin-bottom:16px;">
-                    <h4 style="margin-bottom:12px;">Card Information</h4>
-                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:12px;">
-                        <div>
-                            <span style="color:var(--text-secondary);">Card Number:</span>
-                            <div style="font-family:monospace;font-weight:600;">${t.card_number}</div>
-                        </div>
-                        <div>
-                            <span style="color:var(--text-secondary);">Card Holder:</span>
-                            <div style="font-weight:600;">${t.card_holder}</div>
-                        </div>
-                        <div>
-                            <span style="color:var(--text-secondary);">Device Type:</span>
-                            <div style="font-weight:600;">${t.device_type || 'Unknown'}</div>
-                        </div>
-                        <div>
-                            <span style="color:var(--text-secondary);">IP Address:</span>
-                            <div style="font-family:monospace;font-weight:600;">${t.ip_address || 'N/A'}</div>
-                        </div>
-                    </div>
-                </div>
-
-                ${riskFactors.length > 0 ? `
-                    <div style="background:var(--warning-light);padding:16px;border-radius:8px;margin-bottom:16px;">
-                        <h4 style="margin-bottom:12px;color:var(--warning);">
-                            <i class="fas fa-shield-alt"></i> Risk Factors
-                        </h4>
-                        <ul style="margin:0;padding-left:20px;font-size:12px;">
-                            ${riskFactors.map(f => `<li style="margin-bottom:4px;color:var(--warning);">${f}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-
-                <div style="padding:16px;background:var(--surface-secondary);border-radius:8px;margin-bottom:16px;">
-                    <h4 style="margin-bottom:12px;">Status</h4>
-                    <div style="display:flex;gap:12px;font-size:12px;">
-                        <div>
-                            <span style="color:var(--text-secondary);">Status:</span>
-                            <span class="badge-status ${t.is_fraud ? 'fraud' : t.status}" style="margin-left:8px;font-weight:600;">
-                                ${t.is_fraud ? '⚠️ FRAUD' : '✓ ' + t.status.toUpperCase()}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                ${alertsHtml}
-            `;
-            
-            document.getElementById('detail-modal').style.display = 'flex';
-        } catch (e) {
-            console.error('Error loading transaction details:', e);
-            alert('Failed to load transaction details');
-        }
-    }
-
-    function closeDetailModal() {
-        document.getElementById('detail-modal').style.display = 'none';
-    }
-
-    async function exportTransactions() {
-        const dateFrom = document.getElementById('date-from').value;
-        const dateTo = document.getElementById('date-to').value;
-        const status = document.getElementById('status-filter').value;
-        const riskLevel = document.getElementById('risk-level-filter').value;
-        const minAmount = document.getElementById('amount-min').value;
-        const maxAmount = document.getElementById('amount-max').value;
-        const format = document.getElementById('export-format').value;
-
-        const params = new URLSearchParams({
-            date_from: dateFrom,
-            date_to: dateTo,
-            status: status,
-            risk_level: riskLevel,
-            min_amount: minAmount,
-            max_amount: maxAmount,
-            format: format
-        });
-
-        try {
-            const exportUrl = `/api/transactions/export?${params.toString()}`;
-            const a = document.createElement('a');
-            a.href = exportUrl;
-            a.download = `transactions_${new Date().toISOString().slice(0,10)}.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            showToast(`Exporting transaction ${format.toUpperCase()} report...`, 'success');
-        } catch (e) {
-            console.error('Error exporting transactions:', e);
-            showToast('Failed to export transactions', 'error');
-        }
-    }
-
-    function renderPagination(page, totalPages) {
-        const container = document.getElementById('pagination');
-        if (totalPages <= 1) {
-            container.innerHTML = '';
-            return;
-        }
-
-        let html = '<div style="display:flex;gap:8px;justify-content:center;align-items:center;">';
-        
-        if (page > 1) {
-            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=1;loadTransactions();">First</button>`;
-            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=${page-1};loadTransactions();">← Prev</button>`;
-        }
-
-        html += `<span style="color:var(--text-secondary);margin:0 12px;">Page ${page} of ${totalPages}</span>`;
-
-        if (page < totalPages) {
-            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=${page+1};loadTransactions();">Next →</button>`;
-            html += `<button class="btn btn-sm btn-outline" onclick="currentPage=${totalPages};loadTransactions();">Last</button>`;
-        }
-
-        html += '</div>';
-        container.innerHTML = html;
-    }
-
-    function formatCurrency(amount) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
-    }
-
-    async function blockCard(cardNumber) {
-        if (!confirm(`Block card ${cardNumber}?`)) return;
-        try {
-            await apiCall('/api/cards/block', {
-                method: 'POST',
-                body: JSON.stringify({ card_number: cardNumber, reason: 'Fraud detected' })
-            });
-            showToast('Card blocked successfully', 'success');
-            loadTransactions();
+            const res = await fetch('/api/transactions/statistics');
+            if (!res.ok) return;
+            const stats = await res.json();
+            document.getElementById('stat-total').textContent = Sentinel.formatNumber(stats.total_count);
+            document.getElementById('stat-amount').textContent = Sentinel.formatCurrency(stats.total_amount);
+            document.getElementById('stat-fraud').textContent = Sentinel.formatNumber(stats.fraud_count);
+            document.getElementById('stat-rate').textContent = `${(stats.fraud_rate || 0).toFixed(2)}%`;
         } catch (e) {}
     }
 
-    // Close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(m => {
-        m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-    });
+    async function loadTransactions(isManualRefresh = false) {
+        const refreshIcon = document.getElementById('tx-refresh-icon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
-    loadTransactions();
+        const tbody = document.getElementById('transactions-tbody');
+        const countText = document.getElementById('table-record-count');
+
+        const search = document.getElementById('search-input').value.trim();
+        const status = document.getElementById('status-filter').value;
+        const isFraud = document.getElementById('fraud-filter').value;
+        const category = document.getElementById('category-filter').value;
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
+
+        const params = new URLSearchParams({
+            page: currentPage,
+            per_page: perPage
+        });
+
+        if (status) params.append('status', status);
+        if (isFraud && isFraud !== 'all') params.append('is_fraud', isFraud);
+        if (category) params.append('category', category);
+        if (search) params.append('search', search);
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+
+        try {
+            const res = await fetch(`/api/transactions?${params.toString()}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load transactions`);
+            const data = await res.json();
+
+            const txns = data.transactions || [];
+            totalPages = data.pages || 1;
+            const totalCount = data.total || 0;
+
+            if (countText) countText.textContent = `${Sentinel.formatNumber(totalCount)} total records`;
+
+            if (txns.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="padding:0;">
+                            <div class="ui-state-empty">
+                                <div class="empty-icon-wrap"><i data-lucide="search-x" style="width:24px;height:24px;"></i></div>
+                                <div class="empty-title">No transactions match your criteria</div>
+                                <div class="empty-desc">Try clearing filters or searching for another identifier or merchant.</div>
+                                <div class="empty-actions">
+                                    <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Reset Filters</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('pagination-wrapper').style.display = 'none';
+                Sentinel.initIcons();
+                return;
+            }
+
+            tbody.innerHTML = txns.map(t => {
+                const score = t.fraud_score || 0;
+                let riskClass = 'low';
+                let riskLabel = 'Low';
+                if (score >= 80) { riskClass = 'critical'; riskLabel = 'Critical'; }
+                else if (score >= 50) { riskClass = 'high'; riskLabel = 'High'; }
+                else if (score >= 20) { riskClass = 'medium'; riskLabel = 'Medium'; }
+
+                const statusClass = (t.status || 'approved').toLowerCase();
+
+                return `
+                    <tr class="clickable-row" onclick="inspectTxn('${t.transaction_id}')">
+                        <td class="mono-cell" style="font-weight:600;color:var(--accent);">${t.transaction_id}</td>
+                        <td style="color:var(--text-secondary);font-size:12px;">${Sentinel.formatDate(t.timestamp)}</td>
+                        <td>
+                            <div style="font-weight:600;color:var(--text-primary);">${t.card_holder || '—'}</div>
+                            <div class="mono-cell" style="font-size:11px;color:var(--text-muted);">${t.card_number || '—'}</div>
+                        </td>
+                        <td><strong style="color:var(--text-primary);">${t.merchant || 'Unknown Merchant'}</strong></td>
+                        <td style="color:var(--text-secondary);font-size:12px;">${t.category || 'General'}</td>
+                        <td style="font-weight:700;color:var(--text-primary);">${Sentinel.formatCurrency(t.amount)}</td>
+                        <td>
+                            <div class="score-meter">
+                                <div class="score-bar-track">
+                                    <div class="score-bar-fill ${riskClass}" style="width:${Math.min(score, 100)}%;"></div>
+                                </div>
+                                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;">${score.toFixed(1)}%</span>
+                            </div>
+                        </td>
+                        <td><span class="status-pill ${statusClass}">${(t.status || 'Approved').toUpperCase()}</span></td>
+                        <td style="text-align:right;">
+                            <button class="btn btn-outline btn-xs" onclick="event.stopPropagation(); inspectTxn('${t.transaction_id}')" title="Inspect forensic details">
+                                <i data-lucide="eye" style="width:12px;height:12px;"></i> Inspect
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderPagination(data.page, data.pages, data.total, data.per_page);
+            Sentinel.initIcons();
+
+            if (isManualRefresh) {
+                Sentinel.showToast('Transaction ledger refreshed', 'success');
+            }
+        } catch (err) {
+            console.error('Transactions load error:', err);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="padding:24px;text-align:center;color:var(--danger);">
+                        <i data-lucide="alert-circle" style="width:20px;height:20px;display:inline-block;vertical-align:-4px;"></i>
+                        Failed to load transactions. <button class="btn btn-outline btn-xs" onclick="loadTransactions()">Retry</button>
+                    </td>
+                </tr>
+            `;
+            Sentinel.initIcons();
+        } finally {
+            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+        }
+    }
+
+    function renderPagination(page, pages, total, pPage) {
+        const wrapper = document.getElementById('pagination-wrapper');
+        const info = document.getElementById('pagination-info');
+        const buttons = document.getElementById('pagination-buttons');
+
+        if (!wrapper || pages <= 1) {
+            if (wrapper) wrapper.style.display = 'none';
+            return;
+        }
+
+        wrapper.style.display = 'flex';
+        const start = ((page - 1) * pPage) + 1;
+        const end = Math.min(page * pPage, total);
+        info.textContent = `Showing ${start}–${end} of ${Sentinel.formatNumber(total)} records`;
+
+        let btnsHtml = `
+            <button class="page-btn" ${page === 1 ? 'disabled' : ''} onclick="goToPage(${page - 1})">
+                <i data-lucide="chevron-left" style="width:12px;height:12px;"></i>
+            </button>
+        `;
+
+        for (let p = Math.max(1, page - 2); p <= Math.min(pages, page + 2); p++) {
+            btnsHtml += `
+                <button class="page-btn ${p === page ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>
+            `;
+        }
+
+        btnsHtml += `
+            <button class="page-btn" ${page === pages ? 'disabled' : ''} onclick="goToPage(${page + 1})">
+                <i data-lucide="chevron-right" style="width:12px;height:12px;"></i>
+            </button>
+        `;
+
+        buttons.innerHTML = btnsHtml;
+        Sentinel.initIcons();
+    }
+
+    function goToPage(p) {
+        if (p < 1 || p > totalPages) return;
+        currentPage = p;
+        loadTransactions();
+    }
+
+    async function inspectTxn(txnId) {
+        try {
+            const res = await fetch(`/api/transactions/${txnId}/details`);
+            if (!res.ok) throw new Error('Failed to retrieve record');
+            const txn = await res.json();
+
+            const score = txn.fraud_score || 0;
+            let riskBadgeClass = 'low';
+            if (score >= 80) riskBadgeClass = 'critical';
+            else if (score >= 50) riskBadgeClass = 'high';
+            else if (score >= 20) riskBadgeClass = 'medium';
+
+            const drawerHtml = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle);">
+                    <div>
+                        <div style="font-size:11px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Transaction ID</div>
+                        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--text-primary);">${txn.transaction_id}</div>
+                    </div>
+                    <span class="status-pill ${(txn.status || 'approved').toLowerCase()}" style="font-size:12px;padding:4px 12px;">
+                        ${(txn.status || 'Approved').toUpperCase()}
+                    </span>
+                </div>
+
+                <div class="grid-2" style="margin-bottom:20px;">
+                    <div style="padding:12px;background:var(--bg-surface-secondary);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Amount</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--text-primary);">${Sentinel.formatCurrency(txn.amount)}</div>
+                    </div>
+                    <div style="padding:12px;background:var(--bg-surface-secondary);border-radius:8px;">
+                        <div style="font-size:11px;color:var(--text-muted);">Risk Score</div>
+                        <div style="font-size:20px;font-weight:700;color:${score >= 50 ? 'var(--danger)' : 'var(--success)'};">${score.toFixed(1)}% <span class="risk-pill ${riskBadgeClass}" style="font-size:10px;">${riskBadgeClass}</span></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <h4 style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:10px;">Forensic Information</h4>
+                    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Merchant</td><td style="padding:8px 0;font-weight:600;text-align:right;">${txn.merchant || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Category</td><td style="padding:8px 0;text-align:right;">${txn.category || 'General'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Card Number</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.card_number || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Cardholder</td><td style="padding:8px 0;text-align:right;">${txn.card_holder || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Location</td><td style="padding:8px 0;text-align:right;">${txn.location || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">IP Address</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.ip_address || '—'}</td></tr>
+                        <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Timestamp</td><td style="padding:8px 0;text-align:right;">${Sentinel.formatDate(txn.timestamp)}</td></tr>
+                    </table>
+                </div>
+
+                ${txn.risk_factors && txn.risk_factors.length > 0 ? `
+                    <div style="margin-bottom:20px;">
+                        <h4 style="font-size:13px;font-weight:600;color:var(--danger);margin-bottom:8px;">Identified Risk Factors</h4>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            ${txn.risk_factors.map(rf => `
+                                <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--danger-light);border:1px solid var(--danger-border);border-radius:6px;font-size:12px;color:var(--danger);">
+                                    <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;margin-top:2px;"></i>
+                                    <span>${rf}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div style="padding:12px;background:var(--success-light);border:1px solid var(--success-border);border-radius:6px;font-size:12px;color:var(--success);margin-bottom:20px;">
+                        <i data-lucide="check-circle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;"></i> No high-risk anomalies flagged.
+                    </div>
+                `}
+            `;
+
+            const footerHtml = `
+                <button class="btn btn-secondary btn-sm" onclick="Sentinel.copyToClipboard('${txn.transaction_id}', 'Transaction ID copied')">
+                    <i data-lucide="copy" style="width:12px;height:12px;"></i> Copy ID
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="resolveLedgerTxn('${txn.transaction_id}', 'approved')">
+                    <i data-lucide="check" style="width:12px;height:12px;"></i> Approve
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="resolveLedgerTxn('${txn.transaction_id}', 'blocked')">
+                    <i data-lucide="ban" style="width:12px;height:12px;"></i> Block
+                </button>
+            `;
+
+            Sentinel.openDrawer(`Investigation: ${txn.transaction_id}`, drawerHtml, footerHtml);
+        } catch (e) {
+            Sentinel.showToast('Unable to open transaction details', 'error');
+        }
+    }
+
+    async function resolveLedgerTxn(txnId, status) {
+        try {
+            const res = await fetch(`/api/transactions/${txnId}/review`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            });
+            if (!res.ok) throw new Error('Status update failed');
+            Sentinel.showToast(`Transaction marked as ${status}`, 'success');
+            Sentinel.closeDrawer();
+            loadTransactions();
+            loadStatistics();
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Action failed', 'error');
+        }
+    }
+
+    function exportData(format = 'csv') {
+        const search = document.getElementById('search-input').value.trim();
+        const status = document.getElementById('status-filter').value;
+        const isFraud = document.getElementById('fraud-filter').value;
+        const category = document.getElementById('category-filter').value;
+
+        const params = new URLSearchParams({ format: format });
+        if (status) params.append('status', status);
+        if (isFraud && isFraud !== 'all') params.append('is_fraud', isFraud);
+        if (category) params.append('category', category);
+        if (search) params.append('search', search);
+
+        window.location.href = `/api/transactions/export?${params.toString()}`;
+        Sentinel.showToast(`Generating ${format.toUpperCase()} export...`, 'info');
+    }
 </script>
 {% endblock %}

@@ -3,222 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | FraudShield</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Sign In &mdash; Sentinel Security</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/static/css/sentinel.css">
+    <link rel="stylesheet" href="/static/css/ui-states.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
+            background-color: var(--bg-app);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
+            margin: 0;
+            box-sizing: border-box;
         }
 
-        .bg-animation { display: none; }
-
-        .login-container {
+        .auth-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
         }
 
-        .login-brand {
+        .auth-brand {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
 
-        .login-brand .logo {
-            width: 60px; height: 60px;
-            background: #4f46e5;
-            border-radius: 12px;
+        .auth-brand-logo {
+            width: 44px;
+            height: 44px;
+            background: var(--text-primary);
+            color: #FFFFFF;
+            border-radius: var(--radius-md);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            color: white;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
-        .login-brand h1 {
-            font-size: 26px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .login-brand p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .login-card {
-            background: white;
-            border-radius: 10px;
-            padding: 32px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .login-card h2 {
+        .auth-brand-title {
             font-size: 20px;
             font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin: 0 0 4px 0;
         }
 
-        .login-card .subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 6px;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-wrapper input {
-            width: 100%;
-            padding: 11px 14px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            color: #333;
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .input-wrapper input:focus {
-            outline: none;
-            border-color: #4f46e5;
-            background: white;
-        }
-
-        .input-wrapper input::placeholder { color: #999; }
-
-        .error-message {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 12px 14px;
-            border-radius: 6px;
+        .auth-brand-sub {
             font-size: 13px;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: var(--text-secondary);
+            margin: 0;
         }
 
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            transition: background 0.2s;
+        .auth-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
         }
 
-        .login-btn:hover {
-            background: #3f37c5;
-        }
-
-        .login-footer {
+        .auth-footer-text {
             text-align: center;
-            margin-top: 20px;
-            color: #666;
             font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 24px;
         }
 
-        .login-footer .credentials {
-            background: #f5f5f5;
-            border-radius: 6px;
-            padding: 10px;
-            margin-top: 14px;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .login-footer .credentials strong {
-            color: #4f46e5;
+        .demo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-surface-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-
-    <div class="login-container">
-        <div class="login-brand">
-            <div class="logo"><i class="fas fa-shield-halved"></i></div>
-            <h1>FraudShield</h1>
-            <p>Credit Card Fraud Detection System</p>
+    <div class="auth-container">
+        <div class="auth-brand">
+            <div class="auth-brand-logo">
+                <i data-lucide="shield" style="width:22px;height:22px;"></i>
+            </div>
+            <h1 class="auth-brand-title">Sentinel Security</h1>
+            <p class="auth-brand-sub">Quiet Fintech Operations & Fraud Defense</p>
         </div>
 
-        <div class="login-card">
-            <h2>Welcome back</h2>
-            <p class="subtitle">Sign in to access the fraud detection dashboard</p>
+        <div class="auth-card">
+            <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;color:var(--text-primary);">Authenticate</h2>
+            <p style="font-size:12px;color:var(--text-secondary);margin-bottom:20px;">Enter your credentials to access the security console</p>
 
             {% if error %}
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ error }}
+            <div style="padding:10px 14px;background:var(--danger-light);border:1px solid var(--danger-border);border-radius:var(--radius-sm);font-size:12px;color:var(--danger);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="alert-circle" style="width:14px;height:14px;flex-shrink:0;"></i>
+                <span>{{ error }}</span>
             </div>
             {% endif %}
 
-            <form method="POST" action="/login">
+            <form method="POST" action="/login" id="loginForm" onsubmit="handleLoginSubmit(event)">
                 <div class="form-group">
-                    <label>Username</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user"></i>
-                        <input type="text" name="username" placeholder="Enter your username" required autofocus>
+                    <label class="form-label" for="username">Username</label>
+                    <div style="position:relative;">
+                        <input type="text" name="username" id="username" class="form-control" placeholder="Enter your username" required autofocus autocomplete="username" style="padding-left:32px;">
+                        <i data-lucide="user" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:14px;height:14px;"></i>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" placeholder="Enter your password" required>
+                <div class="form-group" style="margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <label class="form-label" for="password" style="margin-bottom:0;">Password</label>
+                        <a href="{{ url_for('forgot_password') }}" style="font-size:11px;color:var(--accent);text-decoration:none;font-weight:500;">Forgot password?</a>
+                    </div>
+                    <div style="position:relative;">
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password" style="padding-left:32px;">
+                        <i data-lucide="lock" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:14px;height:14px;"></i>
                     </div>
                 </div>
 
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
+                <button type="submit" class="btn btn-primary" id="loginSubmitBtn" style="width:100%;">
+                    <i data-lucide="log-in" style="width:14px;height:14px;"></i>
+                    <span>Sign In</span>
                 </button>
 
-                <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(100, 116, 139, 0.2);">
-                    <p style="color: #64748b; font-size: 14px;">
-                        Don't have an account? 
-                        <a href="{{ url_for('register') }}" style="color: #818cf8; text-decoration: none; font-weight: 600;">Create one now</a>
-                    </p>
+                <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-subtle);font-size:12px;color:var(--text-secondary);">
+                    Don't have an account? 
+                    <a href="{{ url_for('register') }}" style="color:var(--accent);text-decoration:none;font-weight:600;">Create account</a>
                 </div>
             </form>
         </div>
 
-        <div class="login-footer">
-            <p>Protected by FraudShield Security &copy; 2026</p>
-            <div class="credentials">
-                <strong>Demo Credentials:</strong> admin / admin123
+        <div class="auth-footer-text">
+            <div>Sentinel Security Console &bull; Multi-Factor Ready</div>
+            <div class="demo-pill">
+                <i data-lucide="key" style="width:11px;height:11px;color:var(--accent);"></i>
+                <span>Demo access: <strong>admin</strong> / <strong>admin123</strong></span>
             </div>
         </div>
     </div>
+
+    <script src="/static/js/sentinel.js"></script>
+    <script src="/static/js/ui-states.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Sentinel.initIcons();
+        });
+
+        function handleLoginSubmit(e) {
+            const btn = document.getElementById('loginSubmitBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="btn-spinner"></span> Authenticating...`;
+            }
+        }
+    </script>
 </body>
 </html>

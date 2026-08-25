@@ -1,32 +1,37 @@
 {% extends "base.html" %}
 
 {% block title %}{{ status_code }} - {{ title or "Error" }}{% endblock %}
+{% block page_title %}System Alert{% endblock %}
 
 {% block content %}
-<div style="display: flex; align-items: center; justify-content: center; min-height: 70vh; padding: 20px;">
-    <div style="background: var(--bg-card, #1e293b); border: 1px solid var(--border, #334155); border-radius: 16px; padding: 40px; max-width: 550px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        
-        <div style="font-size: 64px; font-weight: 800; color: var(--danger, #ef4444); line-height: 1; margin-bottom: 12px;">
-            {{ status_code or 500 }}
+<div style="display:flex;align-items:center;justify-content:center;min-height:60vh;padding:20px;">
+    <div class="sentinel-card" style="max-width:480px;width:100%;text-align:center;padding:36px 28px;">
+        <div style="width:52px;height:52px;background:var(--danger-light);color:var(--danger);border-radius:var(--radius-md);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <i data-lucide="alert-octagon" style="width:26px;height:26px;"></i>
         </div>
-        
-        <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary, #f1f5f9); margin-bottom: 16px;">
-            {{ title or "An Error Occurred" }}
+
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);margin-bottom:6px;">
+            HTTP {{ status_code or 500 }}
+        </div>
+
+        <h2 style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:10px;">
+            {{ title or "System Exception Encountered" }}
         </h2>
-        
-        <p style="font-size: 15px; color: var(--text-secondary, #94a3b8); margin-bottom: 30px; line-height: 1.6;">
-            {{ message or "We encountered an unexpected issue while processing your request." }}
+
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.5;">
+            {{ message or "Sentinel encountered an unexpected error processing this transaction or request." }}
         </p>
 
-        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <a href="{{ url_for('dashboard') }}" style="background: var(--primary, #6366f1); color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;">
-                <i class="fas fa-home" style="margin-right: 8px;"></i> Return to Dashboard
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                <i data-lucide="layout-dashboard" style="width:14px;height:14px;"></i>
+                <span>Return to Dashboard</span>
             </a>
-            <button onclick="window.history.back()" style="background: var(--bg-card-hover, #334155); color: var(--text-primary, #f1f5f9); padding: 12px 24px; border-radius: 8px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s;">
-                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Go Back
+            <button onclick="window.history.back()" class="btn btn-secondary">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+                <span>Go Back</span>
             </button>
         </div>
-
     </div>
 </div>
 {% endblock %}

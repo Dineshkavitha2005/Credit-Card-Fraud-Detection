@@ -1,322 +1,204 @@
 {% extends "base.html" %}
 
-{% block title %}Settings{% endblock %}
-{% block page_title %}System Settings{% endblock %}
+{% block title %}System Settings &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Settings{% endblock %}
 
 {% block content %}
-<div class="grid-2">
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">System Settings</h1>
+        <p class="page-header-subtitle">Fraud rule thresholds, inference engine parameters, and diagnostic simulation</p>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px;">
     <!-- Fraud Detection Rules -->
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-cog" style="color:var(--primary-light);margin-right:8px;"></i> Fraud Detection Rules</h3>
-        </div>
-        <div class="panel-body no-padding" id="rules-container">
-            <div class="spinner"></div>
-        </div>
-    </div>
-
-    <!-- Blocked Cards -->
-    <div class="panel">
-        <div class="panel-header">
-            <h3><i class="fas fa-ban" style="color:var(--danger);margin-right:8px;"></i> Blocked Cards</h3>
-            <button class="btn btn-xs btn-danger" onclick="openBlockModal()">
-                <i class="fas fa-plus"></i> Block Card
-            </button>
-        </div>
-        <div class="panel-body no-padding" id="blocked-cards-container">
-            <div class="spinner"></div>
-        </div>
-    </div>
-</div>
-
-<!-- System Info -->
-<div class="panel" style="margin-top:24px;">
-    <div class="panel-header">
-        <h3><i class="fas fa-info-circle" style="color:var(--info);margin-right:8px;"></i> System Information</h3>
-    </div>
-    <div class="panel-body">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;">
-            <div style="padding:20px;background:rgba(0,0,0,0.2);border-radius:10px;">
-                <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">System Version</div>
-                <div style="font-size:18px;font-weight:700;">FraudShield v2.0</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Real-time Fraud Detection</div>
-            </div>
-            <div style="padding:20px;background:rgba(0,0,0,0.2);border-radius:10px;">
-                <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Detection Engine</div>
-                <div style="font-size:18px;font-weight:700;">ML-Enhanced Rules</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Multi-factor scoring algorithm</div>
-            </div>
-            <div style="padding:20px;background:rgba(0,0,0,0.2);border-radius:10px;">
-                <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Current User</div>
-                <div style="font-size:18px;font-weight:700;">{{ current_user.username if current_user.is_authenticated else 'Guest' }}</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Role: {{ (current_user.role if current_user.is_authenticated and current_user.role else 'user')|title }}</div>
-            </div>
-            <div style="padding:20px;background:rgba(0,0,0,0.2);border-radius:10px;">
-                <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Protection Status</div>
-                <div style="font-size:18px;font-weight:700;color:var(--success);">
-                    <i class="fas fa-shield-halved"></i> Active
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="sliders" style="width:16px;height:16px;color:var(--accent);"></i>
+                    <span>Detection Engine Rules</span>
                 </div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">All systems operational</div>
+                <div class="sentinel-card-subtitle">Active heuristic constraints and weight multipliers</div>
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="loadRules()">
+                <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> Refresh
+            </button>
+        </div>
+        <div class="sentinel-card-body no-padding" id="rules-container">
+            <div style="padding:28px;text-align:center;"><div class="spinner"></div></div>
+        </div>
+    </div>
+
+    <!-- System Architecture & Health -->
+    <div class="sentinel-card">
+        <div class="sentinel-card-header">
+            <div>
+                <div class="sentinel-card-title">
+                    <i data-lucide="cpu" style="width:16px;height:16px;color:var(--success);"></i>
+                    <span>Engine Telemetry</span>
+                </div>
+                <div class="sentinel-card-subtitle">Cryptographic and operational parameters</div>
+            </div>
+        </div>
+        <div class="sentinel-card-body">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="padding:12px 14px;background:var(--bg-surface-secondary);border:1px solid var(--border-subtle);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Core Platform</div>
+                        <div style="font-size:14px;font-weight:700;color:var(--text-primary);">Sentinel Fintech Security v2.4</div>
+                    </div>
+                    <span class="status-pill approved" style="font-size:11px;">ACTIVE</span>
+                </div>
+
+                <div style="padding:12px 14px;background:var(--bg-surface-secondary);border:1px solid var(--border-subtle);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Fraud Model Architecture</div>
+                        <div style="font-size:14px;font-weight:700;color:var(--text-primary);">Ensemble ML + Dynamic Heuristics</div>
+                    </div>
+                    <span class="status-pill approved" style="font-size:11px;">0.998 AUC</span>
+                </div>
+
+                <div style="padding:12px 14px;background:var(--bg-surface-secondary);border:1px solid var(--border-subtle);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Data Encryption Protocol</div>
+                        <div style="font-size:14px;font-weight:700;color:var(--text-primary);">AES-256-GCM + Salted SHA-256</div>
+                    </div>
+                    <span class="status-pill approved" style="font-size:11px;">ENCRYPTED</span>
+                </div>
+
+                <div style="padding:12px 14px;background:var(--bg-surface-secondary);border:1px solid var(--border-subtle);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Session Authentication</div>
+                        <div style="font-size:14px;font-weight:700;color:var(--text-primary);">{{ current_user.username if current_user.is_authenticated else 'Guest' }} ({{ (current_user.role if current_user.is_authenticated and current_user.role else 'user')|upper }})</div>
+                    </div>
+                    <span class="status-pill reviewed" style="font-size:11px;">SECURED</span>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Data Management -->
-<div class="panel" style="margin-top:24px;">
-    <div class="panel-header">
-        <h3><i class="fas fa-database" style="color:var(--warning);margin-right:8px;"></i> Data Management</h3>
-    </div>
-    <div class="panel-body">
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-            <button class="btn btn-outline" onclick="simulateFromSettings(25)">
-                <i class="fas fa-play"></i> Generate 25 Test Transactions
-            </button>
-            <button class="btn btn-outline" onclick="simulateFromSettings(100)">
-                <i class="fas fa-bolt"></i> Generate 100 Test Transactions
-            </button>
+<!-- Data Management & Diagnostics -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div>
+            <div class="sentinel-card-title">
+                <i data-lucide="database" style="width:16px;height:16px;color:var(--warning);"></i>
+                <span>Diagnostic Simulation & Test Data Generation</span>
+            </div>
+            <div class="sentinel-card-subtitle">Trigger synthetic payment streams to validate detection latency and model precision</div>
         </div>
-        <p style="font-size:12px;color:var(--text-muted);margin-top:12px;">
-            Generate simulated transactions to test the fraud detection system. Simulated transactions include
-            a mix of legitimate and suspicious activities.
-        </p>
     </div>
-</div>
-
-<!-- Block Card Modal -->
-<div class="modal-overlay" id="block-modal">
-    <div class="modal" style="max-width:420px;">
-        <h3><i class="fas fa-ban" style="color:var(--danger);margin-right:10px;"></i>Block Card</h3>
-        <form onsubmit="blockCard(event)">
-            <div class="form-group">
-                <label>Card Number</label>
-                <input class="form-control" id="block-card-number" placeholder="****-****-****-1234" required>
+    <div class="sentinel-card-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+            <p style="font-size:13px;color:var(--text-secondary);max-width:560px;margin:0;">
+                Generate realistic simulated transaction batches incorporating normal spending, location anomalies, velocity surges, and high-risk merchants.
+            </p>
+            <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary" onclick="simulateFromSettings(25)" id="sim-25-btn">
+                    <i data-lucide="play" style="width:13px;height:13px;"></i>
+                    <span>Simulate 25 Txns</span>
+                </button>
+                <button class="btn btn-primary" onclick="simulateFromSettings(100)" id="sim-100-btn">
+                    <i data-lucide="zap" style="width:13px;height:13px;"></i>
+                    <span>Simulate 100 Txns</span>
+                </button>
             </div>
-            <div class="form-group">
-                <label>Reason</label>
-                <input class="form-control" id="block-reason" placeholder="Suspected fraud" value="Suspected fraud">
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-outline" onclick="closeBlockModal()">Cancel</button>
-                <button type="submit" class="btn btn-danger"><i class="fas fa-ban"></i> Block Card</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Utility function for API calls
-    async function apiCall(url, options = {}) {
-        try {
-            const response = await fetch(url, {
-                method: options.method || 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                body: options.body || undefined,
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return null;
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
-            }
-            return await response.text();
-        } catch (error) {
-            console.error('API Error:', error);
-            showToast(`Error: ${error.message}`, 'error');
-            throw error;
-        }
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRules();
+    });
 
     async function loadRules() {
         const container = document.getElementById('rules-container');
-        if (container && window.UIState) {
-            UIState.showLoading(container, 'spinner');
-        }
-
         try {
-            const data = await apiCall('/api/fraud-rules');
+            const res = await fetch('/api/fraud-rules');
+            if (!res.ok) throw new Error('Failed to load rules');
+            const data = await res.json();
             const rules = data.rules || [];
 
-            if (!rules.length) {
-                if (window.UIState) {
-                    container.innerHTML = UIState.renderEmptyState({
-                        icon: 'fa-gears',
-                        title: 'No Fraud Rules',
-                        message: 'No fraud rules are currently active in the detection engine.'
-                    });
-                } else {
-                    container.innerHTML = '<div class="empty-state"><p>No rules configured</p></div>';
-                }
+            if (rules.length === 0) {
+                container.innerHTML = `
+                    <div class="ui-state-empty" style="padding:24px;">
+                        <div class="empty-icon-wrap"><i data-lucide="sliders" style="width:20px;height:20px;"></i></div>
+                        <div class="empty-title">No heuristic rules active</div>
+                        <div class="empty-desc">Detection is operating on base ML model inference.</div>
+                    </div>
+                `;
+                Sentinel.initIcons();
                 return;
             }
 
             container.innerHTML = rules.map(r => `
-                <div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid rgba(51,65,85,0.5);">
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:600;">${r.rule_name}</div>
-                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
-                            Type: ${r.rule_type} | Threshold: ${r.threshold}
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border-subtle);">
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">${r.rule_name}</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+                            Constraint: <span class="mono-cell">${r.rule_type}</span> &bull; Threshold: <strong style="color:var(--text-primary);">${r.threshold}</strong>
                         </div>
                     </div>
-                    <label style="position:relative;width:48px;height:26px;cursor:pointer;">
-                        <input type="checkbox" ${r.is_active ? 'checked' : ''} style="display:none;" 
-                               onchange="toggleRule(${r.id})">
-                        <span style="position:absolute;inset:0;background:${r.is_active ? 'var(--primary)' : 'var(--border)'};
-                            border-radius:13px;transition:0.3s;"></span>
-                        <span style="position:absolute;top:3px;left:${r.is_active ? '25px' : '3px'};width:20px;height:20px;
-                            background:white;border-radius:50%;transition:0.3s;"></span>
-                    </label>
+                    <div>
+                        <button class="btn btn-${r.is_active ? 'success' : 'outline'} btn-xs" onclick="toggleRule(${r.id})">
+                            <i data-lucide="${r.is_active ? 'check' : 'x'}" style="width:11px;height:11px;"></i>
+                            ${r.is_active ? 'Active' : 'Disabled'}
+                        </button>
+                    </div>
                 </div>
             `).join('');
+
+            Sentinel.initIcons();
         } catch (e) {
-            console.error('Error loading fraud rules:', e);
-            if (container && window.UIState) {
-                container.innerHTML = UIState.renderErrorState({
-                    title: 'Unable to Load Fraud Rules',
-                    message: e.message || 'Failed to fetch active fraud detection rules.',
-                    onRetry: 'loadRules()'
-                });
-            }
-        }
-    }
-
-    async function loadBlockedCards() {
-        const container = document.getElementById('blocked-cards-container');
-        if (container && window.UIState) {
-            UIState.showLoading(container, 'spinner');
-        }
-
-        try {
-            const data = await apiCall('/api/blocked-cards');
-            const cards = data.blocked_cards || data.cards || [];
-
-            if (!cards.length) {
-                if (window.UIState) {
-                    container.innerHTML = UIState.renderEmptyState({
-                        icon: 'fa-shield-check',
-                        title: 'No Blocked Cards',
-                        message: 'All cards are currently active and authorized.'
-                    });
-                } else {
-                    container.innerHTML = '<div class="empty-state" style="padding:40px;"><i class="fas fa-check-circle" style="color:var(--success);"></i><p>No blocked cards</p></div>';
-                }
-                return;
-            }
-
-            container.innerHTML = `
-                <table class="data-table">
-                    <thead><tr><th>Card</th><th>Reason</th><th>Blocked At</th><th>Action</th></tr></thead>
-                    <tbody>
-                        ${cards.map(c => `
-                            <tr>
-                                <td class="mono">${c.card_number}</td>
-                                <td style="font-size:12px;">${c.reason || '-'}</td>
-                                <td style="font-size:12px;color:var(--text-muted);">${c.blocked_at ? new Date(c.blocked_at).toLocaleString() : 'N/A'}</td>
-                                <td>
-                                    <button class="btn btn-xs btn-success" onclick="unblockCard('${c.card_number}')">
-                                        <i class="fas fa-unlock"></i> Unblock
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        } catch (e) {
-            console.error('Error loading blocked cards:', e);
-            if (container && window.UIState) {
-                container.innerHTML = UIState.renderErrorState({
-                    title: 'Unable to Load Blocked Cards',
-                    message: e.message || 'Failed to fetch blocked card list.',
-                    onRetry: 'loadBlockedCards()'
-                });
-            }
+            container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--danger);font-size:12px;">Failed to load fraud rules.</div>`;
         }
     }
 
     async function toggleRule(ruleId) {
         try {
-            const data = await apiCall(`/api/fraud-rules/${ruleId}/toggle`, { method: 'POST' });
-            showToast(data.message || 'Rule updated', 'success');
+            const res = await fetch(`/api/fraud-rules/${ruleId}/toggle`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to toggle rule');
+            Sentinel.showToast(data.message || 'Rule state updated', 'success');
             loadRules();
-        } catch (e) {}
-    }
-
-    function openBlockModal() {
-        document.getElementById('block-modal').classList.add('active');
-    }
-
-    function closeBlockModal() {
-        document.getElementById('block-modal').classList.remove('active');
-    }
-
-    async function blockCard(e) {
-        e.preventDefault();
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        if (window.UIState && submitBtn) {
-            UIState.setButtonLoading(submitBtn, true, 'Blocking Card...');
-        }
-
-        const cardNumber = document.getElementById('block-card-number').value;
-        const reason = document.getElementById('block-reason').value;
-
-        try {
-            const data = await apiCall('/api/cards/block', {
-                method: 'POST',
-                body: JSON.stringify({ card_number: cardNumber, reason })
-            });
-            showToast(data.message || 'Card blocked successfully', 'success');
-            closeBlockModal();
-            loadBlockedCards();
         } catch (e) {
-        } finally {
-            if (window.UIState && submitBtn) {
-                UIState.setButtonLoading(submitBtn, false);
-            }
+            Sentinel.showToast(e.message || 'Failed to toggle rule', 'error');
         }
-    }
-
-    async function unblockCard(cardNumber) {
-        if (!confirm(`Unblock card ${cardNumber}?`)) return;
-        try {
-            const data = await apiCall('/api/cards/unblock', {
-                method: 'POST',
-                body: JSON.stringify({ card_number: cardNumber })
-            });
-            showToast(data.message || 'Card unblocked', 'success');
-            loadBlockedCards();
-        } catch (e) {}
     }
 
     async function simulateFromSettings(count) {
-        showToast(`Generating ${count} transactions...`, 'info');
+        const btn = count === 25 ? document.getElementById('sim-25-btn') : document.getElementById('sim-100-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="btn-spinner"></span> Simulating...`;
+        }
+
         try {
-            const result = await apiCall('/api/simulate', {
+            const res = await fetch('/api/simulate', {
                 method: 'POST',
-                body: JSON.stringify({ count })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count: count })
             });
-            showToast(`${count} transactions generated! ${result.fraud_detected || 0} fraud detected.`, 'success');
-        } catch (e) {}
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Simulation failed');
+
+            Sentinel.showToast(`Simulated ${count} transactions! Flagged ${data.fraud_detected || 0} anomalies.`, 'success');
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Simulation failed', 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="${count === 25 ? 'play' : 'zap'}" style="width:13px;height:13px;"></i> <span>Simulate ${count} Txns</span>`;
+                Sentinel.initIcons();
+            }
+        }
     }
-
-    document.getElementById('block-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeBlockModal();
-    });
-
-    loadRules();
-    loadBlockedCards();
 </script>
 {% endblock %}

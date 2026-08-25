@@ -1,936 +1,414 @@
 {% extends "base.html" %}
-{% block title %}My Cards{% endblock %}
 
-{% block page_title %}
-<i class="fas fa-credit-card" style="color: var(--primary-light);"></i> My Cards
-{% endblock %}
+{% block title %}Cards &mdash; Sentinel Security{% endblock %}
+{% block page_title %}Cards{% endblock %}
 
 {% block content %}
-<style>
-    /* Setup Banner */
-    .setup-banner {
-        background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1));
-        border: 1px solid rgba(99,102,241,0.3);
-        border-radius: 16px;
-        padding: 28px 32px;
-        margin-bottom: 32px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .setup-banner .icon {
-        width: 56px; height: 56px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        border-radius: 16px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 24px;
-        flex-shrink: 0;
-    }
-
-    .setup-banner h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-    .setup-banner p { color: var(--text-secondary); font-size: 14px; }
-
-    /* Card Grid */
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 24px;
-        margin-bottom: 32px;
-    }
-
-    /* Visual Credit Card */
-    .credit-card-visual {
-        width: 100%;
-        aspect-ratio: 1.586;
-        border-radius: 20px;
-        padding: 28px;
-        position: relative;
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .credit-card-visual:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
-
-    .credit-card-visual.visa {
-        background: linear-gradient(135deg, #1a1f3c 0%, #2d1b69 50%, #1a1f3c 100%);
-        border: 1px solid rgba(99,102,241,0.3);
-    }
-
-    .credit-card-visual.mastercard {
-        background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
-        border: 1px solid rgba(59,130,246,0.3);
-    }
-
-    .credit-card-visual.amex {
-        background: linear-gradient(135deg, #0a2e1a 0%, #1a3a2a 50%, #0d4a3a 100%);
-        border: 1px solid rgba(16,185,129,0.3);
-    }
-
-    .credit-card-visual.discover {
-        background: linear-gradient(135deg, #2e1a0a 0%, #3a2a1a 50%, #4a3a0d 100%);
-        border: 1px solid rgba(245,158,11,0.3);
-    }
-
-    .credit-card-visual::before {
-        content: '';
-        position: absolute;
-        top: -50%; right: -50%;
-        width: 100%; height: 100%;
-        background: radial-gradient(circle, rgba(255,255,255,0.03), transparent 70%);
-        border-radius: 50%;
-    }
-
-    .card-top-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    .card-chip {
-        width: 48px; height: 36px;
-        background: linear-gradient(135deg, #d4a843, #c9953c, #e6c35c);
-        border-radius: 6px;
-        position: relative;
-    }
-
-    .card-chip::after {
-        content: '';
-        position: absolute;
-        inset: 4px;
-        border: 1px solid rgba(0,0,0,0.2);
-        border-radius: 3px;
-    }
-
-    .card-contactless {
-        font-size: 22px;
-        color: rgba(255,255,255,0.5);
-        transform: rotate(90deg);
-    }
-
-    .card-type-logo {
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: rgba(255,255,255,0.7);
-    }
-
-    .card-number-display {
-        font-size: 20px;
-        font-weight: 500;
-        letter-spacing: 3px;
-        color: rgba(255,255,255,0.9);
-        font-family: 'Courier New', monospace;
-        text-align: center;
-        padding: 8px 0;
-    }
-
-    .card-bottom-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
-
-    .card-holder-info .label {
-        font-size: 9px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(255,255,255,0.4);
-        margin-bottom: 2px;
-    }
-
-    .card-holder-info .value {
-        font-size: 14px;
-        font-weight: 600;
-        color: rgba(255,255,255,0.85);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .card-expiry-info .label {
-        font-size: 9px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(255,255,255,0.4);
-        margin-bottom: 2px;
-    }
-
-    .card-expiry-info .value {
-        font-size: 14px;
-        font-weight: 600;
-        color: rgba(255,255,255,0.85);
-    }
-
-    .card-primary-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: rgba(16,185,129,0.2);
-        border: 1px solid rgba(16,185,129,0.4);
-        color: #6ee7b7;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 20px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .card-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .card-actions button {
-        flex: 1;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--bg-card);
-        color: var(--text-secondary);
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .card-actions button:hover {
-        background: var(--bg-card-hover);
-        color: var(--text-primary);
-    }
-
-    .card-actions button.primary-btn:hover { border-color: var(--success); color: var(--success); }
-    .card-actions button.delete-btn:hover { border-color: var(--danger); color: var(--danger); }
-
-    /* Add New Card */
-    .add-card-placeholder {
-        width: 100%;
-        aspect-ratio: 1.586;
-        border: 2px dashed var(--border);
-        border-radius: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        cursor: pointer;
-        transition: all 0.3s;
-        color: var(--text-muted);
-    }
-
-    .add-card-placeholder:hover {
-        border-color: var(--primary);
-        color: var(--primary-light);
-        background: rgba(99,102,241,0.05);
-    }
-
-    .add-card-placeholder i { font-size: 36px; }
-    .add-card-placeholder span { font-size: 14px; font-weight: 600; }
-
-    /* Add Card Modal */
-    .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(8px);
-        z-index: 1000;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 16px;
-    }
-
-    .modal-overlay.show { display: flex; }
-
-    .modal-card {
-        width: 100%;
-        max-width: 480px;
-        max-height: 90vh;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        overflow: hidden;
-        animation: modalIn 0.3s ease;
-        display: flex;
-        flex-direction: column;
-    }
-
-    @keyframes modalIn {
-        from { transform: scale(0.9) translateY(20px); opacity: 0; }
-        to { transform: scale(1) translateY(0); opacity: 1; }
-    }
-
-    .modal-header {
-        padding: 16px 24px;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-    }
-
-    .modal-header h3 { font-size: 16px; font-weight: 700; }
-
-    .modal-close {
-        width: 36px; height: 36px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: transparent;
-        color: var(--text-muted);
-        cursor: pointer;
-        font-size: 18px;
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s;
-    }
-
-    .modal-close:hover { background: rgba(239,68,68,0.1); color: var(--danger); border-color: var(--danger); }
-
-    .modal-body {
-        padding: 20px 24px;
-        overflow-y: auto;
-        flex: 1;
-    }
-
-    /* Live Card Preview */
-    .card-preview {
-        width: 100%;
-        aspect-ratio: 2;
-        border-radius: 14px;
-        padding: 18px;
-        margin-bottom: 20px;
-        background: linear-gradient(135deg, #1a1f3c 0%, #2d1b69 50%, #1a1f3c 100%);
-        border: 1px solid rgba(99,102,241,0.3);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        position: relative;
-        overflow: hidden;
-        transition: background 0.5s;
-    }
-
-    .card-preview::before {
-        content: '';
-        position: absolute;
-        top: -30%; right: -30%;
-        width: 80%; height: 80%;
-        background: radial-gradient(circle, rgba(255,255,255,0.03), transparent 70%);
-        border-radius: 50%;
-    }
-
-    .card-preview.mastercard {
-        background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
-        border-color: rgba(59,130,246,0.3);
-    }
-
-    .card-preview.amex {
-        background: linear-gradient(135deg, #0a2e1a 0%, #1a3a2a 50%, #0d4a3a 100%);
-        border-color: rgba(16,185,129,0.3);
-    }
-
-    .card-preview.discover {
-        background: linear-gradient(135deg, #2e1a0a 0%, #3a2a1a 50%, #4a3a0d 100%);
-        border-color: rgba(245,158,11,0.3);
-    }
-
-    .preview-top { display: flex; justify-content: space-between; align-items: center; }
-    .preview-chip {
-        width: 32px; height: 24px;
-        background: linear-gradient(135deg, #d4a843, #c9953c);
-        border-radius: 4px;
-    }
-    .preview-brand {
-        font-size: 11px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 2px; color: rgba(255,255,255,0.6);
-    }
-    .preview-number {
-        font-family: 'Courier New', monospace;
-        font-size: 16px; letter-spacing: 2px;
-        color: rgba(255,255,255,0.85);
-        text-align: center;
-    }
-    .preview-bottom { display: flex; justify-content: space-between; }
-    .preview-label { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.35); }
-    .preview-value { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8); text-transform: uppercase; }
-
-    /* Form styles */
-    .card-form .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .card-form .form-group {
-        margin-bottom: 14px;
-    }
-
-    .card-form label {
-        display: block;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--text-secondary);
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .card-form .input-field {
-        width: 100%;
-        padding: 10px 14px;
-        background: var(--bg-dark);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        color: var(--text-primary);
-        font-size: 14px;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.2s;
-    }
-
-    .card-form .input-field::placeholder { color: var(--text-muted); }
-
-    .card-form .input-field:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-    }
-
-    .card-form .input-icon-wrap {
-        position: relative;
-    }
-
-    .card-form .input-icon-wrap i {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-muted);
-        font-size: 16px;
-    }
-
-    .card-form .input-icon-wrap .input-field {
-        padding-left: 44px;
-    }
-
-    .card-form .input-icon-wrap .card-brand-icon {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 22px;
-    }
-
-    .submit-card-btn {
-        width: 100%;
-        padding: 12px;
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.2s;
-        box-shadow: 0 4px 16px rgba(99,102,241,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .submit-card-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 24px rgba(99,102,241,0.4);
-    }
-
-    .submit-card-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .security-note {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        background: rgba(16,185,129,0.08);
-        border: 1px solid rgba(16,185,129,0.2);
-        border-radius: 10px;
-        margin-top: 12px;
-        font-size: 11px;
-        color: var(--success-light);
-    }
-
-    .security-note i { font-size: 16px; color: var(--success); }
-
-    /* Toast */
-    .toast-msg {
-        position: fixed;
-        top: 24px;
-        right: 24px;
-        z-index: 2000;
-        padding: 14px 24px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        display: none;
-        animation: toastSlide 0.3s ease;
-    }
-
-    .toast-msg.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7; }
-    .toast-msg.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
-
-    @keyframes toastSlide {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: var(--text-muted);
-    }
-
-    .empty-state i { font-size: 20px; margin-bottom: 16px; color: var(--text-muted); }
-    .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
-    .empty-state p { font-size: 14px; }
-
-    .skip-btn {
-        display: inline-block;
-        margin-top: 12px;
-        padding: 10px 24px;
-        background: transparent;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        color: var(--text-secondary);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: 'Inter', sans-serif;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-
-    .skip-btn:hover {
-        border-color: var(--text-secondary);
-        color: var(--text-primary);
-    }
-</style>
-
-<!-- Toast notification -->
-<div class="toast-msg" id="toast"></div>
-
-<!-- Setup banner (only on first login) -->
-{% if setup_mode == '1' %}
-<div class="setup-banner">
-    <div class="icon"><i class="fas fa-hand-sparkles"></i></div>
+<!-- Page Header -->
+<div class="page-header">
     <div>
-        <h3>Welcome to FraudShield!</h3>
-        <p>Add your credit card details to start monitoring for fraud. Your card information is encrypted and secured.</p>
+        <h1 class="page-header-title">Cards</h1>
+        <p class="page-header-subtitle">Active payment instruments, encryption tokens, and security controls</p>
+    </div>
+    <div class="page-header-actions">
+        <button class="btn btn-secondary" onclick="openBlockCardModal()">
+            <i data-lucide="shield-ban" style="width:14px;height:14px;"></i>
+            <span>Block a Card</span>
+        </button>
+        <button class="btn btn-primary" onclick="openAddCardModal()">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i>
+            <span>Add Card</span>
+        </button>
     </div>
 </div>
-{% endif %}
 
-<!-- Cards Grid -->
-<div class="cards-grid" id="cardsGrid">
-    <div class="spinner" style="grid-column: 1/-1;"></div>
+<!-- Active Cards Grid Section -->
+<div style="margin-bottom:32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:16px;font-weight:600;color:var(--text-primary);">Active Payment Cards</h2>
+        <span style="font-size:12px;color:var(--text-muted);" id="cards-count-text">Loading cards...</span>
+    </div>
+
+    <div id="cards-container" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));gap:20px;">
+        <div style="grid-column:1/-1;padding:32px;text-align:center;"><div class="spinner"></div></div>
+    </div>
+</div>
+
+<!-- Blocked Cards Security Ledger Section -->
+<div class="sentinel-card">
+    <div class="sentinel-card-header">
+        <div class="sentinel-card-title">
+            <i data-lucide="ban" style="width:16px;height:16px;color:var(--danger);"></i>
+            <span>Blocked Cards & Security Restrictions</span>
+        </div>
+        <button class="btn btn-outline btn-xs" onclick="loadBlockedCards()">
+            <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> Refresh
+        </button>
+    </div>
+
+    <div class="sentinel-card-body no-padding">
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Card Number</th>
+                        <th>Reason for Restriction</th>
+                        <th>Blocked By</th>
+                        <th>Timestamp</th>
+                        <th style="text-align:right;">Security Action</th>
+                    </tr>
+                </thead>
+                <tbody id="blocked-cards-tbody">
+                    <tr><td colspan="5" style="padding:24px;text-align:center;"><div class="spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- Add Card Modal -->
-<div class="modal-overlay" id="addCardModal">
-    <div class="modal-card">
+<div class="modal-overlay" id="add-card-modal" role="dialog" aria-modal="true" aria-labelledby="modal-addcard-title">
+    <div class="modal-box">
         <div class="modal-header">
-            <h3><i class="fas fa-plus-circle" style="color: var(--primary-light); margin-right: 8px;"></i>Add New Card</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-title" id="modal-addcard-title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="credit-card" style="width:16px;height:16px;color:var(--accent);"></i>
+                <span>Add Payment Card</span>
+            </div>
+            <button class="drawer-close" onclick="closeAddCardModal()" aria-label="Close modal">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
         </div>
-        <div class="modal-body">
-            <!-- Live Preview -->
-            <div class="card-preview" id="cardPreview">
-                <div class="preview-top">
-                    <div class="preview-chip"></div>
-                    <div class="preview-brand" id="previewBrand">VISA</div>
+
+        <form id="add-card-form" onsubmit="submitAddCard(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="ac-cardholder">Cardholder Name <span style="color:var(--danger);">*</span></label>
+                    <input type="text" class="form-control" id="ac-cardholder" placeholder="e.g. Dinesh Kumar" required>
                 </div>
-                <div class="preview-number" id="previewNumber">•••• •••• •••• ••••</div>
-                <div class="preview-bottom">
-                    <div>
-                        <div class="preview-label">Card Holder</div>
-                        <div class="preview-value" id="previewHolder">YOUR NAME</div>
+
+                <div class="form-group">
+                    <label class="form-label" for="ac-number">Card Number (PAN) <span style="color:var(--danger);">*</span></label>
+                    <input type="text" class="form-control mono-cell" id="ac-number" placeholder="4532 0000 0000 8892" maxlength="19" required>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label" for="ac-month">Exp Month</label>
+                        <select class="form-control" id="ac-month">
+                            {% for m in range(1, 13) %}
+                            <option value="{{ "%02d"|format(m) }}">{{ "%02d"|format(m) }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div>
-                        <div class="preview-label">Expires</div>
-                        <div class="preview-value" id="previewExpiry">MM/YY</div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="ac-year">Exp Year</label>
+                        <select class="form-control" id="ac-year">
+                            {% for y in range(2026, 2038) %}
+                            <option value="{{ y }}">{{ y }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="ac-cvv">CVV</label>
+                        <input type="password" class="form-control mono-cell" id="ac-cvv" placeholder="•••" maxlength="4">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="ac-nickname">Card Nickname <span class="form-label-hint">(Optional)</span></label>
+                    <input type="text" class="form-control" id="ac-nickname" placeholder="e.g. Primary Operations Visa">
                 </div>
             </div>
 
-            <!-- Card Form -->
-            <form class="card-form" id="cardForm" onsubmit="submitCard(event)">
-                <div class="form-group">
-                    <label>Card Number</label>
-                    <div class="input-icon-wrap">
-                        <i class="fas fa-credit-card"></i>
-                        <input type="text" class="input-field" id="cardNumber" placeholder="1234 5678 9012 3456"
-                               maxlength="19" required oninput="formatCardNumber(this); updatePreview();">
-                        <span class="card-brand-icon" id="cardBrandIcon"><i class="fab fa-cc-visa" style="color: #1a1f6c;"></i></span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Card Holder Name</label>
-                    <div class="input-icon-wrap">
-                        <i class="fas fa-user"></i>
-                        <input type="text" class="input-field" id="cardHolder" placeholder="JOHN DOE"
-                               required oninput="updatePreview();" style="text-transform: uppercase;">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Expiry Month</label>
-                        <select class="input-field" id="expiryMonth" required onchange="updatePreview();">
-                            <option value="">Month</option>
-                            <option value="01">01 - January</option>
-                            <option value="02">02 - February</option>
-                            <option value="03">03 - March</option>
-                            <option value="04">04 - April</option>
-                            <option value="05">05 - May</option>
-                            <option value="06">06 - June</option>
-                            <option value="07">07 - July</option>
-                            <option value="08">08 - August</option>
-                            <option value="09">09 - September</option>
-                            <option value="10">10 - October</option>
-                            <option value="11">11 - November</option>
-                            <option value="12">12 - December</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Expiry Year</label>
-                        <select class="input-field" id="expiryYear" required onchange="updatePreview();">
-                            <option value="">Year</option>
-                            <option value="2026">2026</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                            <option value="2029">2029</option>
-                            <option value="2030">2030</option>
-                            <option value="2031">2031</option>
-                            <option value="2032">2032</option>
-                            <option value="2033">2033</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>CVV</label>
-                        <div class="input-icon-wrap">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" class="input-field" id="cardCVV" placeholder="•••"
-                                   maxlength="4" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Nickname (Optional)</label>
-                        <input type="text" class="input-field" id="cardNickname" placeholder="e.g. Personal Card">
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-card-btn" id="submitBtn">
-                    <i class="fas fa-shield-halved"></i> Add Card Securely
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddCardModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="ac-submit-btn">
+                    <i data-lucide="lock" style="width:13px;height:13px;"></i>
+                    <span>Save Encrypted Card</span>
                 </button>
-
-                <div class="security-note">
-                    <i class="fas fa-lock"></i>
-                    <span>Your CVV is verified but never stored. Card data is encrypted and protected by FraudShield.</span>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
 
-<script>
-    // ─── Load Cards ────────────────────────────────────
-    function loadCards() {
-        const grid = document.getElementById('cardsGrid');
-        if (grid && !grid.children.length) {
-            grid.innerHTML = '<div class="spinner" style="grid-column: 1/-1;"></div>';
-        }
-        fetch('/api/cards')
-            .then(r => r.json().catch(() => ({})))
-            .then(data => {
-                if (data && Array.isArray(data.cards)) {
-                    renderCards(data.cards);
-                } else {
-                    renderCards([]);
-                }
-            })
-            .catch(err => {
-                console.error('Load cards error:', err);
-                if (grid) {
-                    grid.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i>
-                            <h3>Unable to load cards</h3>
-                            <p>Failed to connect to the card management service.</p>
-                        </div>`;
-                }
-            });
-    }
+<!-- Block Card Modal -->
+<div class="modal-overlay" id="block-card-modal" role="dialog" aria-modal="true" aria-labelledby="modal-blockcard-title">
+    <div class="modal-box" style="max-width:460px;">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-blockcard-title" style="display:flex;align-items:center;gap:8px;color:var(--danger);">
+                <i data-lucide="shield-alert" style="width:16px;height:16px;"></i>
+                <span>Block Payment Instrument</span>
+            </div>
+            <button class="drawer-close" onclick="closeBlockCardModal()" aria-label="Close modal">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+            </button>
+        </div>
 
-    function renderCards(cards = []) {
-        const grid = document.getElementById('cardsGrid');
-        if (!grid) return;
-        cards = Array.isArray(cards) ? cards : [];
+        <form id="block-card-form" onsubmit="submitBlockCard(event)">
+            <div class="modal-body">
+                <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">
+                    Placing a security restriction on a card will immediately decline all future attempted authorization requests.
+                </p>
 
-        if (cards.length === 0) {
-            grid.innerHTML = `
-                <div class="empty-state" style="grid-column: 1/-1;">
-                    <i class="fas fa-credit-card"></i>
-                    <h3>No Cards Added Yet</h3>
-                    <p>Add your first credit card to start fraud monitoring.</p>
-                    <br>
-                    <button onclick="openModal()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;box-shadow:0 4px 16px rgba(99,102,241,0.3);">
-                        <i class="fas fa-plus"></i> Add Your First Card
-                    </button>
-                    {% if setup_mode == '1' %}
-                    <br><br>
-                    <a href="/dashboard" class="skip-btn">Skip for now →</a>
-                    {% endif %}
-                </div>`;
-            return;
-        }
-
-        let html = '';
-        cards.forEach(card => {
-            const masked = card.card_display || (card.card_number ? '•••• •••• •••• ' + card.card_number.slice(-4) : '•••• •••• •••• 0000');
-            const last4 = card.last4 || (card.card_display ? card.card_display.slice(-4) : (card.card_number ? card.card_number.slice(-4) : '0000'));
-            const expiry = String(card.expiry_month).padStart(2, '0') + '/' + String(card.expiry_year).slice(-2);
-            const cardType = card.card_type || 'visa';
-            const brandIcons = {
-                visa: 'fab fa-cc-visa',
-                mastercard: 'fab fa-cc-mastercard',
-                amex: 'fab fa-cc-amex',
-                discover: 'fab fa-cc-discover'
-            };
-
-            html += `
-                <div>
-                    <div class="credit-card-visual ${cardType}">
-                        ${card.is_primary ? '<div class="card-primary-badge">★ Primary</div>' : ''}
-                        <div class="card-top-row">
-                            <div class="card-chip"></div>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <i class="fas fa-wifi card-contactless"></i>
-                                <i class="${brandIcons[cardType] || 'fab fa-cc-visa'}" style="font-size: 32px; color: rgba(255,255,255,0.7);"></i>
-                            </div>
-                        </div>
-                        <div class="card-number-display">${masked}</div>
-                        <div class="card-bottom-row">
-                            <div class="card-holder-info">
-                                <div class="label">Card Holder</div>
-                                <div class="value">${card.card_holder}</div>
-                            </div>
-                            <div class="card-expiry-info">
-                                <div class="label">Expires</div>
-                                <div class="value">${expiry}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        ${!card.is_primary ? `<button class="primary-btn" onclick="setPrimary(${card.id})"><i class="fas fa-star"></i> Set Primary</button>` : `<button disabled style="opacity:0.5;"><i class="fas fa-star"></i> Primary Card</button>`}
-                        <button class="delete-btn" onclick="deleteCard(${card.id}, '${last4}')"><i class="fas fa-trash-alt"></i> Remove</button>
-                    </div>
-                </div>`;
-        });
-
-        // Add "Add new card" placeholder
-        html += `
-            <div>
-                <div class="add-card-placeholder" onclick="openModal()">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Add New Card</span>
+                <div class="form-group">
+                    <label class="form-label" for="bc-card-number">Card Number to Block <span style="color:var(--danger);">*</span></label>
+                    <input type="text" class="form-control mono-cell" id="bc-card-number" placeholder="Enter masked or full card number" required>
                 </div>
-            </div>`;
 
-        grid.innerHTML = html;
-    }
+                <div class="form-group">
+                    <label class="form-label" for="bc-reason">Reason for Restriction</label>
+                    <select class="form-control" id="bc-reason">
+                        <option value="Compromised credentials or stolen card">Compromised credentials or stolen card</option>
+                        <option value="Multiple anomalous velocity spikes">Multiple anomalous velocity spikes</option>
+                        <option value="Customer reported unauthorized charge">Customer reported unauthorized charge</option>
+                        <option value="Administrative security restriction">Administrative security restriction</option>
+                    </select>
+                </div>
+            </div>
 
-    // ─── Modal Controls ────────────────────────────────
-    function openModal() {
-        document.getElementById('addCardModal').classList.add('show');
-        document.getElementById('cardForm').reset();
-        resetPreview();
-    }
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeBlockCardModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger" id="bc-submit-btn">
+                    <i data-lucide="ban" style="width:13px;height:13px;"></i>
+                    <span>Confirm Card Block</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
 
-    function closeModal() {
-        document.getElementById('addCardModal').classList.remove('show');
-    }
-
-    // Close modal on overlay click
-    document.getElementById('addCardModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCards();
+        loadBlockedCards();
     });
 
-    // ─── Card Number Formatting ────────────────────────
-    function formatCardNumber(input) {
-        let value = input.value.replace(/\D/g, '');
-        let formatted = '';
-        for (let i = 0; i < value.length && i < 16; i++) {
-            if (i > 0 && i % 4 === 0) formatted += ' ';
-            formatted += value[i];
+    async function loadCards() {
+        const container = document.getElementById('cards-container');
+        const countText = document.getElementById('cards-count-text');
+
+        try {
+            const res = await fetch('/api/cards');
+            if (!res.ok) throw new Error('Failed to fetch cards');
+            const data = await res.json();
+            const cards = data.cards || [];
+
+            if (countText) countText.textContent = `${cards.length} registered cards`;
+
+            if (cards.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column:1/-1;">
+                        <div class="ui-state-empty">
+                            <div class="empty-icon-wrap"><i data-lucide="credit-card"></i></div>
+                            <div class="empty-title">No cards on file</div>
+                            <div class="empty-desc">Add your first payment card to enable real-time monitoring and velocity controls.</div>
+                            <div class="empty-actions">
+                                <button class="btn btn-primary btn-sm" onclick="openAddCardModal()">Add Payment Card</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                Sentinel.initIcons();
+                return;
+            }
+
+            container.innerHTML = cards.map(c => `
+                <div class="sentinel-card" style="padding:0;overflow:hidden;">
+                    <div class="virtual-card-wrapper" style="padding:16px;">
+                        <div class="virtual-card-box">
+                            <div class="virtual-card-top">
+                                <div class="chip-metallic"></div>
+                                ${c.is_primary ? '<span class="status-pill approved" style="font-size:10px;background:rgba(255,255,255,0.18);color:#FFFFFF;border-color:rgba(255,255,255,0.35);">PRIMARY</span>' : ''}
+                            </div>
+                            <div class="virtual-card-number">${c.card_number}</div>
+                            <div class="virtual-card-bottom">
+                                <div>
+                                    <div class="virtual-card-holder">Cardholder</div>
+                                    <div class="virtual-card-name">${c.card_holder}</div>
+                                </div>
+                                <div>
+                                    <div class="virtual-card-holder">Expires</div>
+                                    <div class="virtual-card-exp">${c.expiry_month || 12}/${(c.expiry_year || 2030).toString().slice(-2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding:12px 16px;background:var(--bg-surface-secondary);border-top:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;">
+                        <span style="font-size:12px;color:var(--text-secondary);font-weight:500;">${c.card_nickname || 'Payment Card'}</span>
+                        <div style="display:flex;gap:6px;">
+                            ${!c.is_primary ? `
+                                <button class="btn btn-outline btn-xs" onclick="setPrimaryCard(${c.id})" title="Set as primary payment card">
+                                    Set Primary
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-danger btn-xs" onclick="deleteCard(${c.id})" title="Remove card">
+                                <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            Sentinel.initIcons();
+        } catch (err) {
+            console.error('Cards load error:', err);
+            container.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--danger);padding:24px;">Failed to load cards.</div>`;
         }
-        input.value = formatted;
     }
 
-    function detectCardType(number) {
-        const num = number.replace(/\D/g, '');
-        if (num.startsWith('4')) return 'visa';
-        if (/^5[1-5]/.test(num) || /^2[2-7]/.test(num)) return 'mastercard';
-        if (/^3[47]/.test(num)) return 'amex';
-        if (num.startsWith('6')) return 'discover';
-        return 'visa';
-    }
+    async function loadBlockedCards() {
+        const tbody = document.getElementById('blocked-cards-tbody');
+        if (!tbody) return;
 
-    // ─── Live Preview ──────────────────────────────────
-    function updatePreview() {
-        const num = document.getElementById('cardNumber').value;
-        const holder = document.getElementById('cardHolder').value;
-        const month = document.getElementById('expiryMonth').value;
-        const year = document.getElementById('expiryYear').value;
+        try {
+            const res = await fetch('/api/blocked-cards');
+            if (!res.ok) throw new Error('Failed to load blocked cards');
+            const data = await res.json();
+            const blocked = data.blocked_cards || [];
 
-        // Number
-        const digits = num.replace(/\D/g, '');
-        let display = '';
-        for (let i = 0; i < 16; i++) {
-            if (i > 0 && i % 4 === 0) display += ' ';
-            display += i < digits.length ? digits[i] : '•';
+            if (blocked.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">No active card restrictions in place</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = blocked.map(b => `
+                <tr>
+                    <td class="mono-cell" style="font-weight:600;color:var(--danger);">${b.card_number}</td>
+                    <td style="color:var(--text-primary);">${b.reason || 'Security Restriction'}</td>
+                    <td style="color:var(--text-secondary);">${b.blocked_by || 'Admin'}</td>
+                    <td style="color:var(--text-muted);font-size:12px;">${Sentinel.formatDate(b.blocked_at)}</td>
+                    <td style="text-align:right;">
+                        <button class="btn btn-success btn-xs" onclick="unblockCard('${b.card_number}')">
+                            <i data-lucide="unlock" style="width:11px;height:11px;"></i> Lift Block
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            Sentinel.initIcons();
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--danger);">Error loading blocked cards ledger.</td></tr>`;
         }
-        document.getElementById('previewNumber').textContent = display;
-
-        // Holder
-        document.getElementById('previewHolder').textContent = holder || 'YOUR NAME';
-
-        // Expiry
-        const mm = month || 'MM';
-        const yy = year ? year.slice(-2) : 'YY';
-        document.getElementById('previewExpiry').textContent = `${mm}/${yy}`;
-
-        // Card Type & Color
-        const type = detectCardType(num);
-        const preview = document.getElementById('cardPreview');
-        preview.className = 'card-preview ' + type;
-
-        const brandNames = { visa: 'VISA', mastercard: 'MASTERCARD', amex: 'AMEX', discover: 'DISCOVER' };
-        document.getElementById('previewBrand').textContent = brandNames[type];
-
-        const brandIcons = {
-            visa: '<i class="fab fa-cc-visa" style="color: #1a1f6c;"></i>',
-            mastercard: '<i class="fab fa-cc-mastercard" style="color: #eb001b;"></i>',
-            amex: '<i class="fab fa-cc-amex" style="color: #2e77bc;"></i>',
-            discover: '<i class="fab fa-cc-discover" style="color: #ff6000;"></i>'
-        };
-        document.getElementById('cardBrandIcon').innerHTML = brandIcons[type];
     }
 
-    function resetPreview() {
-        document.getElementById('previewNumber').textContent = '•••• •••• •••• ••••';
-        document.getElementById('previewHolder').textContent = 'YOUR NAME';
-        document.getElementById('previewExpiry').textContent = 'MM/YY';
-        document.getElementById('previewBrand').textContent = 'VISA';
-        document.getElementById('cardPreview').className = 'card-preview';
-        document.getElementById('cardBrandIcon').innerHTML = '<i class="fab fa-cc-visa" style="color: #1a1f6c;"></i>';
+    function openAddCardModal() {
+        document.getElementById('add-card-modal').classList.add('active');
+        document.getElementById('ac-cardholder').focus();
     }
 
-    // ─── Submit Card ───────────────────────────────────
-    function submitCard(e) {
+    function closeAddCardModal() {
+        document.getElementById('add-card-modal').classList.remove('active');
+    }
+
+    function openBlockCardModal() {
+        document.getElementById('block-card-modal').classList.add('active');
+        document.getElementById('bc-card-number').focus();
+    }
+
+    function closeBlockCardModal() {
+        document.getElementById('block-card-modal').classList.remove('active');
+    }
+
+    async function submitAddCard(e) {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        const submitBtn = document.getElementById('ac-submit-btn');
+        submitBtn.disabled = true;
 
         const payload = {
-            card_number: document.getElementById('cardNumber').value,
-            card_holder: document.getElementById('cardHolder').value,
-            expiry_month: document.getElementById('expiryMonth').value,
-            expiry_year: document.getElementById('expiryYear').value,
-            cvv: document.getElementById('cardCVV').value,
-            card_nickname: document.getElementById('cardNickname').value
+            card_holder: document.getElementById('ac-cardholder').value.trim(),
+            card_number: document.getElementById('ac-number').value.trim(),
+            expiry_month: document.getElementById('ac-month').value,
+            expiry_year: document.getElementById('ac-year').value,
+            cvv: document.getElementById('ac-cvv').value.trim(),
+            card_nickname: document.getElementById('ac-nickname').value.trim()
         };
 
-        fetch('/api/cards', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
-        .then(({ ok, data }) => {
-            if (ok) {
-                showToast(data.message, 'success');
-                closeModal();
-                loadCards();
-            } else {
-                showToast(data.error || 'Failed to add card', 'error');
-            }
-        })
-        .catch(() => showToast('Network error', 'error'))
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-shield-halved"></i> Add Card Securely';
-        });
-    }
-
-    // ─── Card Actions ──────────────────────────────────
-    function deleteCard(id, last4) {
-        if (!confirm(`Remove card ending in ${last4}?`)) return;
-        fetch(`/api/cards/${id}`, { method: 'DELETE' })
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, 'success');
-                loadCards();
+        try {
+            const res = await fetch('/api/cards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to save card');
+
+            Sentinel.showToast('Card saved with AES-256 encryption', 'success');
+            closeAddCardModal();
+            loadCards();
+            document.getElementById('add-card-form').reset();
+        } catch (err) {
+            Sentinel.showToast(err.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+        }
     }
 
-    function setPrimary(id) {
-        fetch(`/api/cards/${id}/primary`, { method: 'POST' })
-            .then(r => r.json())
-            .then(data => {
-                showToast(data.message, 'success');
-                loadCards();
+    async function submitBlockCard(e) {
+        e.preventDefault();
+        const num = document.getElementById('bc-card-number').value.trim();
+        const reason = document.getElementById('bc-reason').value;
+
+        try {
+            const res = await fetch('/api/cards/block', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ card_number: num, reason: reason })
             });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to block card');
+
+            Sentinel.showToast('Security block enacted successfully', 'warning');
+            closeBlockCardModal();
+            loadBlockedCards();
+            document.getElementById('block-card-form').reset();
+        } catch (err) {
+            Sentinel.showToast(err.message, 'error');
+        }
     }
 
-    // ─── Toast ─────────────────────────────────────────
-    function showToast(msg, type) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.className = `toast-msg ${type}`;
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    async function unblockCard(cardNum) {
+        try {
+            const res = await fetch('/api/cards/unblock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ card_number: cardNum })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to unblock card');
+
+            Sentinel.showToast('Card restriction lifted', 'success');
+            loadBlockedCards();
+        } catch (err) {
+            Sentinel.showToast(err.message, 'error');
+        }
     }
 
-    // ─── Init ──────────────────────────────────────────
-    loadCards();
+    async function setPrimaryCard(cardId) {
+        try {
+            const res = await fetch(`/api/cards/${cardId}/primary`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to update primary status');
+            Sentinel.showToast('Primary payment card updated', 'success');
+            loadCards();
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Action failed', 'error');
+        }
+    }
 
-    // Auto-open modal in setup mode if no cards
-    {% if setup_mode == '1' %}
-    setTimeout(() => {
-        fetch('/api/cards').then(r => r.json()).then(d => {
-            if (d.cards.length === 0) openModal();
-        });
-    }, 500);
-    {% endif %}
+    async function deleteCard(cardId) {
+        if (!confirm('Are you sure you want to remove this payment card?')) return;
+        try {
+            const res = await fetch(`/api/cards/${cardId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed to remove card');
+            Sentinel.showToast('Card removed from portfolio', 'success');
+            loadCards();
+        } catch (e) {
+            Sentinel.showToast(e.message || 'Action failed', 'error');
+        }
+    }
 </script>
 {% endblock %}
