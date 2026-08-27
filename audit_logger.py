@@ -28,13 +28,28 @@ class EventType:
     REPORT_DOWNLOAD = 'report_download'
     SUSPICIOUS_ACTIVITY = 'suspicious_activity'
     API_AUTH_FAILURE = 'api_auth_failure'
+    
+    # Google OAuth Authentication Events
+    GOOGLE_LOGIN_SUCCESS = 'google_login_success'
+    GOOGLE_LOGIN_FAILURE = 'google_login_failure'
+    GOOGLE_ACCOUNT_CREATED = 'google_account_created'
+    GOOGLE_ACCOUNT_LINKED = 'google_account_linked'
+    GOOGLE_ACCOUNT_UNLINKED = 'google_account_unlinked'
+    GOOGLE_LOGIN_CANCELLED = 'google_login_cancelled'
 
-    ALL_EVENTS = [
+    CORE_EVENTS = [
         LOGIN, LOGOUT, FAILED_LOGIN, REGISTRATION, PASSWORD_CHANGE,
         TRANSACTION_SUBMISSION, FRAUD_DETECTION, ADMIN_USER_CHANGE,
         ACCOUNT_BLOCK, ACCOUNT_UNBLOCK, REPORT_GENERATION, REPORT_DOWNLOAD,
         SUSPICIOUS_ACTIVITY, API_AUTH_FAILURE
     ]
+
+    OAUTH_EVENTS = [
+        GOOGLE_LOGIN_SUCCESS, GOOGLE_LOGIN_FAILURE, GOOGLE_ACCOUNT_CREATED,
+        GOOGLE_ACCOUNT_LINKED, GOOGLE_ACCOUNT_UNLINKED, GOOGLE_LOGIN_CANCELLED
+    ]
+
+    ALL_EVENTS = CORE_EVENTS + OAUTH_EVENTS
 
 # Sensitive key names that must be redacted
 SENSITIVE_KEYS = {
@@ -42,7 +57,9 @@ SENSITIVE_KEYS = {
     'current_password', 'password_hash', 'secret', 'secret_key', 'token',
     'reset_token', 'api_key', 'authorization', 'auth', 'cvv', 'cvc',
     'ssn', 'pin', '2fa_secret', 'two_factor_secret', 'answer_hash',
-    'card_encryption_key', 'private_key'
+    'card_encryption_key', 'private_key', 'code', 'access_token',
+    'refresh_token', 'id_token', 'client_secret', 'code_verifier',
+    'code_challenge'
 }
 
 # Regex to detect raw credit card numbers (13-19 digits)

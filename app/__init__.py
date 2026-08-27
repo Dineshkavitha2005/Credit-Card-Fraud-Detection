@@ -276,6 +276,40 @@ def migrate_audit_logs_table():
         print(f"Audit log schema migration note: {e}")
 
 
+def migrate_user_identities_table():
+    """Ensure users table has OAuth columns and user_identities table exists in SQLite database"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(users);")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'google_id' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN google_id VARCHAR(255);")
+        if 'auth_provider' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local';")
+            
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_identities (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                provider VARCHAR(50) NOT NULL,
+                provider_subject VARCHAR(255) NOT NULL,
+                provider_email VARCHAR(120),
+                created_at DATETIME,
+                last_used_at DATETIME,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                CONSTRAINT uq_user_identity_provider_subject UNIQUE (provider, provider_subject)
+            );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS ix_user_identities_user_id ON user_identities (user_id);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS ix_user_identities_provider ON user_identities (provider);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS ix_user_identities_provider_subject ON user_identities (provider_subject);")
+        conn.commit()
+    except Exception as e:
+        print(f"User identity schema migration note: {e}")
+
+
 def init_db():
     """Initialize database with all tables and perform security migrations"""
     from app.models.user import User
@@ -284,6 +318,7 @@ def init_db():
         db.create_all()
         migrate_database_security()
         migrate_audit_logs_table()
+        migrate_user_identities_table()
         
         admin_exists = User.query.filter_by(username='admin').first()
         if not admin_exists:
@@ -315,7 +350,7 @@ def init_db():
 # Backward-compatible re-exports
 from app.services.fraud_detection import fraud_engine, sanitize_numpy_types
 from app.models import (
-    User, UserCard, Transaction, Alert, FraudRule, BlockedCard, AuditLog,
+    User, UserIdentity, UserCard, Transaction, Alert, FraudRule, BlockedCard, AuditLog,
     UserSession, LoginAttempt, IPAddress, UserActivity, EmailVerificationToken,
     PasswordResetToken, Notification, SecurityQuestion, RateLimitRecord, Report,
     SuspiciousActivity, AdminAction, CardEncryption, mask_card_number

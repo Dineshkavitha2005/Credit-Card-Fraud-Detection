@@ -24,6 +24,10 @@ services:
       - THREADS=${THREADS:-2}
       - TIMEOUT=${TIMEOUT:-120}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-}
+      - GOOGLE_ALLOWED_DOMAIN=${GOOGLE_ALLOWED_DOMAIN:-}
     volumes:
       # Persist SQLite database across container recreations
       - app_data:/app/data

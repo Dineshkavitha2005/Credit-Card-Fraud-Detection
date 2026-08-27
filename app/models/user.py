@@ -5,13 +5,13 @@ from flask_login import UserMixin
 from app.extensions import db
 
 class User(UserMixin, db.Model):
-    """User model with secure password management"""
+    """User model with secure password management and OAuth identity linking"""
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True)
     full_name = db.Column(db.String(120))
     phone = db.Column(db.String(20))
     address = db.Column(db.Text)
@@ -26,6 +26,8 @@ class User(UserMixin, db.Model):
     notification_preferences = db.Column(db.JSON, default={'email': True, 'sms': False})
     two_factor_enabled = db.Column(db.Boolean, default=False)
     two_factor_secret = db.Column(db.String(255))
+    google_id = db.Column(db.String(255), unique=True, nullable=True, index=True)
+    auth_provider = db.Column(db.String(50), default='local')
     last_login = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -33,14 +35,43 @@ class User(UserMixin, db.Model):
     # Relationships
     cards = db.relationship('UserCard', backref='user', lazy=True, cascade='all, delete-orphan')
     transactions = db.relationship('Transaction', backref='user', lazy=True, foreign_keys='Transaction.user_id')
+    identities = db.relationship('UserIdentity', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Hash password using bcrypt"""
+        if not password:
+            self.password_hash = None
+            return
         self.password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
     
     def check_password(self, password):
-        """Verify password against hash"""
-        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+        """Verify password against hash. Safely returns False if user has no password set."""
+        if not self.password_hash or not password or self.password_hash.startswith('!'):
+            return False
+        try:
+            return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+        except Exception:
+            return False
+
+    @property
+    def has_password(self):
+        """Check if user has a valid local password configured"""
+        return bool(self.password_hash and not self.password_hash.startswith('!'))
+
+    @property
+    def has_google_linked(self):
+        """Check if user has a linked Google account"""
+        if self.google_id:
+            return True
+        return any(ident.provider == 'google' for ident in (self.identities or []))
+
+    @property
+    def google_email(self):
+        """Return email associated with linked Google account if available"""
+        for ident in (self.identities or []):
+            if ident.provider == 'google' and ident.provider_email:
+                return ident.provider_email
+        return self.email if self.has_google_linked else None
     
     def update_last_login(self):
         """Update last login timestamp"""
@@ -49,6 +80,25 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+class UserIdentity(db.Model):
+    """Federated / OAuth User Identity mappings (e.g. Google)"""
+    __tablename__ = 'user_identities'
+    __table_args__ = (
+        db.UniqueConstraint('provider', 'provider_subject', name='uq_user_identity_provider_subject'),
+    )
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    provider = db.Column(db.String(50), nullable=False, default='google', index=True)
+    provider_subject = db.Column(db.String(255), nullable=False, index=True)  # e.g. Google 'sub' claim
+    provider_email = db.Column(db.String(120), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<UserIdentity {self.provider}:{self.provider_subject} -> User {self.user_id}>'
 
 
 class UserCard(db.Model):

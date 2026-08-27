@@ -1,6 +1,6 @@
 from app.extensions import db
 from app.models.user import (
-    User, UserCard, UserSession, EmailVerificationToken, PasswordResetToken,
+    User, UserIdentity, UserCard, UserSession, EmailVerificationToken, PasswordResetToken,
     LoginAttempt, IPAddress, UserActivity, Notification, SecurityQuestion
 )
 from app.models.transaction import Transaction, BlockedCard
@@ -13,6 +13,7 @@ from app.models.encryption import mask_card_number, CardEncryption
 __all__ = [
     'db',
     'User',
+    'UserIdentity',
     'UserCard',
     'UserSession',
     'EmailVerificationToken',

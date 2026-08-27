@@ -130,6 +130,13 @@ class TestAuditLoggingSystem(unittest.TestCase):
             audit_logger.log_event(EventType.SUSPICIOUS_ACTIVITY, user_id=self.user_id, status='failure', details={'reason': 'Rate limit'})
             # 13. API Authorization Failures
             audit_logger.log_event(EventType.API_AUTH_FAILURE, user_id=None, status='failure', target_resource='/api/admin/users')
+            # 14. Google OAuth Events
+            audit_logger.log_event(EventType.GOOGLE_LOGIN_SUCCESS, user_id=self.user_id, status='success')
+            audit_logger.log_event(EventType.GOOGLE_LOGIN_FAILURE, user_id=None, status='failure')
+            audit_logger.log_event(EventType.GOOGLE_ACCOUNT_CREATED, user_id=self.user_id, status='success')
+            audit_logger.log_event(EventType.GOOGLE_ACCOUNT_LINKED, user_id=self.user_id, status='success')
+            audit_logger.log_event(EventType.GOOGLE_ACCOUNT_UNLINKED, user_id=self.user_id, status='success')
+            audit_logger.log_event(EventType.GOOGLE_LOGIN_CANCELLED, user_id=None, status='failure')
 
             logs = AuditLog.query.all()
             recorded_types = {log.get_event_type for log in logs}

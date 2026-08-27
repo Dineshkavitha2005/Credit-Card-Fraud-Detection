@@ -76,6 +76,22 @@
                     </div>
                     <span class="status-pill reviewed" style="font-size:11px;">SECURED</span>
                 </div>
+
+                <div style="padding:12px 14px;background:var(--bg-surface-secondary);border:1px solid var(--border-subtle);border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;font-weight:600;">Google OAuth Provider</div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">
+                            {% if current_user.is_authenticated and current_user.has_google_linked %}
+                            Linked ({{ current_user.google_email or current_user.email }})
+                            {% else %}
+                            Multi-Factor / OAuth 2.0 Ready
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline btn-xs">
+                        <i data-lucide="settings" style="width:11px;height:11px;"></i> Manage
+                    </a>
+                </div>
             </div>
         </div>
     </div>

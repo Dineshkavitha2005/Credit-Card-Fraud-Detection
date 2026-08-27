@@ -1,12 +1,13 @@
 import secrets
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime, timedelta
 from app.extensions import db, audit_logger, EventType
 from app.models.user import (
-    User, UserCard, UserSession, LoginAttempt, IPAddress, UserActivity,
+    User, UserIdentity, UserCard, UserSession, LoginAttempt, IPAddress, UserActivity,
     EmailVerificationToken, PasswordResetToken, SecurityQuestion, Notification
 )
+from app.services.oauth_service import oauth_service, OAuthError
 from utils import GeolocationService, SecurityHelper, EmailService
 
 auth_bp = Blueprint('auth', __name__)
@@ -356,3 +357,351 @@ def reset_password(token):
             return render_template('message.html', title='Password Reset Complete', message='Password updated successfully. You can now log in.', type='success', action_link='/login')
 
     return render_template('reset_password.html')
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Google OAuth 2.0 / OpenID Connect Authentication Flow
+# ═════════════════════════════════════════════════════════════════════════════
+
+@auth_bp.route('/auth/google', methods=['GET'])
+@auth_bp.route('/login/google', methods=['GET'])
+def google_login():
+    """
+    Initiate Google OAuth 2.0 / OpenID Connect authorization code flow with PKCE
+    and cryptographic state CSRF protection.
+    """
+    ip_address = request.remote_addr or '127.0.0.1'
+
+    # Rate limiting protection
+    if SecurityHelper.is_rate_limited(ip_address, '/auth/google', limit=15, window=60):
+        audit_logger.log_event(
+            EventType.FAILED_LOGIN,
+            status='failure',
+            details={'reason': 'Rate limited on /auth/google'}
+        )
+        flash("Too many authentication requests. Please wait a moment and try again.", "warning")
+        return redirect(url_for('auth.login'))
+
+    if not oauth_service.is_configured():
+        flash("Google sign-in is not configured on this server.", "warning")
+        return redirect(url_for('auth.login'))
+
+    # Generate state & PKCE parameters
+    state = oauth_service.generate_state()
+    code_verifier, code_challenge, _ = oauth_service.generate_pkce()
+
+    # Store state and PKCE in session
+    session['oauth_state'] = state
+    session['oauth_code_verifier'] = code_verifier
+    session['oauth_state_time'] = datetime.utcnow().timestamp()
+    session['oauth_next'] = request.args.get('next')
+    session['oauth_mode'] = 'link' if (current_user.is_authenticated and request.args.get('mode') == 'link') else 'login'
+
+    auth_url = oauth_service.build_authorization_url(state, code_challenge=code_challenge)
+    return redirect(auth_url)
+
+
+@auth_bp.route('/auth/google/callback', methods=['GET'])
+def google_callback():
+    """
+    Handle Google OAuth 2.0 callback:
+    - Validate cryptographic state to prevent CSRF / replay attacks
+    - Exchange authorization code for tokens using PKCE verifier
+    - Fetch verified identity from OpenID Connect UserInfo
+    - Provision new user or link existing account safely
+    - Establish standard Flask-Login authenticated session
+    """
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ip_address and ',' in ip_address:
+        ip_address = ip_address.split(',')[0].strip()
+    ip_address = ip_address or request.remote_addr or '127.0.0.1'
+
+    # Rate limiting
+    if SecurityHelper.is_rate_limited(ip_address, '/auth/google/callback', limit=20, window=60):
+        audit_logger.log_event(
+            EventType.GOOGLE_LOGIN_FAILURE,
+            status='failure',
+            details={'reason': 'Rate limited on OAuth callback'}
+        )
+        flash("Too many callback requests. Please try again later.", "warning")
+        return redirect(url_for('auth.login'))
+
+    # Handle error responses from Google authorization endpoint
+    error = request.args.get('error')
+    if error:
+        if error in ('access_denied', 'user_cancelled_authorize', 'consent_denied'):
+            audit_logger.log_event(
+                EventType.GOOGLE_LOGIN_CANCELLED,
+                user_id=None,
+                status='failure',
+                details={'error': error}
+            )
+            flash("Google sign-in cancelled", "warning")
+            return redirect(url_for('auth.login'))
+        else:
+            audit_logger.log_event(
+                EventType.GOOGLE_LOGIN_FAILURE,
+                user_id=None,
+                status='failure',
+                details={'error': error}
+            )
+            flash("Unable to sign in with Google. Please try again.", "danger")
+            return redirect(url_for('auth.login'))
+
+    # Validate OAuth state (CSRF / Replay Protection)
+    expected_state = session.pop('oauth_state', None)
+    state_time = session.pop('oauth_state_time', None)
+    code_verifier = session.pop('oauth_code_verifier', None)
+    oauth_next = session.pop('oauth_next', None)
+    oauth_mode = session.pop('oauth_mode', 'login')
+    received_state = request.args.get('state')
+
+    if not expected_state or not received_state or expected_state != received_state:
+        audit_logger.log_event(
+            EventType.GOOGLE_LOGIN_FAILURE,
+            user_id=None,
+            status='failure',
+            details={'reason': 'OAuth state CSRF validation failed'}
+        )
+        flash("Unable to sign in with Google. Please try again.", "danger")
+        return redirect(url_for('auth.login'))
+
+    # Validate state freshness (10-minute expiry)
+    if state_time and (datetime.utcnow().timestamp() - state_time > 600):
+        audit_logger.log_event(
+            EventType.GOOGLE_LOGIN_FAILURE,
+            user_id=None,
+            status='failure',
+            details={'reason': 'OAuth state expired (> 10 minutes)'}
+        )
+        flash("Google sign-in session expired. Please try again.", "warning")
+        return redirect(url_for('auth.login'))
+
+    # Validate authorization code
+    code = request.args.get('code')
+    if not code:
+        audit_logger.log_event(
+            EventType.GOOGLE_LOGIN_FAILURE,
+            user_id=None,
+            status='failure',
+            details={'reason': 'Missing authorization code'}
+        )
+        flash("Unable to sign in with Google. Please try again.", "danger")
+        return redirect(url_for('auth.login'))
+
+    # Exchange code for tokens & fetch verified OpenID Connect profile
+    try:
+        tokens = oauth_service.exchange_code_for_tokens(code, code_verifier=code_verifier)
+        user_info = oauth_service.fetch_user_info(tokens['access_token'])
+    except OAuthError as e:
+        audit_logger.log_event(
+            EventType.GOOGLE_LOGIN_FAILURE,
+            user_id=None,
+            status='failure',
+            details={'reason': str(e.message), 'error_code': getattr(e, 'code', 'OAUTH_ERROR')}
+        )
+        flash("Unable to sign in with Google. Please try again.", "danger")
+        return redirect(url_for('auth.login'))
+    except Exception as e:
+        audit_logger.log_event(
+            EventType.GOOGLE_LOGIN_FAILURE,
+            user_id=None,
+            status='failure',
+            details={'reason': f'Unexpected callback error: {str(e)}'}
+        )
+        flash("Unable to sign in with Google. Please try again.", "danger")
+        return redirect(url_for('auth.login'))
+
+    # Resolve or create Sentinel user account
+    linking_user = current_user if (oauth_mode == 'link' and current_user.is_authenticated) else None
+    user, action, err_msg = oauth_service.resolve_or_create_user(
+        user_info, mode=oauth_mode, linking_user=linking_user
+    )
+
+    if not user:
+        if action == 'disabled':
+            audit_logger.log_event(
+                EventType.GOOGLE_LOGIN_FAILURE,
+                user_id=None,
+                status='failure',
+                details={'reason': 'Account disabled', 'email': user_info.get('email')}
+            )
+            flash("This account is currently disabled.", "danger")
+            return redirect(url_for('auth.login'))
+        elif action == 'conflict':
+            audit_logger.log_event(
+                EventType.GOOGLE_LOGIN_FAILURE,
+                user_id=None,
+                status='failure',
+                details={'reason': 'Account conflict', 'email': user_info.get('email')}
+            )
+            flash("This Google account is already associated with another Sentinel account.", "danger")
+            return redirect(url_for('auth.profile' if oauth_mode == 'link' else 'auth.login'))
+        elif action == 'unauthorized':
+            audit_logger.log_event(
+                EventType.GOOGLE_LOGIN_FAILURE,
+                user_id=None,
+                status='failure',
+                details={'reason': 'Domain unauthorized', 'email': user_info.get('email')}
+            )
+            flash("Access restricted. Your Google Workspace domain is not authorized.", "danger")
+            return redirect(url_for('auth.login'))
+        else:
+            audit_logger.log_event(
+                EventType.GOOGLE_LOGIN_FAILURE,
+                user_id=None,
+                status='failure',
+                details={'reason': err_msg or 'User resolution failed'}
+            )
+            flash(err_msg or "Unable to sign in with Google. Please try again.", "danger")
+            return redirect(url_for('auth.login'))
+
+    if oauth_mode == 'link' and action == 'linked':
+        audit_logger.log_event(
+            EventType.GOOGLE_ACCOUNT_LINKED,
+            user_id=user.id,
+            status='success',
+            details={'email': user_info.get('email'), 'provider': 'google'}
+        )
+        flash("Google account connected successfully!", "success")
+        return redirect(url_for('auth.profile'))
+
+    # Establish authenticated Sentinel session
+    login_user(user)
+    session.permanent = True
+    user.update_last_login()
+
+    geo_data = GeolocationService.get_geo_data(ip_address)
+    session_token = secrets.token_hex(32)
+    user_session = UserSession(
+        user_id=user.id,
+        session_token=session_token,
+        ip_address=ip_address,
+        user_agent=request.user_agent.string[:255] if request.user_agent else 'system',
+        expires_at=datetime.utcnow() + timedelta(days=7)
+    )
+    db.session.add(user_session)
+
+    known_ip = IPAddress.query.filter_by(ip_address=ip_address).first()
+    if not known_ip:
+        known_ip = IPAddress(
+            ip_address=ip_address,
+            user_id=user.id,
+            country=geo_data.get('country'),
+            city=geo_data.get('city'),
+            latitude=geo_data.get('latitude'),
+            longitude=geo_data.get('longitude')
+        )
+        db.session.add(known_ip)
+    else:
+        known_ip.last_seen = datetime.utcnow()
+
+    login_attempt = LoginAttempt(
+        username=user.username,
+        ip_address=ip_address,
+        user_agent=request.user_agent.string[:255] if request.user_agent else 'system',
+        success=True,
+        country=geo_data.get('country'),
+        city=geo_data.get('city'),
+        latitude=geo_data.get('latitude'),
+        longitude=geo_data.get('longitude')
+    )
+    db.session.add(login_attempt)
+    db.session.commit()
+
+    # Record appropriate audit events
+    if action == 'created':
+        audit_logger.log_event(
+            EventType.GOOGLE_ACCOUNT_CREATED,
+            user_id=user.id,
+            status='success',
+            details={'username': user.username, 'email': user.email}
+        )
+    elif action == 'linked':
+        audit_logger.log_event(
+            EventType.GOOGLE_ACCOUNT_LINKED,
+            user_id=user.id,
+            status='success',
+            details={'username': user.username, 'email': user.email}
+        )
+
+    audit_logger.log_event(
+        EventType.GOOGLE_LOGIN_SUCCESS,
+        user_id=user.id,
+        status='success',
+        details={'username': user.username, 'email': user.email, 'action': action}
+    )
+
+    next_page = oauth_next
+    if next_page and (next_page.startswith('/') and not next_page.startswith('//')):
+        return redirect(next_page)
+    return redirect(url_for('main.dashboard'))
+
+
+@auth_bp.route('/auth/google/disconnect', methods=['POST'])
+@login_required
+def google_disconnect():
+    """
+    Securely disconnect Google identity from current user account.
+    Enforces security invariant: User MUST retain at least one login method (password).
+    """
+    if not current_user.has_password:
+        msg = "Cannot disconnect Google authentication. You must set a password first to avoid losing access to your account."
+        if request.is_json or request.headers.get('Accept') == 'application/json':
+            return jsonify({'error': msg}), 400
+        flash(msg, "danger")
+        return redirect(url_for('auth.profile'))
+
+    # Revoke local Google identity association
+    UserIdentity.query.filter_by(user_id=current_user.id, provider='google').delete()
+    current_user.google_id = None
+    current_user.auth_provider = 'local'
+    db.session.commit()
+
+    audit_logger.log_event(
+        EventType.GOOGLE_ACCOUNT_UNLINKED,
+        user_id=current_user.id,
+        status='success',
+        details={'username': current_user.username}
+    )
+
+    if request.is_json or request.headers.get('Accept') == 'application/json':
+        return jsonify({'message': 'Google account disconnected successfully.'})
+
+    flash("Google account disconnected successfully.", "success")
+    return redirect(url_for('auth.profile'))
+
+
+@auth_bp.route('/api/set-password', methods=['POST'])
+@login_required
+def set_initial_password():
+    """
+    API for OAuth users who do not have a password configured yet.
+    """
+    data = request.get_json() or {}
+    new_password = data.get('new_password', '')
+    confirm_password = data.get('confirm_password', '')
+
+    if current_user.has_password:
+        return jsonify({'error': 'Password already configured. Use Change Password instead.'}), 400
+
+    if not new_password or new_password != confirm_password:
+        return jsonify({'error': 'Passwords do not match'}), 400
+
+    strength = SecurityHelper.check_password_strength(new_password)
+    if not strength['is_valid']:
+        return jsonify({'error': ', '.join(strength['feedback'])}), 400
+
+    current_user.set_password(new_password)
+    current_user.auth_provider = 'multiple' if current_user.has_google_linked else 'local'
+    db.session.commit()
+
+    audit_logger.log_event(
+        EventType.PASSWORD_CHANGE,
+        user_id=current_user.id,
+        status='success',
+        details={'username': current_user.username, 'action': 'initial_password_set'}
+    )
+
+    return jsonify({'message': 'Password configured successfully. You can now use either password or Google authentication.'})
+

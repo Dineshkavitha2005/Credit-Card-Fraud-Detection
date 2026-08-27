@@ -3,6 +3,7 @@ from app.services.authentication import AuthService
 from app.services.reporting import ReportingService
 from app.services.card_service import CardService
 from app.services.admin_service import AdminService
+from app.services.oauth_service import GoogleOAuthService, oauth_service
 
 __all__ = [
     'FraudDetectionEngine',
@@ -12,4 +13,6 @@ __all__ = [
     'ReportingService',
     'CardService',
     'AdminService',
+    'GoogleOAuthService',
+    'oauth_service',
 ]
