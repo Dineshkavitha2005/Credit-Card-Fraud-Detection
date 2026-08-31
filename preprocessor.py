@@ -196,6 +196,8 @@ class TransactionPreprocessor(BaseEstimator, TransformerMixin):
             df_out['amount_raw'] = df['Amount'].astype(float).clip(lower=0.0)
         elif 'amount' in df.columns:
             df_out['amount_raw'] = df['amount'].astype(float).clip(lower=0.0)
+        elif 'amount_raw' in df.columns:
+            df_out['amount_raw'] = df['amount_raw'].astype(float).clip(lower=0.0)
         else:
             df_out['amount_raw'] = 0.0
 
@@ -203,16 +205,22 @@ class TransactionPreprocessor(BaseEstimator, TransformerMixin):
 
         if 'category' in df.columns:
             df_out['category_risk'] = df['category'].apply(self.get_category_risk)
+        elif 'category_risk' in df.columns:
+            df_out['category_risk'] = df['category_risk'].astype(float)
         else:
             df_out['category_risk'] = 0.15
 
         if 'location' in df.columns:
             df_out['location_risk'] = df['location'].apply(self.get_location_risk)
+        elif 'location_risk' in df.columns:
+            df_out['location_risk'] = df['location_risk'].astype(float)
         else:
             df_out['location_risk'] = 0.15
 
         if 'device_type' in df.columns:
             df_out['device_risk'] = df['device_type'].apply(self.get_device_risk)
+        elif 'device_risk' in df.columns:
+            df_out['device_risk'] = df['device_risk'].astype(float)
         else:
             df_out['device_risk'] = 0.15
 
@@ -252,7 +260,7 @@ class TransactionPreprocessor(BaseEstimator, TransformerMixin):
     def save_config(self, filepath='preprocessing_config.json'):
         """Save preprocessing rules and feature specifications to JSON."""
         config = {
-            'version': '2.0.0',
+            'version': '2.1.0',
             'feature_names': self.feature_names,
             'category_risk_map': self.category_risk_map,
             'high_risk_countries': self.high_risk_countries,

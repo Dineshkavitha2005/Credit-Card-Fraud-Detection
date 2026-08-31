@@ -9,6 +9,9 @@ import unittest
 import json
 import numpy as np
 from app import app, fraud_engine, sanitize_numpy_types
+from app.extensions import db
+from app.models.user import User
+from app.models.rule import FraudRule
 from preprocessor import TransactionPreprocessor
 
 class TestFraudDetectionPipeline(unittest.TestCase):
@@ -16,6 +19,21 @@ class TestFraudDetectionPipeline(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = app.test_client()
+        with app.app_context():
+            db.create_all()
+            if not User.query.filter_by(id=1).first():
+                user = User(
+                    id=1,
+                    username='pipeline_test_user',
+                    email='pipelinetest@example.com',
+                    full_name='Pipeline Test User',
+                    role='user',
+                    is_active=True,
+                    is_verified=True
+                )
+                user.set_password('TestPass123!')
+                db.session.add(user)
+                db.session.commit()
 
     def test_preprocessor_deterministic_transform(self):
         """Verify that TransactionPreprocessor generates deterministic features without random numbers."""
@@ -86,7 +104,8 @@ class TestFraudDetectionPipeline(unittest.TestCase):
             'category': 'Cryptocurrency',
             'location': 'Lagos, Nigeria',
             'device_type': 'VPN',
-            'timestamp': '2026-08-15T02:30:00Z'
+            'timestamp': '2026-08-15T02:30:00Z',
+            'velocity_score': 0.9
         }
         res = fraud_engine.analyze_transaction(txn)
         
@@ -114,7 +133,7 @@ class TestFraudDetectionPipeline(unittest.TestCase):
         res = fraud_engine.analyze_transaction(txn)
         self.assertIn('fraud_score', res)
         self.assertIn('ml_probability', res)
-        self.assertEqual(res['model_version'], 'v2.0.0')
+        self.assertEqual(res['model_version'], 'v2.1.0')
 
     def test_api_endpoint_integration(self):
         """Test Flask POST endpoint /api/transactions/process with new metadata fields."""

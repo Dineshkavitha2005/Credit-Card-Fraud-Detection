@@ -54,8 +54,9 @@ class FraudDetectionEngine:
         self.model = None
         self.scaler = None
         self.feature_names = None
-        self.model_version = 'v2.0.0'
+        self.model_version = 'v2.1.0'
         self.model_metadata = {}
+        self.classification_threshold = 0.25
         
         try:
             if os.path.exists('fraud_model.pkl') and os.path.exists('scaler.pkl'):
@@ -69,9 +70,10 @@ class FraudDetectionEngine:
                 if os.path.exists('model_metadata.json'):
                     with open('model_metadata.json', 'r') as f:
                         self.model_metadata = json.load(f)
-                        self.model_version = self.model_metadata.get('model_version', 'v2.0.0')
+                        self.model_version = self.model_metadata.get('model_version', 'v2.1.0')
+                        self.classification_threshold = float(self.model_metadata.get('classification_threshold', 0.25))
 
-                print("✅ Machine Learning model v{} loaded successfully".format(self.model_version))
+                print("✅ Machine Learning model v{} loaded successfully (threshold: {})".format(self.model_version, self.classification_threshold))
         except Exception as e:
             print("⚠️ Error loading ML model: {}".format(e))
 
@@ -100,7 +102,7 @@ class FraudDetectionEngine:
                     ml_prob = float(probabilities[0][1])
                     ml_score = float(ml_prob * 100.0)
                 
-                if ml_prob >= 0.65 or ml_score >= 65.0:
+                if ml_prob >= self.classification_threshold or ml_score >= 65.0:
                     risk_factors.append('ML Engine detects pattern deviation (Probability: {:.1f}%)'.format(ml_prob * 100.0))
             except Exception as e:
                 print("ML Scoring Error: {}".format(e))
