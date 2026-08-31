@@ -39,41 +39,38 @@ class GoogleOAuthService:
     @property
     def client_id(self) -> str:
         """Google Client ID from app config or environment"""
-        if current_app:
+        if current_app and 'GOOGLE_CLIENT_ID' in current_app.config:
             val = current_app.config.get('GOOGLE_CLIENT_ID')
-            if val:
-                return str(val).strip()
+            return str(val or '').strip()
         return os.getenv('GOOGLE_CLIENT_ID', '').strip()
 
     @property
     def client_secret(self) -> str:
         """Google Client Secret from app config or environment (Server-Side Only)"""
-        if current_app:
+        if current_app and 'GOOGLE_CLIENT_SECRET' in current_app.config:
             val = current_app.config.get('GOOGLE_CLIENT_SECRET')
-            if val:
-                return str(val).strip()
+            return str(val or '').strip()
         return os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
 
     @property
     def configured_redirect_uri(self) -> str:
         """Explicit redirect URI from app config or environment"""
-        if current_app:
+        if current_app and 'GOOGLE_REDIRECT_URI' in current_app.config:
             val = current_app.config.get('GOOGLE_REDIRECT_URI')
-            if val:
-                return str(val).strip()
+            return str(val or '').strip()
         return os.getenv('GOOGLE_REDIRECT_URI', '').strip()
 
     @property
     def allowed_domains(self) -> list:
         """List of allowed Google Workspace domains if restriction configured"""
         raw = ""
-        if current_app:
-            raw = current_app.config.get('GOOGLE_ALLOWED_DOMAIN', '')
-        if not raw:
+        if current_app and 'GOOGLE_ALLOWED_DOMAIN' in current_app.config:
+            raw = current_app.config.get('GOOGLE_ALLOWED_DOMAIN') or ''
+        elif os.getenv('GOOGLE_ALLOWED_DOMAIN'):
             raw = os.getenv('GOOGLE_ALLOWED_DOMAIN', '')
         if not raw:
             return []
-        return [d.strip().lower() for d in raw.split(',') if d.strip()]
+        return [d.strip().lower() for d in str(raw).split(',') if d.strip()]
 
     def is_configured(self) -> bool:
         """Check if Google OAuth credentials are configured"""

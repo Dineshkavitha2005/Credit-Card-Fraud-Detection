@@ -151,3 +151,26 @@ class TestTransactions:
             txn = Transaction.query.filter_by(transaction_id=txn_id).first()
             assert txn.status == 'reviewed'
             assert txn.reviewed_by is not None
+
+    def test_simulate_batch_and_single_transactions(self, authenticated_client):
+        """Test /api/simulate with both single transaction and batch simulation count."""
+        # Single transaction simulation
+        single_res = authenticated_client.post('/api/simulate', json={
+            'amount': 4500.0,
+            'merchant': 'High-End Jeweler',
+            'category': 'Jewelry',
+            'location': 'Nigeria'
+        })
+        assert single_res.status_code == 200
+        single_data = single_res.get_json()
+        assert 'analysis' in single_data
+        assert 'fraud_score' in single_data
+
+        # Batch simulation
+        batch_res = authenticated_client.post('/api/simulate', json={'count': 20})
+        assert batch_res.status_code == 200
+        batch_data = batch_res.get_json()
+        assert batch_data.get('count') == 20
+        assert 'fraud_detected' in batch_data
+        assert 'simulated_transactions' in batch_data
+        assert len(batch_data['simulated_transactions']) > 0

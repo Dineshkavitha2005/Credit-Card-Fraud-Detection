@@ -181,6 +181,9 @@ def run_flask_api_tests():
     assert_native_python_types(data5, "scenario_5")
     print("✅ Scenario 5 passed!")
 
+test_engine_direct_analysis = run_engine_direct_test
+test_flask_api_predictions = run_flask_api_tests
+
 if __name__ == '__main__':
     run_engine_direct_test()
     run_flask_api_tests()

@@ -1,5 +1,4 @@
 import os
-import secrets
 from pathlib import Path
 
 env_path = Path(__file__).resolve().parent.parent / '.env'
@@ -22,19 +21,37 @@ if env_path.exists():
         except Exception:
             pass
 
+UNSAFE_SECRET_KEYS = {
+    'your_secret_key_here',
+    'change_this_secret_key_in_production',
+    'change_this_to_a_secure_random_64_character_hex_string',
+    'fraud-detection-secret-key-2026',
+    'secret',
+    'secret_key',
+    'default-unsafe-key',
+    'password',
+    '12345',
+    '123456',
+    'test',
+    'admin'
+}
+
+
+def is_unsafe_secret(key: str) -> bool:
+    """Check if a secret key is empty, unsafe, a default placeholder, or too short (< 16 chars)."""
+    if not key or not isinstance(key, str):
+        return True
+    cleaned = key.strip()
+    return (
+        not cleaned
+        or cleaned.lower() in {s.lower() for s in UNSAFE_SECRET_KEYS}
+        or len(cleaned) < 16
+    )
+
+
 class Config:
     """Base application configuration."""
     SECRET_KEY = os.getenv('SECRET_KEY', '').strip()
-    if not SECRET_KEY or SECRET_KEY in {
-        'your_secret_key_here',
-        'change_this_secret_key_in_production',
-        'fraud-detection-secret-key-2026',
-        'secret',
-        'default-unsafe-key'
-    }:
-        if os.getenv('FLASK_ENV') == 'production' and not os.getenv('TESTING'):
-            raise ValueError("Insecure or default SECRET_KEY configured in environment.")
-        SECRET_KEY = secrets.token_hex(32)
         
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///fraud_detection.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -51,12 +68,71 @@ class Config:
     GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', '').strip()
     GOOGLE_ALLOWED_DOMAIN = os.getenv('GOOGLE_ALLOWED_DOMAIN', '').strip()
 
+    @classmethod
+    def validate(cls):
+        """Validate configuration settings. Reject missing, default, or unsafe secrets."""
+        if 'SECRET_KEY' in cls.__dict__ and cls.__dict__['SECRET_KEY'] is not None:
+            secret = cls.SECRET_KEY
+        else:
+            secret = os.getenv('SECRET_KEY', '').strip() or cls.SECRET_KEY
+        if is_unsafe_secret(secret):
+            raise ValueError("Insecure, default, or missing SECRET_KEY configured in environment.")
+
+
 class DevelopmentConfig(Config):
+    """Development configuration requiring an explicit secret or .env configuration."""
     DEBUG = True
+    SECRET_KEY = os.getenv('DEV_SECRET_KEY', '').strip() or os.getenv('SECRET_KEY', '').strip()
+
+    @classmethod
+    def validate(cls):
+        if 'SECRET_KEY' in cls.__dict__ and cls.__dict__['SECRET_KEY'] is not None:
+            secret = cls.SECRET_KEY
+        else:
+            secret = os.getenv('DEV_SECRET_KEY', '').strip() or os.getenv('SECRET_KEY', '').strip() or cls.SECRET_KEY
+        if is_unsafe_secret(secret):
+            raise ValueError(
+                "Development configuration requires an explicit SECRET_KEY or DEV_SECRET_KEY "
+                "configured in your environment or .env file."
+            )
+
 
 class ProductionConfig(Config):
+    """Production configuration strictly rejecting missing/default/unsafe secrets."""
     DEBUG = False
+    SESSION_COOKIE_SECURE = True
+    SECRET_KEY = os.getenv('SECRET_KEY', '').strip()
+
+    @classmethod
+    def validate(cls):
+        if 'SECRET_KEY' in cls.__dict__ and cls.__dict__['SECRET_KEY'] is not None:
+            secret = cls.SECRET_KEY
+        else:
+            secret = os.getenv('SECRET_KEY', '').strip() or cls.SECRET_KEY
+        if is_unsafe_secret(secret):
+            raise ValueError(
+                "Production configuration requires a strong, explicit SECRET_KEY configured in environment."
+            )
+
 
 class TestingConfig(Config):
+    """Testing configuration requiring explicit TEST_SECRET_KEY or SECRET_KEY from test environment."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+    SECRET_KEY = os.getenv('TEST_SECRET_KEY', '').strip() or os.getenv('SECRET_KEY', '').strip()
+
+    @classmethod
+    def validate(cls):
+        if 'SECRET_KEY' in cls.__dict__ and cls.__dict__['SECRET_KEY'] is not None:
+            secret = cls.SECRET_KEY
+        else:
+            secret = os.getenv('TEST_SECRET_KEY', '').strip() or os.getenv('SECRET_KEY', '').strip() or cls.SECRET_KEY
+        if is_unsafe_secret(secret):
+            raise ValueError(
+                "Testing configuration requires an explicit TEST_SECRET_KEY or SECRET_KEY "
+                "supplied by the test environment."
+            )
+
+
+

@@ -4,8 +4,12 @@ import tempfile
 import pytest
 from cryptography.fernet import Fernet
 
-# Set test environment variables
+# Set deterministic test environment variables
+os.environ['TESTING'] = '1'
+os.environ.setdefault('TEST_SECRET_KEY', 'deterministic-sentinel-test-secret-key-for-test-suite')
+os.environ.setdefault('SECRET_KEY', 'deterministic-sentinel-test-secret-key-for-test-suite')
 os.environ['CARD_ENCRYPTION_KEY'] = Fernet.generate_key().decode('utf-8')
+
 
 from app import create_app
 from app.config import TestingConfig

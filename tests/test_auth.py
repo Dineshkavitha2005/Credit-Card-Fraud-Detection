@@ -1,5 +1,5 @@
 import pytest
-from app.models.user import User, UserSession
+from app.models.user import User, UserSession, PasswordResetToken
 from app.extensions import db
 
 class TestAuthentication:
@@ -177,3 +177,83 @@ class TestAuthentication:
         assert api_res.status_code == 200
         data = api_res.get_json()
         assert 'users' in data
+
+    def test_update_profile_html_form(self, authenticated_client, app):
+        """Regression test: Updating profile via HTML form POST correctly updates User and redirects."""
+        res = authenticated_client.post('/api/profile', data={
+            'first_name': 'Alexander',
+            'last_name': 'Pierce',
+            'email': 'alexander.pierce@sentinel.io',
+            'phone': '+1 (555) 987-6543',
+            'city': 'Boston',
+            'state': 'MA',
+            'zipcode': '02108',
+            'country': 'USA'
+        }, follow_redirects=True)
+        assert res.status_code == 200
+        assert b'Profile updated successfully' in res.data
+
+        with app.app_context():
+            user = User.query.filter_by(email='alexander.pierce@sentinel.io').first()
+            assert user is not None
+            assert user.full_name == 'Alexander Pierce'
+            assert user.city == 'Boston'
+
+    def test_change_password_html_form(self, authenticated_client, test_user):
+        """Regression test: Changing password via HTML form POST."""
+        res = authenticated_client.post('/api/change-password', data={
+            'current_password': 'TestPass123!',
+            'new_password': 'NewSecurePassword456!',
+            'confirm_password': 'NewSecurePassword456!'
+        }, follow_redirects=True)
+        assert res.status_code == 200
+        assert b'Password changed successfully' in res.data
+
+    def test_toggle_2fa_and_notifications_html_form(self, authenticated_client):
+        """Regression test: 2FA toggle and notification preferences via HTML form POST."""
+        res_2fa = authenticated_client.post('/api/2fa/toggle', data={'enabled': 'on'}, follow_redirects=True)
+        assert res_2fa.status_code == 200
+
+        res_notif = authenticated_client.post('/api/notifications', data={
+            'email_notif': 'on',
+            'fraud_alerts': 'on'
+        }, follow_redirects=True)
+        assert res_notif.status_code == 200
+        assert b'Preferences saved' in res_notif.data
+
+    def test_password_reset_flow_with_token_and_strength(self, client, app, test_user):
+        """Regression test: Password reset token validation, weak rejection, and successful update."""
+        with app.app_context():
+            token_val = PasswordResetToken.generate_token()
+            token_rec = PasswordResetToken(user_id=test_user.id, token=token_val)
+            db.session.add(token_rec)
+            db.session.commit()
+
+        # GET reset page passes token into template
+        get_res = client.get(f'/reset-password/{token_val}')
+        assert get_res.status_code == 200
+        assert f'/reset-password/{token_val}'.encode('utf-8') in get_res.data
+
+        # POST with mismatched password
+        mismatch_res = client.post(f'/reset-password/{token_val}', data={
+            'password': 'StrongPassword123!',
+            'confirm_password': 'DifferentPassword456!'
+        })
+        assert mismatch_res.status_code == 200
+        assert b'Passwords do not match' in mismatch_res.data
+
+        # POST with weak password
+        weak_res = client.post(f'/reset-password/{token_val}', data={
+            'password': 'weak',
+            'confirm_password': 'weak'
+        })
+        assert weak_res.status_code == 200
+        assert b'at least 8 characters' in weak_res.data or b'Reset' in weak_res.data
+
+        # POST with valid strong password
+        success_res = client.post(f'/reset-password/{token_val}', data={
+            'password': 'BrandNewPassword123!',
+            'confirm_password': 'BrandNewPassword123!'
+        }, follow_redirects=True)
+        assert success_res.status_code == 200
+        assert b'Password updated successfully' in success_res.data

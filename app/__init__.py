@@ -12,8 +12,9 @@ from flask.json.provider import DefaultJSONProvider
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.config import Config
+from app.config import Config, DevelopmentConfig, ProductionConfig, TestingConfig, is_unsafe_secret, UNSAFE_SECRET_KEYS
 from app.extensions import db, login_manager, cors, audit_logger, EventType
+
 from errors import (
     APIError, format_error_response, is_json_request
 )
@@ -47,8 +48,20 @@ def handle_error_response(message, status_code=500, code="INTERNAL_SERVER_ERROR"
         ), status_code
 
 
-def create_app(config_class=Config):
+def create_app(config_class=None):
     """Application factory for Credit Card Fraud Detection System."""
+    if config_class is None:
+        flask_env = os.getenv('FLASK_ENV', 'development').lower()
+        if os.getenv('TESTING') == '1' or os.getenv('TESTING', '').lower() == 'true':
+            from app.config import TestingConfig
+            config_class = TestingConfig
+        elif flask_env == 'production':
+            from app.config import ProductionConfig
+            config_class = ProductionConfig
+        else:
+            from app.config import DevelopmentConfig
+            config_class = DevelopmentConfig
+
     root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     template_folder = os.path.join(root_path, 'templates')
     static_folder = os.path.join(root_path, 'static')
@@ -59,6 +72,42 @@ def create_app(config_class=Config):
         static_folder=static_folder
     )
     app.config.from_object(config_class)
+
+    # Sync runtime environment secret with app.config['SECRET_KEY']
+    from app.config import is_unsafe_secret, TestingConfig, DevelopmentConfig, ProductionConfig
+    
+    env_secret = None
+    if isinstance(config_class, type) and issubclass(config_class, TestingConfig) or app.config.get('TESTING'):
+        env_secret = os.getenv('TEST_SECRET_KEY', '').strip() or os.getenv('SECRET_KEY', '').strip()
+    elif isinstance(config_class, type) and issubclass(config_class, DevelopmentConfig):
+        env_secret = os.getenv('DEV_SECRET_KEY', '').strip() or os.getenv('SECRET_KEY', '').strip()
+    elif (isinstance(config_class, type) and issubclass(config_class, ProductionConfig)) or os.getenv('FLASK_ENV') == 'production':
+        env_secret = os.getenv('SECRET_KEY', '').strip()
+    else:
+        env_secret = os.getenv('SECRET_KEY', '').strip()
+
+    if 'SECRET_KEY' not in getattr(config_class, '__dict__', {}) or env_secret is not None:
+        if env_secret is not None:
+            app.config['SECRET_KEY'] = env_secret
+
+
+    # Validate active secret on app.config
+    active_secret = app.config.get('SECRET_KEY', '')
+    if is_unsafe_secret(active_secret):
+        if (isinstance(config_class, type) and issubclass(config_class, ProductionConfig)) or os.getenv('FLASK_ENV') == 'production':
+            raise ValueError("Production configuration requires a strong, explicit SECRET_KEY configured in environment.")
+        elif (isinstance(config_class, type) and issubclass(config_class, TestingConfig)) or app.config.get('TESTING'):
+            raise ValueError("Testing configuration requires an explicit TEST_SECRET_KEY or SECRET_KEY supplied by the test environment.")
+        elif isinstance(config_class, type) and issubclass(config_class, DevelopmentConfig):
+            raise ValueError("Development configuration requires an explicit SECRET_KEY or DEV_SECRET_KEY configured in your environment or .env file.")
+        else:
+            raise ValueError("Insecure, default, or missing SECRET_KEY configured in environment.")
+
+    # Validate config_class
+    if hasattr(config_class, 'validate') and callable(config_class.validate):
+        config_class.validate()
+
+
 
     # Configure custom JSON provider
     app.json_provider_class = CustomJSONProvider

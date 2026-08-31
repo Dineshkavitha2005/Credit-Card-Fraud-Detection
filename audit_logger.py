@@ -193,10 +193,12 @@ class AuditLogger:
         }
 
         # Check if we should execute synchronously (e.g. testing or explicit setting)
-        app_obj = self.app or (current_app._get_current_object() if current_app else None)
+        app_obj = (current_app._get_current_object() if current_app else None) or self.app
         is_testing = False
         if app_obj:
             is_testing = app_obj.config.get('TESTING', False)
+        elif os.getenv('TESTING'):
+            is_testing = True
 
         if not async_log or is_testing or not app_obj:
             self._write_log(app_obj, payload)

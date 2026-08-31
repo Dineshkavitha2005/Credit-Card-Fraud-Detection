@@ -297,11 +297,74 @@ def export_transactions():
 @transactions_bp.route('/api/simulate', methods=['POST'])
 @login_required
 def simulate_transaction():
-    """Simulate a transaction run without persisting"""
+    """Simulate a transaction run or batch simulation without persisting"""
     data = request.get_json() or {}
+    count = data.get('count')
+
+    if count is not None:
+        try:
+            count = min(max(int(count), 1), 500)
+        except (ValueError, TypeError):
+            count = 10
+
+        import random
+        merchants = [
+            ('Apple Store', 'Electronics', 'USA', 1200.00),
+            ('Amazon Marketplace', 'Online Shopping', 'USA', 84.50),
+            ('Binance Exchange', 'Cryptocurrency', 'Russia', 8500.00),
+            ('Local Grocery Mart', 'Groceries', 'USA', 42.10),
+            ('Luxury Watch Boutique', 'Luxury', 'France', 4200.00),
+            ('Global Wire Services', 'Wire Transfer', 'Nigeria', 12500.00),
+            ('Starbucks Coffee', 'General', 'USA', 6.75),
+            ('CryptoGift Cards Outlet', 'Gift Cards', 'Romania', 3200.00),
+            ('Shell Gas Station', 'General', 'USA', 55.00),
+            ('Target Superstore', 'Supermarket', 'USA', 124.80)
+        ]
+        devices = ['Desktop', 'Mobile Safari', 'Android App', 'TOR Browser VPN', 'Unknown Proxy']
+
+        simulated_results = []
+        fraud_count = 0
+
+        for i in range(count):
+            m_name, m_cat, m_loc, base_amt = random.choice(merchants)
+            amt_jitter = random.uniform(0.7, 1.4)
+            sim_amt = round(base_amt * amt_jitter, 2)
+            sim_dev = random.choice(devices)
+            
+            sim_payload = {
+                'amount': sim_amt,
+                'merchant': m_name,
+                'category': m_cat,
+                'location': m_loc,
+                'device_type': sim_dev,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+            res = fraud_engine.analyze_transaction(sim_payload)
+            if res.get('is_fraud', False) or res.get('fraud_score', 0) >= 65:
+                fraud_count += 1
+            simulated_results.append({
+                'id': i + 1,
+                'merchant': m_name,
+                'category': m_cat,
+                'amount': sim_amt,
+                'location': m_loc,
+                'fraud_score': res.get('fraud_score'),
+                'is_fraud': res.get('is_fraud'),
+                'risk_level': res.get('risk_level')
+            })
+
+        return jsonify(sanitize_numpy_types({
+            'message': f'Simulation of {count} transactions completed',
+            'count': count,
+            'fraud_detected': fraud_count,
+            'simulated_transactions': simulated_results[:25]
+        }))
+
     analysis = fraud_engine.analyze_transaction(data)
     return jsonify(sanitize_numpy_types({
-        'analysis': analysis
+        'analysis': analysis,
+        'fraud_score': analysis.get('fraud_score'),
+        'is_fraud': analysis.get('is_fraud')
     }))
 
 

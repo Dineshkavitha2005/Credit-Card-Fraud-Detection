@@ -208,18 +208,35 @@ def profile():
 
 
 @auth_bp.route('/api/profile', methods=['POST'])
+@auth_bp.route('/profile/update', methods=['POST'])
 @login_required
 def update_profile():
-    """API: Update user profile"""
-    data = request.get_json() or {}
+    """API & Web Form: Update user profile"""
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict()
+
     full_name = data.get('full_name', '').strip()
+    if not full_name and (data.get('first_name') or data.get('last_name')):
+        full_name = f"{data.get('first_name', '').strip()} {data.get('last_name', '').strip()}".strip()
+
+    email = data.get('email', '').strip()
     phone = data.get('phone', '').strip()
     address = data.get('address', '').strip()
     city = data.get('city', '').strip()
     state = data.get('state', '').strip()
     zipcode = data.get('zipcode', '').strip()
     country = data.get('country', '').strip()
-    
+
+    if email and email != current_user.email:
+        if User.query.filter(User.email == email, User.id != current_user.id).first():
+            if not request.is_json and request.form:
+                flash('A user with this email already exists', 'danger')
+                return redirect(url_for('auth.profile'))
+            return jsonify({'error': 'A user with this email already exists'}), 400
+        current_user.email = email
+
     if full_name:
         current_user.full_name = full_name
     if phone:
@@ -234,52 +251,107 @@ def update_profile():
         current_user.zipcode = zipcode
     if country:
         current_user.country = country
-        
+
     db.session.commit()
+
+    if not request.is_json and request.form:
+        flash('Profile updated successfully', 'success')
+        return redirect(url_for('auth.profile'))
+
     return jsonify({'message': 'Profile updated successfully'})
 
 
 @auth_bp.route('/api/change-password', methods=['POST'])
+@auth_bp.route('/profile/change-password', methods=['POST'])
 @login_required
 def change_password():
-    """API: Change user password"""
-    data = request.get_json() or {}
+    """API & Web Form: Change user password"""
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict()
+
     current_password = data.get('current_password', '')
     new_password = data.get('new_password', '')
-    
+    confirm_password = data.get('confirm_password', '')
+
+    if confirm_password and new_password != confirm_password:
+        msg = 'Passwords do not match'
+        if not request.is_json and request.form:
+            flash(msg, 'danger')
+            return redirect(url_for('auth.profile'))
+        return jsonify({'error': msg}), 400
+
     if not current_user.check_password(current_password):
-        return jsonify({'error': 'Current password is incorrect'}), 400
-        
+        msg = 'Current password is incorrect'
+        if not request.is_json and request.form:
+            flash(msg, 'danger')
+            return redirect(url_for('auth.profile'))
+        return jsonify({'error': msg}), 400
+
     strength = SecurityHelper.check_password_strength(new_password)
     if not strength['is_valid']:
-        return jsonify({'error': ', '.join(strength['feedback'])}), 400
-        
+        msg = ', '.join(strength['feedback'])
+        if not request.is_json and request.form:
+            flash(msg, 'danger')
+            return redirect(url_for('auth.profile'))
+        return jsonify({'error': msg}), 400
+
     current_user.set_password(new_password)
     db.session.commit()
-    
+
     audit_logger.log_event(EventType.PASSWORD_CHANGE, user_id=current_user.id, status='success', details={'username': current_user.username})
+
+    if not request.is_json and request.form:
+        flash('Password changed successfully', 'success')
+        return redirect(url_for('auth.profile'))
+
     return jsonify({'message': 'Password changed successfully'})
 
 
 @auth_bp.route('/api/notifications', methods=['POST'])
 @login_required
 def update_notifications():
-    """API: Update notification preferences"""
-    data = request.get_json() or {}
+    """API & Web Form: Update notification preferences"""
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = {
+            'email': 'email_notif' in request.form,
+            'sms': 'sms_notif' in request.form,
+            'fraud_alerts': 'fraud_alerts' in request.form
+        }
     current_user.notification_preferences = data
     db.session.commit()
+
+    if not request.is_json and request.form:
+        flash('Preferences saved', 'success')
+        return redirect(url_for('auth.profile'))
+
     return jsonify({'message': 'Preferences saved'})
 
 
 @auth_bp.route('/api/2fa/toggle', methods=['POST'])
 @login_required
 def toggle_2fa():
-    """API: Toggle 2FA"""
-    data = request.get_json() or {}
-    enabled = bool(data.get('enabled', False))
+    """API & Web Form: Toggle 2FA"""
+    if request.is_json:
+        data = request.get_json() or {}
+        enabled = bool(data.get('enabled', not current_user.two_factor_enabled))
+    elif request.form and 'enabled' in request.form:
+        enabled = request.form.get('enabled') in ('true', '1', 'on')
+    else:
+        enabled = not current_user.two_factor_enabled
+
     current_user.two_factor_enabled = enabled
     db.session.commit()
-    return jsonify({'message': f'2FA {"enabled" if enabled else "disabled"}'})
+
+    msg = f'2FA {"enabled" if enabled else "disabled"}'
+    if not request.is_json and request.form:
+        flash(msg, 'success')
+        return redirect(url_for('auth.profile'))
+
+    return jsonify({'message': msg})
 
 
 @auth_bp.route('/api/logout-all-devices', methods=['POST'])
@@ -346,7 +418,11 @@ def reset_password(token):
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         if password != confirm_password:
-            return render_template('reset_password.html', error='Passwords do not match')
+            return render_template('reset_password.html', error='Passwords do not match', token=token)
+
+        strength = SecurityHelper.check_password_strength(password)
+        if not strength['is_valid']:
+            return render_template('reset_password.html', error=', '.join(strength['feedback']), token=token)
 
         user = User.query.get(token_record.user_id)
         if user:
@@ -354,9 +430,10 @@ def reset_password(token):
             token_record.is_used = True
             token_record.used_at = datetime.utcnow()
             db.session.commit()
+            audit_logger.log_event(EventType.PASSWORD_CHANGE, user_id=user.id, status='success', details={'username': user.username, 'action': 'password_reset_completed'})
             return render_template('message.html', title='Password Reset Complete', message='Password updated successfully. You can now log in.', type='success', action_link='/login')
 
-    return render_template('reset_password.html')
+    return render_template('reset_password.html', token=token)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -673,24 +750,41 @@ def google_disconnect():
 
 
 @auth_bp.route('/api/set-password', methods=['POST'])
+@auth_bp.route('/profile/set-password', methods=['POST'])
 @login_required
 def set_initial_password():
     """
-    API for OAuth users who do not have a password configured yet.
+    API & Web Form: Set initial password for OAuth users who do not have a password configured yet.
     """
-    data = request.get_json() or {}
+    if request.is_json:
+        data = request.get_json() or {}
+    else:
+        data = request.form.to_dict()
+
     new_password = data.get('new_password', '')
     confirm_password = data.get('confirm_password', '')
 
     if current_user.has_password:
-        return jsonify({'error': 'Password already configured. Use Change Password instead.'}), 400
+        msg = 'Password already configured. Use Change Password instead.'
+        if not request.is_json and request.form:
+            flash(msg, 'warning')
+            return redirect(url_for('auth.profile'))
+        return jsonify({'error': msg}), 400
 
     if not new_password or new_password != confirm_password:
-        return jsonify({'error': 'Passwords do not match'}), 400
+        msg = 'Passwords do not match'
+        if not request.is_json and request.form:
+            flash(msg, 'danger')
+            return redirect(url_for('auth.profile'))
+        return jsonify({'error': msg}), 400
 
     strength = SecurityHelper.check_password_strength(new_password)
     if not strength['is_valid']:
-        return jsonify({'error': ', '.join(strength['feedback'])}), 400
+        msg = ', '.join(strength['feedback'])
+        if not request.is_json and request.form:
+            flash(msg, 'danger')
+            return redirect(url_for('auth.profile'))
+        return jsonify({'error': msg}), 400
 
     current_user.set_password(new_password)
     current_user.auth_provider = 'multiple' if current_user.has_google_linked else 'local'
@@ -702,6 +796,10 @@ def set_initial_password():
         status='success',
         details={'username': current_user.username, 'action': 'initial_password_set'}
     )
+
+    if not request.is_json and request.form:
+        flash('Password configured successfully. You can now use either password or Google authentication.', 'success')
+        return redirect(url_for('auth.profile'))
 
     return jsonify({'message': 'Password configured successfully. You can now use either password or Google authentication.'})
 

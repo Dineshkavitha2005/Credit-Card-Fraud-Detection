@@ -121,3 +121,27 @@ class TestSecurity:
             assert data['database'] == 'connected'
             assert data['service'] == 'credit-card-fraud-detection'
 
+    def test_secret_key_validation_and_fallback_elimination(self):
+        """Verify that SECRET_KEY validation strictly rejects unsafe keys and does not use silent fallbacks."""
+        from app.config import is_unsafe_secret, ProductionConfig, TestingConfig, DevelopmentConfig
+        
+        # Test placeholder rejection
+        for bad_key in ['', 'your_secret_key_here', 'default-unsafe-key', 'secret', '123']:
+            assert is_unsafe_secret(bad_key) is True
+
+        # Test valid key acceptance
+        assert is_unsafe_secret('valid-deterministic-test-key-32bytes') is False
+
+        # Verify ProductionConfig rejects empty/unsafe keys
+        class BadProd(ProductionConfig):
+            SECRET_KEY = 'your_secret_key_here'
+        with pytest.raises(ValueError):
+            BadProd.validate()
+
+        # Verify TestingConfig rejects empty/unsafe keys
+        class BadTest(TestingConfig):
+            SECRET_KEY = ''
+        with pytest.raises(ValueError):
+            BadTest.validate()
+
+
