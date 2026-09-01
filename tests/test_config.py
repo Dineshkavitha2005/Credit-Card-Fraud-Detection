@@ -80,14 +80,48 @@ class TestConfigurationSecurity(unittest.TestCase):
             ShortProdConfig.validate()
 
     def test_production_config_accepts_valid_secret(self):
-        """Test ProductionConfig.validate() succeeds with a secure, explicit secret."""
+        """Test ProductionConfig.validate() succeeds with a secure secret and PostgreSQL URI."""
         class ValidProdConfig(ProductionConfig):
             SECRET_KEY = "production-super-secure-session-signing-secret-key-64hex"
+            SQLALCHEMY_DATABASE_URI = "postgresql://fraud_user:secret_pass@localhost:5432/fraud_db"
 
         # Should not raise any exception
         ValidProdConfig.validate()
         self.assertEqual(ValidProdConfig.DEBUG, False)
         self.assertEqual(ValidProdConfig.SESSION_COOKIE_SECURE, True)
+
+    def test_production_config_rejects_missing_database_url(self):
+        """Test ProductionConfig.validate() strictly rejects missing DATABASE_URL."""
+        with patch.dict(os.environ, {'DATABASE_URL': ''}, clear=False):
+            class MissingDbProdConfig(ProductionConfig):
+                SECRET_KEY = "production-super-secure-session-signing-secret-key-64hex"
+                SQLALCHEMY_DATABASE_URI = ""
+
+            with self.assertRaises(ValueError) as ctx:
+                MissingDbProdConfig.validate()
+            self.assertIn("Production configuration requires a PostgreSQL database", str(ctx.exception))
+
+    def test_production_config_rejects_sqlite_database_url(self):
+        """Test ProductionConfig.validate() strictly refuses to start if DATABASE_URL points to SQLite."""
+        for sqlite_uri in ['sqlite:///fraud_detection.db', 'sqlite:////app/data/fraud_detection.db', 'sqlite:///:memory:']:
+            class SqliteProdConfig(ProductionConfig):
+                SECRET_KEY = "production-super-secure-session-signing-secret-key-64hex"
+                SQLALCHEMY_DATABASE_URI = sqlite_uri
+
+            with self.assertRaises(ValueError) as ctx:
+                SqliteProdConfig.validate()
+            self.assertIn("refuses to start with SQLite", str(ctx.exception))
+
+    def test_production_config_rejects_non_postgres_database_url(self):
+        """Test ProductionConfig.validate() rejects non-PostgreSQL URIs."""
+        for bad_uri in ['mysql://user:pass@localhost/db', 'mongodb://localhost:27017/db']:
+            class BadDbProdConfig(ProductionConfig):
+                SECRET_KEY = "production-super-secure-session-signing-secret-key-64hex"
+                SQLALCHEMY_DATABASE_URI = bad_uri
+
+            with self.assertRaises(ValueError) as ctx:
+                BadDbProdConfig.validate()
+            self.assertIn("requires a PostgreSQL database URI", str(ctx.exception))
 
     # ─── 3. DevelopmentConfig Validation Tests ──────────────────────────────
 
@@ -166,6 +200,25 @@ class TestConfigurationSecurity(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             create_app(BadConfig)
+
+    def test_create_app_rejects_production_with_sqlite(self):
+        """Verify create_app factory strictly refuses to start in production if DATABASE_URL is SQLite."""
+        class SqliteProdAppConfig(ProductionConfig):
+            SECRET_KEY = "production-super-secure-session-signing-secret-key-64hex"
+            SQLALCHEMY_DATABASE_URI = "sqlite:///local_leak.db"
+
+        with self.assertRaises(ValueError) as ctx:
+            create_app(SqliteProdAppConfig)
+        self.assertIn("refuses to start with SQLite", str(ctx.exception))
+
+    def test_development_config_permits_sqlite(self):
+        """Verify DevelopmentConfig permits SQLite by default."""
+        class DevConfig(DevelopmentConfig):
+            SECRET_KEY = "dev-explicit-configured-secret-key-32bytes"
+
+        DevConfig.validate()
+        self.assertIn("sqlite", DevConfig.SQLALCHEMY_DATABASE_URI.lower())
+
 
 
 if __name__ == '__main__':

@@ -8,7 +8,6 @@ import os
 import json
 import joblib
 import numpy as np
-import sqlite3
 from datetime import datetime, timedelta
 from preprocessor import TransactionPreprocessor
 from app.models.encryption import mask_card_number
@@ -214,24 +213,29 @@ class FraudDetectionEngine:
         return sanitize_numpy_types(raw_result)
 
     def _check_velocity(self, transaction):
-        """Check transaction velocity for the card"""
+        """Check transaction velocity for the card across SQLite and PostgreSQL"""
         try:
             raw_card = transaction.get('card_number', '')
             masked_card = mask_card_number(raw_card)
+            five_min_ago = datetime.utcnow() - timedelta(minutes=5)
             
-            # Query via SQLite database
-            db_path = os.getenv('DATABASE_URL', 'fraud_detection.db').replace('sqlite:///', '')
-            conn = sqlite3.connect(db_path)
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            five_min_ago = (datetime.now() - timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')
-            cursor.execute(
-                'SELECT COUNT(*) as cnt FROM transactions WHERE (card_number = ? OR card_number = ?) AND timestamp >= ?',
-                (masked_card, raw_card, five_min_ago)
-            )
-            result = cursor.fetchone()
-            conn.close()
-            count = result['cnt'] if result else 0
+            from app.extensions import db
+            from app.models.transaction import Transaction
+            from flask import current_app
+
+            def _query_count():
+                return Transaction.query.filter(
+                    (Transaction.card_number == masked_card) | (Transaction.card_number == raw_card),
+                    Transaction.timestamp >= five_min_ago
+                ).count()
+
+            if current_app:
+                count = _query_count()
+            else:
+                from app import app
+                with app.app_context():
+                    count = _query_count()
+
             return min(count / 5.0, 1.0)
         except Exception:
             return 0.2

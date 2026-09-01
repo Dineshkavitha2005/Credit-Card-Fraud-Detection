@@ -3,6 +3,11 @@
 .gitignore
 .gitattributes
 
+# Environment secrets and credentials (never bake into images)
+.env
+.env.*
+.env*.local
+
 # Python bytecode and caches
 __pycache__/
 *.py[cod]

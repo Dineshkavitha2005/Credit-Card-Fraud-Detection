@@ -103,6 +103,37 @@ def create_app(config_class=None):
         else:
             raise ValueError("Insecure, default, or missing SECRET_KEY configured in environment.")
 
+    # Normalize postgres:// to postgresql:// for SQLAlchemy 2.0+ compatibility
+    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if db_uri and db_uri.startswith('postgres://'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + db_uri[len('postgres://'):]
+
+    # Validate active database URI for production environment
+    is_prod = (isinstance(config_class, type) and issubclass(config_class, ProductionConfig)) or (
+        os.getenv('FLASK_ENV') == 'production' and not app.config.get('TESTING')
+    )
+    if is_prod and not app.config.get('TESTING'):
+        current_db = app.config.get('SQLALCHEMY_DATABASE_URI', '').strip()
+        if not current_db:
+            raise ValueError(
+                "Production configuration requires a PostgreSQL database. "
+                "DATABASE_URL is missing or not configured in the environment."
+            )
+        current_db_lower = current_db.lower()
+        if current_db_lower.startswith('sqlite:') or 'sqlite' in current_db_lower:
+            raise ValueError(
+                "Production configuration refuses to start with SQLite. "
+                "PostgreSQL is strictly required in production."
+            )
+        if not (
+            current_db_lower.startswith('postgresql://')
+            or current_db_lower.startswith('postgres://')
+            or current_db_lower.startswith('postgresql+')
+        ):
+            raise ValueError(
+                "Production configuration requires a PostgreSQL database URI (postgresql://...)."
+            )
+
     # Validate config_class
     if hasattr(config_class, 'validate') and callable(config_class.validate):
         config_class.validate()
@@ -261,14 +292,17 @@ def create_app(config_class=None):
 app = create_app()
 
 def get_db():
-    """Get SQLite connection for operations"""
+    """Get database connection for operations (works across PostgreSQL and SQLite)."""
     try:
         return db.engine.raw_connection()
     except Exception:
-        db_path = app.config.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///fraud_detection.db').replace('sqlite:///', '')
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        db_path = app.config.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///fraud_detection.db')
+        if db_path.startswith('sqlite:'):
+            db_file = db_path.replace('sqlite:///', '')
+            conn = sqlite3.connect(db_file)
+            conn.row_factory = sqlite3.Row
+            return conn
+        raise
 
 
 def migrate_database_security():
@@ -306,55 +340,37 @@ def migrate_database_security():
 
 
 def migrate_audit_logs_table():
-    """Ensure audit_logs table has all required columns in SQLite database"""
+    """Ensure audit_logs table has all required columns across SQLite and PostgreSQL"""
     try:
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(audit_logs);")
-        columns = [row[1] for row in cursor.fetchall()]
-        
-        if 'event_type' not in columns:
-            cursor.execute("ALTER TABLE audit_logs ADD COLUMN event_type VARCHAR(50);")
-        if 'target_resource' not in columns:
-            cursor.execute("ALTER TABLE audit_logs ADD COLUMN target_resource VARCHAR(255);")
-        if 'user_agent' not in columns:
-            cursor.execute("ALTER TABLE audit_logs ADD COLUMN user_agent VARCHAR(500);")
-            
-        conn.commit()
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        if 'audit_logs' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('audit_logs')]
+            with db.engine.connect() as conn:
+                if 'event_type' not in columns:
+                    conn.execute(db.text("ALTER TABLE audit_logs ADD COLUMN event_type VARCHAR(50);"))
+                if 'target_resource' not in columns:
+                    conn.execute(db.text("ALTER TABLE audit_logs ADD COLUMN target_resource VARCHAR(255);"))
+                if 'user_agent' not in columns:
+                    conn.execute(db.text("ALTER TABLE audit_logs ADD COLUMN user_agent VARCHAR(500);"))
+                conn.commit()
     except Exception as e:
         print(f"Audit log schema migration note: {e}")
 
 
 def migrate_user_identities_table():
-    """Ensure users table has OAuth columns and user_identities table exists in SQLite database"""
+    """Ensure users table has OAuth columns and user_identities exists across SQLite and PostgreSQL"""
     try:
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(users);")
-        columns = [row[1] for row in cursor.fetchall()]
-        
-        if 'google_id' not in columns:
-            cursor.execute("ALTER TABLE users ADD COLUMN google_id VARCHAR(255);")
-        if 'auth_provider' not in columns:
-            cursor.execute("ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local';")
-            
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS user_identities (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                provider VARCHAR(50) NOT NULL,
-                provider_subject VARCHAR(255) NOT NULL,
-                provider_email VARCHAR(120),
-                created_at DATETIME,
-                last_used_at DATETIME,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                CONSTRAINT uq_user_identity_provider_subject UNIQUE (provider, provider_subject)
-            );
-        """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS ix_user_identities_user_id ON user_identities (user_id);")
-        cursor.execute("CREATE INDEX IF NOT EXISTS ix_user_identities_provider ON user_identities (provider);")
-        cursor.execute("CREATE INDEX IF NOT EXISTS ix_user_identities_provider_subject ON user_identities (provider_subject);")
-        conn.commit()
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        if 'users' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('users')]
+            with db.engine.connect() as conn:
+                if 'google_id' not in columns:
+                    conn.execute(db.text("ALTER TABLE users ADD COLUMN google_id VARCHAR(255);"))
+                if 'auth_provider' not in columns:
+                    conn.execute(db.text("ALTER TABLE users ADD COLUMN auth_provider VARCHAR(50) DEFAULT 'local';"))
+                conn.commit()
     except Exception as e:
         print(f"User identity schema migration note: {e}")
 
