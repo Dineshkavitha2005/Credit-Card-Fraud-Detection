@@ -186,9 +186,11 @@
         if (dateTo) params.append('date_to', dateTo);
 
         try {
-            const res = await fetch(`/api/admin/audit-logs?${params.toString()}`);
+            const res = await Sentinel.cancellableFetch('admin-audit-logs', `/api/admin/audit-logs?${params.toString()}`);
             if (!res.ok) throw new Error('Failed to retrieve audit trail');
             const data = await res.json();
+
+            if (!Sentinel.isLatest('admin-audit-logs', res)) return;
 
             const logs = data.logs || [];
             auditState.logs = logs;
@@ -262,10 +264,13 @@
                 Sentinel.showToast('Audit trail refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) return;
             console.error('Audit logs error:', err);
             tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--danger);">Error loading audit records.</td></tr>`;
         } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            if (refreshIcon && Sentinel.isLatest('admin-audit-logs')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 

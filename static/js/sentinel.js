@@ -185,12 +185,162 @@ window.Sentinel = (function() {
     initIcons();
   }
 
+  // Active request controllers and sequence tracking
+  const activeControllers = new Map();
+  const activeSequences = new Map();
+
+  /**
+   * Determine if an error represents an expected cancellation.
+   * Handles standard DOMException 'AbortError', WebKit/Safari TypeError: "Load failed"
+   * when aborted, and DOMException code 20 (ABORT_ERR).
+   * Preserves genuine network/offline failures when signal was not aborted.
+   */
+  function isAbortError(err, signal) {
+    if (!err) return false;
+    if (err.name === 'AbortError') return true;
+    if (err.code === 20) return true;
+    if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return true;
+
+    if (signal && signal.aborted) {
+      if (err.name === 'TypeError') {
+        const msg = String(err.message || '').toLowerCase();
+        if (msg.includes('load failed') || msg.includes('abort') || msg.includes('cancel')) {
+          return true;
+        }
+      }
+      return true;
+    }
+
+    if (err.name === 'TypeError') {
+      const msg = String(err.message || '').toLowerCase();
+      if (msg.includes('user aborted') || msg.includes('fetch is aborted')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Abort in-flight requests for a given key.
+   */
+  function abortRequests(key) {
+    if (!key) return;
+    if (activeControllers.has(key)) {
+      try {
+        const controller = activeControllers.get(key);
+        controller.abort('Operation cancelled by Sentinel');
+      } catch (e) {}
+      activeControllers.delete(key);
+    }
+  }
+
+  /**
+   * Abort all active requests (e.g. on navigation / page teardown).
+   */
+  function abortAllRequests() {
+    activeControllers.forEach((controller) => {
+      try {
+        controller.abort('Navigation in progress');
+      } catch (e) {}
+    });
+    activeControllers.clear();
+  }
+
+  /**
+   * Check if a response or sequence token is still the latest for its key.
+   */
+  function isLatest(key, target) {
+    if (!key) return true;
+    const currentSeq = activeSequences.get(key);
+    if (currentSeq === undefined) return true;
+    if (target === undefined || target === null) {
+      return true;
+    }
+    if (typeof target === 'number') {
+      return target === currentSeq;
+    }
+    if (typeof target === 'object') {
+      if (typeof target._sentinelSeq === 'number') {
+        return target._sentinelSeq === currentSeq;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  /**
+   * Execute a cancellable fetch request. If a prior request with the same key
+   * is in flight, it is immediately aborted before the new one commences.
+   * Prevents stale responses from overwriting newer state via sequence checking.
+   */
+  async function cancellableFetch(key, url, options = {}) {
+    const requestKey = key || 'sentinel-global-request';
+
+    // Abort previous in-flight request for this key
+    abortRequests(requestKey);
+
+    const controller = new AbortController();
+    activeControllers.set(requestKey, controller);
+
+    const seq = (activeSequences.get(requestKey) || 0) + 1;
+    activeSequences.set(requestKey, seq);
+
+    // Chaining consumer signal if provided
+    if (options.signal) {
+      if (options.signal.aborted) {
+        controller.abort(options.signal.reason);
+      } else {
+        options.signal.addEventListener('abort', () => {
+          controller.abort(options.signal.reason);
+        }, { once: true });
+      }
+    }
+
+    const fetchOptions = {
+      ...options,
+      signal: controller.signal
+    };
+
+    try {
+      const res = await fetch(url, fetchOptions);
+
+      // Verify sequence to prevent microtask race conditions
+      if (activeSequences.get(requestKey) !== seq) {
+        const staleErr = new Error('Stale response discarded');
+        staleErr.name = 'AbortError';
+        staleErr._sentinelKey = requestKey;
+        staleErr._sentinelSeq = seq;
+        throw staleErr;
+      }
+
+      res._sentinelKey = requestKey;
+      res._sentinelSeq = seq;
+      return res;
+    } catch (err) {
+      if (isAbortError(err, controller.signal)) {
+        const abortErr = new Error('Request cancelled');
+        abortErr.name = 'AbortError';
+        abortErr.originalError = err;
+        abortErr._sentinelKey = requestKey;
+        abortErr._sentinelSeq = seq;
+        throw abortErr;
+      }
+      throw err;
+    } finally {
+      if (activeControllers.get(requestKey) === controller) {
+        activeControllers.delete(requestKey);
+      }
+    }
+  }
+
   function closeDrawer() {
     const backdrop = document.getElementById('sentinel-drawer-backdrop');
     if (backdrop) {
       backdrop.classList.remove('active');
       document.body.style.overflow = '';
     }
+    abortRequests('drawer-detail');
   }
 
   // Copy to Clipboard with Feedback
@@ -343,6 +493,10 @@ window.Sentinel = (function() {
     initKeyboardShortcuts();
   });
 
+  // Teardown in-flight network requests on page navigation to prevent memory leaks
+  window.addEventListener('beforeunload', () => abortAllRequests());
+  window.addEventListener('pagehide', () => abortAllRequests());
+
   return {
     initTheme,
     toggleTheme,
@@ -355,6 +509,11 @@ window.Sentinel = (function() {
     formatCurrency,
     formatNumber,
     formatDate,
-    toggleSidebar
+    toggleSidebar,
+    isAbortError,
+    abortRequests,
+    abortAllRequests,
+    cancellableFetch,
+    isLatest
   };
 })();

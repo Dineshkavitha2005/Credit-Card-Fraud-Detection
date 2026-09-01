@@ -421,13 +421,18 @@
 
     async function loadDashboardData(queryString = '', showFeedback = false) {
         const errorBanner = document.getElementById('dashboard-error-banner');
-        if (errorBanner) errorBanner.style.display = 'none';
+        const refreshIcon = document.getElementById('refresh-icon');
 
         try {
             const url = `/api/dashboard/overview${queryString ? '?' + queryString : ''}`;
-            const res = await fetch(url);
+            const res = await Sentinel.cancellableFetch('dashboard-overview', url);
             if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch dashboard telemetry`);
             const data = await res.json();
+
+            // Guard against microtask interleaving
+            if (!Sentinel.isLatest('dashboard-overview', res)) return;
+
+            if (errorBanner) errorBanner.style.display = 'none';
             dashboardData = data;
 
             renderKPIs(data.kpi);
@@ -439,12 +444,20 @@
                 Sentinel.showToast('Dashboard metrics refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) {
+                // Superseded or cancelled by user interaction - do not treat as user-visible failure
+                return;
+            }
             console.error('Dashboard Error:', err);
             if (errorBanner) {
                 errorBanner.style.display = 'flex';
                 document.getElementById('dashboard-error-message').textContent = err.message || 'Telemetry connection failed.';
             }
             Sentinel.showToast('Failed to load dashboard data', 'error');
+        } finally {
+            if (refreshIcon && Sentinel.isLatest('dashboard-overview')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 
@@ -674,9 +687,11 @@
     // Inspect Transaction in Detail Drawer
     async function inspectTransaction(txnId) {
         try {
-            const res = await fetch(`/api/transactions/${txnId}/details`);
+            const res = await Sentinel.cancellableFetch('drawer-detail', `/api/transactions/${txnId}/details`);
             if (!res.ok) throw new Error('Transaction details not found');
             const txn = await res.json();
+
+            if (!Sentinel.isLatest('drawer-detail', res)) return;
 
             const score = txn.fraud_score || 0;
             let riskBadgeClass = 'low';
@@ -755,6 +770,7 @@
 
             Sentinel.openDrawer(`Investigation: ${txn.transaction_id}`, drawerHtml, footerHtml);
         } catch (e) {
+            if (Sentinel.isAbortError(e)) return;
             Sentinel.showToast('Unable to open transaction details', 'error');
         }
     }

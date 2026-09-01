@@ -192,9 +192,12 @@
         const countText = document.getElementById('cards-count-text');
 
         try {
-            const res = await fetch('/api/cards');
+            const res = await Sentinel.cancellableFetch('cards-list', '/api/cards');
             if (!res.ok) throw new Error('Failed to fetch cards');
             const data = await res.json();
+
+            if (!Sentinel.isLatest('cards-list', res)) return;
+
             const cards = data.cards || [];
 
             if (countText) countText.textContent = `${cards.length} registered cards`;
@@ -256,6 +259,7 @@
 
             Sentinel.initIcons();
         } catch (err) {
+            if (Sentinel.isAbortError(err)) return;
             console.error('Cards load error:', err);
             container.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--danger);padding:24px;">Failed to load cards.</div>`;
         }
@@ -266,9 +270,12 @@
         if (!tbody) return;
 
         try {
-            const res = await fetch('/api/blocked-cards');
+            const res = await Sentinel.cancellableFetch('cards-blocked', '/api/blocked-cards');
             if (!res.ok) throw new Error('Failed to load blocked cards');
             const data = await res.json();
+
+            if (!Sentinel.isLatest('cards-blocked', res)) return;
+
             const blocked = data.blocked_cards || [];
 
             if (blocked.length === 0) {
@@ -283,8 +290,8 @@
                     <td style="color:var(--text-secondary);">${b.blocked_by || 'Admin'}</td>
                     <td style="color:var(--text-muted);font-size:12px;">${Sentinel.formatDate(b.blocked_at)}</td>
                     <td style="text-align:right;">
-                        <button class="btn btn-success btn-xs" onclick="unblockCard('${b.card_number}')">
-                            <i data-lucide="unlock" style="width:11px;height:11px;"></i> Lift Block
+                        <button class="btn btn-outline btn-xs" onclick="unblockCard('${b.card_number}')">
+                            <i data-lucide="unlock" style="width:11px;height:11px;"></i> Unblock
                         </button>
                     </td>
                 </tr>
@@ -292,7 +299,9 @@
 
             Sentinel.initIcons();
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--danger);">Error loading blocked cards ledger.</td></tr>`;
+            if (Sentinel.isAbortError(err)) return;
+            console.error('Blocked cards load error:', err);
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--danger);font-size:12px;">Failed to load blocked cards.</td></tr>`;
         }
     }
 

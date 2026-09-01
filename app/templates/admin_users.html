@@ -135,9 +135,11 @@
         if (status && status !== 'all') params.append('status', status);
 
         try {
-            const res = await fetch(`/api/admin/users?${params.toString()}`);
+            const res = await Sentinel.cancellableFetch('admin-users-list', `/api/admin/users?${params.toString()}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch user directory`);
             const data = await res.json();
+
+            if (!Sentinel.isLatest('admin-users-list', res)) return;
 
             const users = data.users || [];
             userState.totalPages = data.pages || 1;
@@ -178,39 +180,49 @@
                                 </div>
                             </div>
                         </td>
-                        <td style="color:var(--text-secondary);">${u.email}</td>
+                        <td style="color:var(--text-secondary);font-size:13px;">${u.email}</td>
                         <td style="color:var(--text-primary);">${u.full_name || '—'}</td>
                         <td>
-                            <span class="status-pill ${isAdmin ? 'reviewed' : 'approved'}" style="font-size:10px;text-transform:uppercase;">
+                            <span class="status-pill ${isAdmin ? 'admin' : 'user'}" style="font-size:10px;text-transform:uppercase;">
                                 ${u.role}
                             </span>
                         </td>
                         <td>
-                            <span class="status-pill ${isActive ? 'approved' : 'blocked'}">
-                                ${isActive ? 'Active' : 'Blocked'}
+                            <span class="status-pill ${isActive ? 'approved' : 'blocked'}" style="font-size:10px;">
+                                ${isActive ? 'Active' : 'Restricted'}
                             </span>
                         </td>
-                        <td style="color:var(--text-secondary);font-size:12px;">${Sentinel.formatDate(u.created_at)}</td>
+                        <td class="mono-cell" style="font-size:12px;">${Sentinel.formatDate(u.created_at)}</td>
                         <td style="text-align:right;">
-                            <button class="btn btn-outline btn-xs" onclick="event.stopPropagation(); openUserDrawer(${u.id})" title="Manage user permissions">
-                                <i data-lucide="sliders" style="width:11px;height:11px;"></i> Manage
-                            </button>
+                            <div style="display:inline-flex;gap:6px;" onclick="event.stopPropagation()">
+                                <button class="btn btn-outline btn-xs" onclick="openUserDrawer(${u.id})" title="Edit account">
+                                    <i data-lucide="edit-3" style="width:11px;height:11px;"></i> Edit
+                                </button>
+                                ${!isAdmin ? `
+                                    <button class="btn btn-${isActive ? 'danger' : 'success'} btn-xs" onclick="toggleUserStatus(${u.id}, ${isActive})" title="${isActive ? 'Suspend' : 'Activate'} user">
+                                        <i data-lucide="${isActive ? 'lock' : 'unlock'}" style="width:11px;height:11px;"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </td>
                     </tr>
                 `;
             }).join('');
 
-            renderPagination(data.page, data.pages, data.total, data.per_page);
+            renderPagination(userState.page, userState.totalPages, data.total || 0, userState.per_page);
             Sentinel.initIcons();
 
             if (isManualRefresh) {
                 Sentinel.showToast('User directory refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) return;
             console.error('Users error:', err);
             tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--danger);">Error loading directory accounts.</td></tr>`;
         } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            if (refreshIcon && Sentinel.isLatest('admin-users-list')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 
@@ -260,9 +272,11 @@
     // Right-Side User Detail Drawer
     async function openUserDrawer(userId) {
         try {
-            const res = await fetch(`/api/admin/users/${userId}`);
+            const res = await Sentinel.cancellableFetch('drawer-detail', `/api/admin/users/${userId}`);
             if (!res.ok) throw new Error('Failed to retrieve user record');
             const u = await res.json();
+
+            if (!Sentinel.isLatest('drawer-detail', res)) return;
 
             const drawerHtml = `
                 <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border-subtle);">
@@ -324,6 +338,7 @@
 
             Sentinel.openDrawer(`User Account: #${u.id}`, drawerHtml, footerHtml);
         } catch (e) {
+            if (Sentinel.isAbortError(e)) return;
             Sentinel.showToast('Unable to open user record', 'error');
         }
     }

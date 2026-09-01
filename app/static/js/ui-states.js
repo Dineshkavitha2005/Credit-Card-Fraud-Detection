@@ -590,6 +590,15 @@
                     slowBanner.classList.remove('active');
                 }
 
+                // Treat AbortError / cancellation (including Safari / WebKit quirks) as expected cancellation
+                const isAbort = (window.Sentinel && typeof window.Sentinel.isAbortError === 'function')
+                    ? window.Sentinel.isAbortError(err, options.signal)
+                    : (err.name === 'AbortError' || (options.signal && options.signal.aborted));
+
+                if (isAbort) {
+                    throw err;
+                }
+
                 // Don't toast if it was already handled by session expired or 403 modal
                 if (!err.message.includes('session has expired') && !err.message.includes('Access Forbidden')) {
                     this.showToast(err.message || 'An unexpected error occurred', 'error');

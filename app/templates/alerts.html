@@ -99,9 +99,12 @@
         const container = document.getElementById('alerts-list');
 
         try {
-            const res = await fetch('/api/alerts');
+            const res = await Sentinel.cancellableFetch('alerts-list', '/api/alerts');
             if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch security alerts`);
             const data = await res.json();
+
+            if (!Sentinel.isLatest('alerts-list', res)) return;
+
             rawAlerts = data.alerts || [];
 
             updateCounts(rawAlerts);
@@ -111,6 +114,7 @@
                 Sentinel.showToast('Alerts queue refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) return;
             console.error('Alerts load error:', err);
             container.innerHTML = `
                 <div style="padding:24px;text-align:center;color:var(--danger);">
@@ -120,7 +124,9 @@
             `;
             Sentinel.initIcons();
         } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            if (refreshIcon && Sentinel.isLatest('alerts-list')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 
@@ -238,9 +244,11 @@
 
     async function inspectAlertTxn(txnId) {
         try {
-            const res = await fetch(`/api/transactions/${txnId}/details`);
+            const res = await Sentinel.cancellableFetch('drawer-detail', `/api/transactions/${txnId}/details`);
             if (!res.ok) throw new Error('Record not found');
             const txn = await res.json();
+
+            if (!Sentinel.isLatest('drawer-detail', res)) return;
 
             const score = txn.fraud_score || 0;
             let riskBadgeClass = 'low';
@@ -271,10 +279,11 @@
                 </div>
 
                 <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:20px;">
-                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Merchant</td><td style="padding:8px 0;font-weight:600;text-align:right;">${txn.merchant}</td></tr>
-                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Card Number</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.card_number}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Merchant</td><td style="padding:8px 0;font-weight:600;text-align:right;">${txn.merchant || '—'}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Card Number</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.card_number || '—'}</td></tr>
                     <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Cardholder</td><td style="padding:8px 0;text-align:right;">${txn.card_holder || '—'}</td></tr>
                     <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Location</td><td style="padding:8px 0;text-align:right;">${txn.location || '—'}</td></tr>
+                    <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">IP Address</td><td style="padding:8px 0;font-family:var(--font-mono);text-align:right;">${txn.ip_address || '—'}</td></tr>
                     <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:8px 0;color:var(--text-secondary);">Timestamp</td><td style="padding:8px 0;text-align:right;">${Sentinel.formatDate(txn.timestamp)}</td></tr>
                 </table>
 
@@ -294,7 +303,9 @@
             `;
 
             const footerHtml = `
-                <button class="btn btn-secondary btn-sm" onclick="Sentinel.closeDrawer()">Close</button>
+                <button class="btn btn-secondary btn-sm" onclick="Sentinel.copyToClipboard('${txn.transaction_id}', 'Target ID copied')">
+                    <i data-lucide="copy" style="width:12px;height:12px;"></i> Copy ID
+                </button>
                 <button class="btn btn-danger btn-sm" onclick="blockAlertTxn('${txn.transaction_id}')">
                     <i data-lucide="ban" style="width:12px;height:12px;"></i> Block Card
                 </button>
@@ -302,6 +313,7 @@
 
             Sentinel.openDrawer(`Investigation: ${txn.transaction_id}`, drawerHtml, footerHtml);
         } catch (e) {
+            if (Sentinel.isAbortError(e)) return;
             Sentinel.showToast('Unable to inspect transaction', 'error');
         }
     }

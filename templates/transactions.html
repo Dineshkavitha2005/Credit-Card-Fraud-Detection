@@ -183,14 +183,17 @@
 
     async function loadStatistics() {
         try {
-            const res = await fetch('/api/transactions/statistics');
+            const res = await Sentinel.cancellableFetch('transactions-stats', '/api/transactions/statistics');
             if (!res.ok) return;
             const stats = await res.json();
+            if (!Sentinel.isLatest('transactions-stats', res)) return;
             document.getElementById('stat-total').textContent = Sentinel.formatNumber(stats.total_count);
             document.getElementById('stat-amount').textContent = Sentinel.formatCurrency(stats.total_amount);
             document.getElementById('stat-fraud').textContent = Sentinel.formatNumber(stats.fraud_count);
             document.getElementById('stat-rate').textContent = `${(stats.fraud_rate || 0).toFixed(2)}%`;
-        } catch (e) {}
+        } catch (e) {
+            if (Sentinel.isAbortError(e)) return;
+        }
     }
 
     async function loadTransactions(isManualRefresh = false) {
@@ -220,9 +223,11 @@
         if (dateTo) params.append('date_to', dateTo);
 
         try {
-            const res = await fetch(`/api/transactions?${params.toString()}`);
+            const res = await Sentinel.cancellableFetch('transactions-list', `/api/transactions?${params.toString()}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load transactions`);
             const data = await res.json();
+
+            if (!Sentinel.isLatest('transactions-list', res)) return;
 
             const txns = data.transactions || [];
             totalPages = data.pages || 1;
@@ -296,6 +301,9 @@
                 Sentinel.showToast('Transaction ledger refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) {
+                return;
+            }
             console.error('Transactions load error:', err);
             tbody.innerHTML = `
                 <tr>
@@ -307,7 +315,9 @@
             `;
             Sentinel.initIcons();
         } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            if (refreshIcon && Sentinel.isLatest('transactions-list')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 
@@ -356,9 +366,11 @@
 
     async function inspectTxn(txnId) {
         try {
-            const res = await fetch(`/api/transactions/${txnId}/details`);
+            const res = await Sentinel.cancellableFetch('drawer-detail', `/api/transactions/${txnId}/details`);
             if (!res.ok) throw new Error('Failed to retrieve record');
             const txn = await res.json();
+
+            if (!Sentinel.isLatest('drawer-detail', res)) return;
 
             const score = txn.fraud_score || 0;
             let riskBadgeClass = 'low';

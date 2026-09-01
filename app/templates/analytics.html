@@ -167,9 +167,12 @@
         if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
         try {
-            const res = await fetch('/api/dashboard/overview');
+            const res = await Sentinel.cancellableFetch('analytics-overview', '/api/dashboard/overview');
             if (!res.ok) throw new Error('Failed to load analytics data');
             const data = await res.json();
+
+            if (!Sentinel.isLatest('analytics-overview', res)) return;
+
             const c = data.charts || {};
 
             renderCategoryChart(c.top_categories);
@@ -183,10 +186,13 @@
                 Sentinel.showToast('Analytics models refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) return;
             console.error('Analytics load error:', err);
             Sentinel.showToast('Failed to load analytics', 'error');
         } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            if (refreshIcon && Sentinel.isLatest('analytics-overview')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 

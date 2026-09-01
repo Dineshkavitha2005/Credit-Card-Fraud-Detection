@@ -137,9 +137,12 @@
         const countText = document.getElementById('reports-count-text');
 
         try {
-            const res = await fetch('/api/reports');
+            const res = await Sentinel.cancellableFetch('reports-list', '/api/reports');
             if (!res.ok) throw new Error('Failed to load reports archive');
             const data = await res.json();
+
+            if (!Sentinel.isLatest('reports-list', res)) return;
+
             const reports = data.reports || [];
 
             if (countText) countText.textContent = `${reports.length} compiled documents`;
@@ -201,10 +204,13 @@
                 Sentinel.showToast('Reports repository refreshed', 'success');
             }
         } catch (err) {
+            if (Sentinel.isAbortError(err)) return;
             console.error('Reports error:', err);
             tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--danger);">Error loading report documents.</td></tr>`;
         } finally {
-            if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            if (refreshIcon && Sentinel.isLatest('reports-list')) {
+                refreshIcon.classList.remove('fa-spin');
+            }
         }
     }
 

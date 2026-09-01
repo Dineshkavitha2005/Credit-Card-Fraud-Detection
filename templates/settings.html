@@ -137,9 +137,12 @@
     async function loadRules() {
         const container = document.getElementById('rules-container');
         try {
-            const res = await fetch('/api/fraud-rules');
+            const res = await Sentinel.cancellableFetch('fraud-rules-list', '/api/fraud-rules');
             if (!res.ok) throw new Error('Failed to load rules');
             const data = await res.json();
+
+            if (!Sentinel.isLatest('fraud-rules-list', res)) return;
+
             const rules = data.rules || [];
 
             if (rules.length === 0) {
@@ -173,6 +176,7 @@
 
             Sentinel.initIcons();
         } catch (e) {
+            if (Sentinel.isAbortError(e)) return;
             container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--danger);font-size:12px;">Failed to load fraud rules.</div>`;
         }
     }
