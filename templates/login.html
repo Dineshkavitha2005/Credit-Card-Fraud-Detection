@@ -96,7 +96,7 @@
             gap: 10px;
             width: 100%;
             background-color: var(--bg-surface-secondary, #1e293b);
-            color: var(--text-primary, #f8fafc);
+            color: #000000;
             border: 1px solid var(--border-color, #334155);
             border-radius: var(--radius-md, 6px);
             padding: 10px 16px;
@@ -109,10 +109,12 @@
             margin-bottom: 4px;
         }
 
-        .btn-google:hover {
+        .btn-google:hover,
+        .btn-google:focus,
+        .btn-google:active {
             background-color: var(--bg-surface-hover, #334155);
             border-color: var(--border-color-hover, #475569);
-            color: #ffffff;
+            color: #000000;
             box-shadow: var(--shadow-sm);
         }
 

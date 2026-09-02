@@ -360,6 +360,7 @@ def logout_all_devices():
     """API: Revoke all active sessions"""
     UserSession.query.filter_by(user_id=current_user.id).update({'is_active': False})
     db.session.commit()
+    logout_user()
     return jsonify({'message': 'All devices logged out'})
 
 

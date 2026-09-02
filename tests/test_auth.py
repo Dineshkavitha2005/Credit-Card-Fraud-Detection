@@ -257,3 +257,27 @@ class TestAuthentication:
         }, follow_redirects=True)
         assert success_res.status_code == 200
         assert b'Password updated successfully' in success_res.data
+
+    def test_logout_all_devices_revokes_sessions_and_logs_out(self, authenticated_client, app, test_user):
+        """Verify /api/logout-all-devices deactivates all UserSession records and terminates current user session."""
+        with app.app_context():
+            # Create extra session records for test_user
+            s1 = UserSession(user_id=test_user.id, session_token='sess_tok_1', is_active=True)
+            s2 = UserSession(user_id=test_user.id, session_token='sess_tok_2', is_active=True)
+            db.session.add_all([s1, s2])
+            db.session.commit()
+
+        # Call logout-all-devices
+        res = authenticated_client.post('/api/logout-all-devices', json={})
+        assert res.status_code == 200
+        assert res.get_json()['message'] == 'All devices logged out'
+
+        # Verify DB records are deactivated
+        with app.app_context():
+            active_sessions = UserSession.query.filter_by(user_id=test_user.id, is_active=True).all()
+            assert len(active_sessions) == 0
+
+        # Verify current client is logged out (accessing protected page redirects to login)
+        dash_res = authenticated_client.get('/dashboard')
+        assert dash_res.status_code == 302
+        assert '/login' in dash_res.headers['Location']
