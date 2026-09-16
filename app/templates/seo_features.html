@@ -1,0 +1,66 @@
+{% extends "public_base.html" %}
+
+{% block title %}Platform Features — Sentinel Fraud Detection & Risk Analysis{% endblock %}
+{% block meta_description %}Explore Sentinel's enterprise fraud prevention capabilities: sub-10ms machine learning inference, real-time risk scoring, custom heuristic rule builder, and encrypted card storage.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="layers"></i>
+            <span>Feature Architecture</span>
+        </div>
+        <h1>Enterprise Financial Surveillance Capabilities</h1>
+        <p class="lead">
+            Sentinel provides a unified defense suite built specifically for fintech platforms, payment gateways, and banking analysts requiring immediate detection of illicit transaction patterns.
+        </p>
+
+        <h2>1. Real-Time Risk Scoring Engine</h2>
+        <p>
+            Every transaction routed through Sentinel is instantly evaluated against an ensemble machine learning model trained on millions of real-world financial records. The inference engine operates with sub-10 millisecond execution latency, producing a continuous risk probability from 0.00 to 1.00 alongside risk category classifications: Genuine, Low Risk, Medium Risk, High Risk, or Severe Threat.
+        </p>
+
+        <h2>2. Dynamic Heuristic Rule Engine</h2>
+        <p>
+            Complementing machine learning inference, Sentinel's heuristic engine allows compliance officers to enforce customized deterministic rules without restarting or redeploying the application:
+        </p>
+        <ul>
+            <li><strong>Velocity Triggers:</strong> Flag or decline cards that execute more than <em>N</em> transactions within a defined rolling time window.</li>
+            <li><strong>High-Value Thresholds:</strong> Route transactions exceeding configured dollar amounts to mandatory human review.</li>
+            <li><strong>Nocturnal Window Checks:</strong> Apply heightened scrutiny to high-risk transactions initiated during historical low-activity hours (12:00 AM – 5:00 AM).</li>
+            <li><strong>Card Swarm Defense:</strong> Detect coordinated bot testing across disparate card numbers originating from identical IP subnets.</li>
+        </ul>
+
+        <h2>3. Zero-Plaintext Card Vault & Tokenization</h2>
+        <p>
+            Cardholder data security is enforced at the database layer. Sentinel intercepts primary account numbers (PANs) before persistence:
+        </p>
+        <ul>
+            <li>Front-facing displays and API responses strictly present masked representations (e.g., <code>**** **** **** 4242</code>).</li>
+            <li>Sensitive records are encrypted using AES-128-CBC with SHA-256 HMAC authentication via cryptographic Fernet keys.</li>
+            <li>Decryption keys remain strictly externalized in server environment variables, preventing exposure in source code or database dumps.</li>
+        </ul>
+
+        <h2>4. Live Threat Alert Dispatch</h2>
+        <p>
+            When anomalous behavior breaches safety thresholds, Sentinel automatically dispatches urgent alerts containing:
+        </p>
+        <ul>
+            <li>Transaction timestamp and unique transaction ID.</li>
+            <li>Triggering rule rationale and calculated risk score.</li>
+            <li>Geographical location derived from the client IP.</li>
+            <li>One-click automated action controls (Block Card, Whitelist, Mark False Positive).</li>
+        </ul>
+
+        <h2>5. Compliance-Ready PDF & CSV Reporting</h2>
+        <p>
+            Financial intelligence teams can export audit-ready reports filtered by custom date ranges, risk tiers, and resolution statuses. Reports include statistical aggregations, fraud volume trends, and administrative resolution notes required by regulatory audits.
+        </p>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/register" class="btn-primary">Get Started with Sentinel</a>
+            <a href="/how-it-works" class="btn-outline" style="margin-left: 1rem;">View Technical Pipeline</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

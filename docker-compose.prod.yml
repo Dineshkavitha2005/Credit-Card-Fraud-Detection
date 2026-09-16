@@ -1,0 +1,72 @@
+# ==============================================================================
+# Sentinel Production Docker Compose Overlay (docker-compose.prod.yml)
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # Nginx Reverse Proxy with TLS Termination
+  # ----------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: sentinel_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./static:/app/static:ro
+      - certbot_www:/var/www/certbot:ro
+      - cert_data:/etc/letsencrypt:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - sentinel_network
+
+  # ----------------------------------------------------------------------------
+  # Application Server (Gunicorn + Flask)
+  # Internal network only; public port 5000 is closed
+  # ----------------------------------------------------------------------------
+  app:
+    ports: []
+    networks:
+      - sentinel_network
+
+  # ----------------------------------------------------------------------------
+  # PostgreSQL Database Server
+  # Internal network only; public port 5432 is closed to external traffic
+  # ----------------------------------------------------------------------------
+  postgres:
+    ports: []
+    networks:
+      - sentinel_network
+
+  # ----------------------------------------------------------------------------
+  # Automated Let's Encrypt Certificate Renewal Agent
+  # ----------------------------------------------------------------------------
+  certbot:
+    image: certbot/certbot:latest
+    container_name: sentinel_certbot
+    restart: unless-stopped
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    volumes:
+      - certbot_www:/var/www/certbot:rw
+      - cert_data:/etc/letsencrypt:rw
+    networks:
+      - sentinel_network
+
+networks:
+  sentinel_network:
+    name: sentinel_production_network
+    driver: bridge
+
+volumes:
+  cert_data:
+    name: sentinel_cert_data
+    driver: local
+  certbot_www:
+    name: sentinel_certbot_www
+    driver: local

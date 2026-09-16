@@ -1,0 +1,64 @@
+{% extends "public_base.html" %}
+
+{% block title %}Contact & Security Incident Reporting — Sentinel Platform{% endblock %}
+{% block meta_description %}Contact Sentinel engineering and security teams for technical integration inquiries, vulnerability reporting, and enterprise deployment assistance.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="mail"></i>
+            <span>Communications</span>
+        </div>
+        <h1>Contact Sentinel Engineering & Security</h1>
+        <p class="lead">
+            Whether you are planning a high-throughput production deployment, integrating Sentinel with existing payment gateways, or reporting a security vulnerability, our team is available to assist.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="shield"></i>
+                </div>
+                <h3>Security & Vulnerability</h3>
+                <p>For responsible disclosure of security findings, encryption queries, and audit requests.</p>
+                <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-cyan);">
+                    security@fraudshield.com
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="terminal"></i>
+                </div>
+                <h3>Technical Inquiries</h3>
+                <p>For API integration guidance, ML pipeline customization, and infrastructure architecture.</p>
+                <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-indigo);">
+                    engineering@fraudshield.com
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="life-buoy"></i>
+                </div>
+                <h3>Operational Support</h3>
+                <p>For active platform deployment troubleshooting, database migrations, and health checks.</p>
+                <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-emerald);">
+                    support@fraudshield.com
+                </div>
+            </div>
+        </div>
+
+        <h2>Responsible Vulnerability Disclosure</h2>
+        <p>
+            Sentinel welcomes responsible disclosures from security researchers. When submitting a potential security report, please include reproduction steps, environment parameters, and an impact assessment. We commit to acknowledging receipt within 24 business hours and providing transparent mitigation updates.
+        </p>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/faq" class="btn-primary">View Technical FAQ</a>
+            <a href="/security" class="btn-outline" style="margin-left: 1rem;">Review Security Standards</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

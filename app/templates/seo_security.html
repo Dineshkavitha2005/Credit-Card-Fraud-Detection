@@ -1,0 +1,75 @@
+{% extends "public_base.html" %}
+
+{% block title %}Security & Encryption Architecture — Sentinel Platform{% endblock %}
+{% block meta_description %}Review Sentinel's security standards: AES-128-CBC Fernet card encryption, PCI-DSS aligned PAN masking, Google OAuth PKCE, and immutable PostgreSQL audit logging.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="lock"></i>
+            <span>Security Engineering</span>
+        </div>
+        <h1>Enterprise Security & Encryption Standards</h1>
+        <p class="lead">
+            Financial surveillance platforms must meet rigorous data protection standards. Sentinel is architected from the ground up with defense-in-depth principles to safeguard cardholder information and prevent unauthorized system access.
+        </p>
+
+        <h2>1. Cryptographic Cardholder Protection (AES-128-CBC)</h2>
+        <p>
+            Storing credit card numbers in plaintext is an unacceptable vulnerability. Sentinel guarantees that full Primary Account Numbers (PANs) are never written to disk unencrypted:
+        </p>
+        <ul>
+            <li><strong>Fernet Symmetric Encryption:</strong> Sensitive card numbers are encrypted using 128-bit AES in CBC mode with PKCS7 padding and authenticated via HMAC-SHA256.</li>
+            <li><strong>Externalized Keys:</strong> The master encryption key (<code>CARD_ENCRYPTION_KEY</code>) is loaded exclusively via secure container environment variables and is never committed to code repositories or database records.</li>
+            <li><strong>Display Masking:</strong> User interfaces and API outputs strictly expose masked tokens (e.g. <code>**** **** **** 8891</code>). Only authorized administrative actions can trigger cryptographically verified decryption.</li>
+        </ul>
+
+        <h2>2. Modern Identity & Authentication (Google OAuth 2.0 + PKCE)</h2>
+        <p>
+            Sentinel incorporates enterprise-grade identity controls supporting both local credential access and Google OpenID Connect:
+        </p>
+        <ul>
+            <li><strong>PKCE Protection:</strong> The Google OAuth 2.0 flow implements Proof Key for Code Exchange (RFC 7636) with SHA-256 challenges, eliminating authorization code interception vulnerabilities.</li>
+            <li><strong>Cryptographic State Nonces:</strong> Every login attempt includes high-entropy cryptographic state parameters validated server-side to prevent cross-site request forgery (CSRF) and replay attacks.</li>
+            <li><strong>Credential Hashing:</strong> Local passwords are processed using PBKDF2-HMAC-SHA256 with distinct random salt strings per user and high work factors.</li>
+            <li><strong>Session Governance:</strong> Active user sessions can be inspected and remotely invalidated at any time from the security settings console.</li>
+        </ul>
+
+        <h2>3. Immutable PostgreSQL Audit Trails</h2>
+        <p>
+            Every security-relevant operation creates an audit log entry in the PostgreSQL database:
+        </p>
+        <ul>
+            <li>Tracks authentication attempts, card block/unblock actions, rule edits, and report generation.</li>
+            <li>Logs capture timestamp, user ID, client IP address (resolved via trusted proxy headers), user agent, event status, and contextual metadata.</li>
+            <li>System administrators cannot alter or delete audit history, providing compliance-ready evidence for external security reviews.</li>
+        </ul>
+
+        <h2>4. Role-Based Access Control (RBAC)</h2>
+        <p>
+            System privileges are partitioned strictly by authorization tiers:
+        </p>
+        <ul>
+            <li><strong>Analyst Role:</strong> Authorized to monitor live transaction streams, review flagged transactions, and generate analytical reports.</li>
+            <li><strong>Administrator Role:</strong> Exclusive privileges to configure heuristic fraud rules, manage user accounts, inspect global audit trails, and oversee system configuration.</li>
+        </ul>
+
+        <h2>5. Network & HTTP Transport Hardening</h2>
+        <p>
+            Production deployments enforce strict transport security policies:
+        </p>
+        <ul>
+            <li>Mandatory HTTPS via Nginx with automated HTTP-to-HTTPS 301 redirection.</li>
+            <li>HTTP Strict Transport Security (HSTS) with <code>max-age=31536000; includeSubDomains</code>.</li>
+            <li>HTTP response security headers: <code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: SAMEORIGIN</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, and restrictive Content Security Policy (CSP).</li>
+            <li>Automated <code>X-Robots-Tag: noindex, nofollow</code> headers across all private dashboards and APIs to prevent indexing by search engine crawlers.</li>
+        </ul>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/register" class="btn-primary">Access Secure Console</a>
+            <a href="/contact" class="btn-outline" style="margin-left: 1rem;">Contact Security Team</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

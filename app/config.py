@@ -71,6 +71,9 @@ class Config:
     GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', '').strip()
     GOOGLE_ALLOWED_DOMAIN = os.getenv('GOOGLE_ALLOWED_DOMAIN', '').strip()
 
+    # Production Domain & Canonical URL Configuration
+    CANONICAL_DOMAIN = os.getenv('CANONICAL_DOMAIN', 'https://your-domain.com').strip().rstrip('/')
+
     @classmethod
     def validate(cls):
         """Validate configuration settings. Reject missing, default, or unsafe secrets."""
@@ -157,6 +160,12 @@ class ProductionConfig(Config):
         ):
             raise ValueError(
                 "Production configuration requires a PostgreSQL database URI (postgresql://...)."
+            )
+
+        canonical = os.getenv('CANONICAL_DOMAIN', '').strip()
+        if canonical and not canonical.startswith('https://'):
+            raise ValueError(
+                "Production configuration requires CANONICAL_DOMAIN to use HTTPS (https://...)."
             )
 
 

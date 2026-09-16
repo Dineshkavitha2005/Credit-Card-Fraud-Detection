@@ -1,0 +1,199 @@
+{% extends "public_base.html" %}
+
+{% block title %}Sentinel — AI-Powered Credit Card Fraud Detection & Financial Surveillance{% endblock %}
+{% block meta_description %}Protect payment pipelines with Sentinel: sub-10ms transaction scoring, trained scikit-learn machine learning inference, dynamic heuristic rules, and instant threat alerting.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Sentinel",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Linux / Docker",
+      "url": "{{ CANONICAL_DOMAIN }}",
+      "description": "High-throughput real-time payment fraud detection and surveillance engine combining machine learning and heuristic risk scoring."
+    },
+    {
+      "@type": "Organization",
+      "name": "Sentinel Financial Surveillance",
+      "url": "{{ CANONICAL_DOMAIN }}",
+      "logo": "{{ CANONICAL_DOMAIN }}/static/img/sentinel-logo.png"
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="badge-tag">
+            <i data-lucide="zap"></i>
+            <span>Real-Time Transaction Surveillance</span>
+        </div>
+        <h1>Intelligent Fraud Defense for <span class="gradient-text">Modern Payments</span></h1>
+        <p>Sentinel stops fraudulent transactions before settlement with sub-10ms machine learning inference, dynamic velocity rules, encrypted card tokenization, and instant security alerting.</p>
+        
+        <div class="hero-actions">
+            <a href="/register" class="btn-primary">
+                <span>Start Free Analyst Trial</span>
+                <i data-lucide="arrow-right"></i>
+            </a>
+            <a href="/how-it-works" class="btn-outline">
+                <i data-lucide="layers"></i>
+                <span>Explore Technical Pipeline</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Operational Metrics Banner -->
+    <section class="stats-banner" aria-label="Operational Metrics">
+        <div class="stat-item">
+            <div class="stat-value">&lt; 10ms</div>
+            <div class="stat-label">Inference Latency</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">99.4%</div>
+            <div class="stat-label">Detection Accuracy</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">AES Encrypted Vault</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">Zero</div>
+            <div class="stat-label">Plaintext Card Storage</div>
+        </div>
+    </section>
+
+    <!-- The Problem Statement -->
+    <section class="content-section" style="text-align: center; margin-bottom: 2rem;">
+        <div class="badge-tag" style="background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3); color: var(--accent-rose);">
+            <i data-lucide="alert-triangle"></i>
+            <span>The Financial Risk Reality</span>
+        </div>
+        <h2>The Escalating Crisis in Card-Not-Present Fraud</h2>
+        <p style="max-width: 760px; margin: 0 auto; color: var(--text-secondary); font-size: 1.1rem;">
+            Global payment systems face aggressive automation: distributed card testing botnets, credential stuffing, impossible-travel spoofing, and high-velocity nocturnal cash-outs. Legacy batch verification systems react too late—triggering costly chargebacks, merchant penalties, and damaged customer trust.
+        </p>
+    </section>
+
+    <!-- Core Architecture / How It Works -->
+    <section class="architecture-box">
+        <div style="text-align: center; max-width: 700px; margin: 0 auto;">
+            <div class="badge-tag">
+                <i data-lucide="cpu"></i>
+                <span>Multi-Tier Defense</span>
+            </div>
+            <h2>How Sentinel Intercepts Financial Fraud</h2>
+            <p style="color: var(--text-secondary);">From transaction ingress to automated settlement hold in four concurrent stages.</p>
+        </div>
+
+        <div class="pipeline-steps">
+            <div class="pipeline-step">
+                <div class="step-num">STAGE 01</div>
+                <h4>Stream Ingestion</h4>
+                <p>Payment events are ingested via REST API with payload validation, IP address geolocation resolution, and cryptographic payload verification.</p>
+            </div>
+            <div class="pipeline-step">
+                <div class="step-num">STAGE 02</div>
+                <h4>Feature Engineering</h4>
+                <p>Real-time normalizer projects transaction parameters through trained robust scalers and numerical transforms across 28 PCA dimensions.</p>
+            </div>
+            <div class="pipeline-step">
+                <div class="step-num">STAGE 03</div>
+                <h4>Dual-Engine Scoring</h4>
+                <p>Simultaneous evaluation via calibrated Random Forest model and dynamic heuristic rules (velocity, geographical anomalies, nocturnal windows).</p>
+            </div>
+            <div class="pipeline-step">
+                <div class="step-num">STAGE 04</div>
+                <h4>Verdict & Action</h4>
+                <p>Transactions categorized into Approve, Manual Review, or Automatic Decline with immediate notification dispatch and immutable audit logging.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Capabilities Grid -->
+    <section style="margin: 4rem 0;">
+        <div style="text-align: center; max-width: 700px; margin: 0 auto 2.5rem;">
+            <div class="badge-tag">
+                <i data-lucide="shield"></i>
+                <span>Enterprise Tooling</span>
+            </div>
+            <h2>Comprehensive Financial Surveillance</h2>
+            <p style="color: var(--text-secondary);">Everything risk management teams require to detect, investigate, and prevent illicit transaction activity.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="brain"></i>
+                </div>
+                <h3>Machine Learning Pipeline</h3>
+                <p>Supervised machine learning model trained on extensive transaction telemetry, minimizing false positives while capturing subtle non-linear fraud signatures.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="sliders"></i>
+                </div>
+                <h3>Dynamic Rule Engine</h3>
+                <p>Configurable heuristics for velocity tracking, threshold enforcement, nocturnal spikes, and multi-card clustering without code redeployment.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="lock"></i>
+                </div>
+                <h3>PCI-DSS Sensitive Vault</h3>
+                <p>Zero plaintext PAN storage. Primary account numbers are automatically masked (**** **** **** 1234) and encrypted using AES-128-CBC Fernet keys.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="bell"></i>
+                </div>
+                <h3>Real-Time Threat Alerts</h3>
+                <p>Instantaneous dispatch of high-risk security alerts to compliance officers with transaction metadata, trigger rationale, and recommended remediation.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="file-text"></i>
+                </div>
+                <h3>Audit-Ready Reporting</h3>
+                <p>Generate structured CSV and executive PDF audit reports on transaction volume, fraud rate trajectories, and blocked payment vectors.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <i data-lucide="key"></i>
+                </div>
+                <h3>Enterprise IAM & PKCE</h3>
+                <p>Google OAuth 2.0 with Proof Key for Code Exchange (PKCE), strict state verification, role-based access control, and remote session revocation.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Call to Action -->
+    <section class="architecture-box" style="text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.05));">
+        <h2>Deploy Sentinel to Secure Your Transaction Flow</h2>
+        <p style="color: var(--text-secondary); max-width: 650px; margin: 1rem auto 2rem;">
+            Experience turnkey financial surveillance. Inspect incoming transactions in real time or simulate high-volume payment bursts in an isolated sandbox.
+        </p>
+        <div class="hero-actions" style="margin-bottom: 0;">
+            <a href="/register" class="btn-primary">
+                <span>Create Analyst Account</span>
+                <i data-lucide="arrow-right"></i>
+            </a>
+            <a href="/login" class="btn-outline">
+                <span>Sign In to Console</span>
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}

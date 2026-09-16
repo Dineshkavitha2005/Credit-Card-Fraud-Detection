@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sentinel — Real-Time Financial Fraud Detection & Surveillance{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Enterprise-grade credit card fraud detection system powered by real-time machine learning, adaptive risk rules, and instant threat alerting.{% endblock %}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical_url %}{{ CANONICAL_DOMAIN }}{{ request.path }}{% endblock %}">
+    
+    <!-- Open Graph Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Sentinel Financial Surveillance">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ CANONICAL_DOMAIN }}{{ request.path }}{% endblock %}">
+    <meta property="og:image" content="{{ CANONICAL_DOMAIN }}/static/img/sentinel-og.png">
+    
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
+    
+    <!-- Favicon (SVG Shield) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z'/></svg>">
+    
+    <!-- Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons: Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/css/landing.css">
+    
+    <!-- Structured Data (JSON-LD) -->
+    {% block structured_data %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Sentinel",
+      "operatingSystem": "Cloud / Linux / Docker",
+      "applicationCategory": "SecurityApplication",
+      "description": "Enterprise-grade real-time financial fraud detection and surveillance system utilizing machine learning and heuristic behavioral analytics.",
+      "url": "{{ CANONICAL_DOMAIN }}",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    {% endblock %}
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <!-- Header Navigation -->
+    <header class="public-header">
+        <div class="header-container">
+            <a href="/" class="brand-link" aria-label="Sentinel Home">
+                <div class="brand-logo-icon">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <span>Sentinel</span>
+            </a>
+
+            <nav class="public-nav" aria-label="Primary Navigation">
+                <a href="/features" class="nav-link {% if request.path == '/features' %}active{% endif %}">Features</a>
+                <a href="/how-it-works" class="nav-link {% if request.path == '/how-it-works' %}active{% endif %}">How It Works</a>
+                <a href="/fraud-detection" class="nav-link {% if request.path == '/fraud-detection' %}active{% endif %}">Detection Engine</a>
+                <a href="/security" class="nav-link {% if request.path == '/security' %}active{% endif %}">Security</a>
+                <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
+                <a href="/faq" class="nav-link {% if request.path == '/faq' %}active{% endif %}">FAQ</a>
+                <a href="/contact" class="nav-link {% if request.path == '/contact' %}active{% endif %}">Contact</a>
+            </nav>
+
+            <div class="auth-actions">
+                {% if current_user.is_authenticated %}
+                <a href="/dashboard" class="btn-primary">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Console</span>
+                </a>
+                {% else %}
+                <a href="/login" class="btn-link">Sign In</a>
+                <a href="/register" class="btn-primary">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Public Footer -->
+    <footer class="public-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="/" class="brand-link">
+                    <div class="brand-logo-icon">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <span>Sentinel</span>
+                </a>
+                <p>Enterprise credit card fraud surveillance and automated anomaly defense. Sub-10ms transaction scoring with machine learning precision.</p>
+            </div>
+
+            <div class="footer-column">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="/features">Features Overview</a></li>
+                    <li><a href="/how-it-works">Architecture & Pipeline</a></li>
+                    <li><a href="/fraud-detection">Detection Typologies</a></li>
+                    <li><a href="/security">Security & Encryption</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Company & Trust</h4>
+                <ul>
+                    <li><a href="/about">About Sentinel</a></li>
+                    <li><a href="/contact">Security Contacts</a></li>
+                    <li><a href="/faq">Technical FAQ</a></li>
+                    <li><a href="/health">System Health</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h4>Legal & Access</h4>
+                <ul>
+                    <li><a href="/security">PCI-DSS Standards</a></li>
+                    <li><a href="/login">Analyst Sign In</a></li>
+                    <li><a href="/register">Register Account</a></li>
+                    <li><a href="/sitemap.xml">XML Sitemap</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>&copy; {{ current_year }} Sentinel Financial Surveillance. All rights reserved.</div>
+            <div>Built for high-assurance financial transaction integrity.</div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% extends "public_base.html" %}
+
+{% block title %}Fraud Detection Typologies — Sentinel Financial Surveillance{% endblock %}
+{% block meta_description %}Explore the credit card fraud vectors detected by Sentinel: card testing botnets, velocity bursts, geographical impossible travel, nocturnal spikes, and credential stuffing.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="shield-alert"></i>
+            <span>Threat Taxonomy</span>
+        </div>
+        <h1>Financial Fraud Typologies Detected by Sentinel</h1>
+        <p class="lead">
+            Modern cybercriminals exploit multi-layered vectors to test stolen credentials and drain balances. Sentinel actively classifies and intercepts complex fraud patterns across multiple operational dimensions.
+        </p>
+
+        <h2>1. Distributed Card Testing (BIN Attacks)</h2>
+        <p>
+            Attackers utilize automated botnets to test thousands of stolen Bank Identification Numbers (BINs) through micro-transactions ($0.50 to $2.00) on e-commerce merchants. Sentinel detects card testing through:
+        </p>
+        <ul>
+            <li>Abnormal frequencies of low-value transactions targeting identical merchant categories.</li>
+            <li>High authorization failure rates originating from clustered IP subnets.</li>
+            <li>Instant rate limiting and autonomous IP blocking to protect merchant authorization quotas.</li>
+        </ul>
+
+        <h2>2. High-Velocity Payment Bursts</h2>
+        <p>
+            When fraudsters validate a working credit card, they attempt to rapidly monetize the account before the genuine cardholder notices. Sentinel tracks rolling transaction counters per card and per identity:
+        </p>
+        <ul>
+            <li>Flags multiple transactions executed within seconds or minutes of each other.</li>
+            <li>Detects escalating dollar amounts indicative of progressive balance testing.</li>
+            <li>Enforces configurable velocity rules to temporarily freeze payment attempts.</li>
+        </ul>
+
+        <h2>3. Geographical Anomalies & Impossible Travel</h2>
+        <p>
+            Physical and IP geolocation discrepancies provide strong indicators of account compromise. Sentinel analyzes geographic telemetry:
+        </p>
+        <ul>
+            <li>Detects transactions originating from different countries or regions within physically impossible time frames (e.g. New York at 10:00 AM and London at 10:45 AM).</li>
+            <li>Identifies suspicious data center IPs, known VPN gateways, and residential proxy networks.</li>
+            <li>Correlates card issuing bank location with transaction terminal location.</li>
+        </ul>
+
+        <h2>4. Nocturnal Activity & Temporal Deviations</h2>
+        <p>
+            Fraud rings frequently operate during off-peak hours (midnight to 5:00 AM cardholder local time) to delay discovery and prevent two-factor authentication alerts from being noticed immediately. Sentinel evaluates temporal patterns:
+        </p>
+        <ul>
+            <li>Applies dynamic risk weight multipliers to off-hour high-value transactions.</li>
+            <li>Compares current transaction timing against historical cardholder habit baselines.</li>
+            <li>Requires supervisory analyst sign-off for high-value off-hours payment releases.</li>
+        </ul>
+
+        <h2>5. Multi-Card Account Takeover (ATO)</h2>
+        <p>
+            In credential stuffing and checkout hijacking campaigns, a single malicious device or session attempts purchases using multiple distinct card numbers. Sentinel monitors cross-card correlations:
+        </p>
+        <ul>
+            <li>Clusters transactions sharing device fingerprints, user agents, or IP addresses.</li>
+            <li>Flags accounts adding and cycling through three or more payment cards within an hour.</li>
+            <li>Automatically blacklists identified card numbers to prevent cascade losses.</li>
+        </ul>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/register" class="btn-primary">Test Fraud Detection Live</a>
+            <a href="/faq" class="btn-outline" style="margin-left: 1rem;">Read Technical FAQ</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

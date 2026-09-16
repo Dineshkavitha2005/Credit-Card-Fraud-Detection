@@ -285,6 +285,41 @@ def create_app(config_class=None):
 
     app.url_build_error_handlers.append(handle_url_build_error)
 
+    # Attach ProxyFix to correctly interpret reverse proxy headers (X-Forwarded-For, X-Forwarded-Proto, etc.)
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    # Defense-in-depth HTTP security headers & search engine robot tags
+    @app.after_request
+    def set_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+
+        # HSTS when HTTPS is active or in production
+        if request.is_secure or (app.config.get('FLASK_ENV') == 'production'):
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+        # Strict noindex on private / authenticated / admin / internal API paths
+        private_prefixes = (
+            '/dashboard', '/transactions', '/analytics', '/alerts',
+            '/cards', '/reports', '/settings', '/admin', '/api'
+        )
+        if request.path.startswith(private_prefixes):
+            response.headers['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
+
+        return response
+
+    # Global template context variables (canonical domain, current year)
+    @app.context_processor
+    def inject_global_template_vars():
+        canonical_domain = app.config.get('CANONICAL_DOMAIN', 'https://your-domain.com').rstrip('/')
+        return {
+            'CANONICAL_DOMAIN': canonical_domain,
+            'current_year': 2026,
+        }
+
     return app
 
 

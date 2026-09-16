@@ -1,0 +1,137 @@
+{% extends "public_base.html" %}
+
+{% block title %}Technical FAQ — Sentinel Credit Card Fraud Detection{% endblock %}
+{% block meta_description %}Answers to frequent questions about Sentinel: ML inference latency, PCI-DSS compliance, false positive rates, Google OAuth setup, and rule configuration.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does Sentinel score transactions without delaying checkout?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sentinel features a pre-compiled, optimized machine learning pipeline using scikit-learn standard scalers and calibrated models. End-to-end inference executes in under 10 milliseconds, allowing inline risk scoring well within standard payment gateway timeout thresholds."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does Sentinel ensure cardholder data security and PCI-DSS compliance?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sentinel never stores plaintext Primary Account Numbers (PANs). All card numbers are encrypted using AES-128-CBC with Fernet keys stored in environment variables, and public interfaces strictly render masked values such as **** **** **** 1234."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can compliance teams adjust fraud rules without redeploying code?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Sentinel includes a dynamic heuristic rule engine. Administrators can adjust amount thresholds, transaction velocity limits, nocturnal risk multipliers, and card velocity checks dynamically through the web console or database."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does Google OAuth 2.0 authentication work in Sentinel?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sentinel implements the Google OAuth 2.0 authorization code flow reinforced with Proof Key for Code Exchange (PKCE) and cryptographic session states, ensuring robust protection against authorization code interception and CSRF attacks."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What database systems are supported in production?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Production deployments strictly require PostgreSQL with connection pooling (pool_pre_ping, max_overflow, pool_recycle). SQLite is strictly restricted to local development and testing environments."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="help-circle"></i>
+            <span>Knowledge Base</span>
+        </div>
+        <h1>Frequently Asked Questions</h1>
+        <p class="lead">
+            Everything you need to know about Sentinel's machine learning architecture, transaction processing latency, security posture, and production deployment options.
+        </p>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How does Sentinel score transactions without delaying checkout?</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sentinel features a pre-compiled, optimized machine learning pipeline using scikit-learn standard scalers and calibrated models. End-to-end inference executes in under 10 milliseconds, allowing inline risk scoring well within standard payment gateway timeout thresholds.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How does Sentinel ensure cardholder data security and PCI-DSS compliance?</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sentinel never stores plaintext Primary Account Numbers (PANs). All card numbers are encrypted using AES-128-CBC with Fernet keys stored in environment variables, and public interfaces strictly render masked values such as <code>**** **** **** 1234</code>.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can compliance teams adjust fraud rules without redeploying code?</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes. Sentinel includes a dynamic heuristic rule engine. Administrators can adjust amount thresholds, transaction velocity limits, nocturnal risk multipliers, and card velocity checks dynamically through the web console or database.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How does Google OAuth 2.0 authentication work in Sentinel?</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sentinel implements the Google OAuth 2.0 authorization code flow reinforced with Proof Key for Code Exchange (PKCE) and cryptographic session states, ensuring robust protection against authorization code interception and CSRF attacks.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What database systems are supported in production?</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Production deployments strictly require PostgreSQL with connection pooling (<code>pool_pre_ping</code>, <code>max_overflow</code>, <code>pool_recycle</code>). SQLite is strictly restricted to local development and testing environments.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How does Sentinel differentiate genuine high-value purchases from fraud?</span>
+                    <i data-lucide="chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Rather than relying solely on dollar amounts, Sentinel's model evaluates 28 principal component features alongside contextual signals like merchant category, IP consistency, device historical patterns, and time-of-day baselines, drastically reducing false positive declines for legitimate VIP customers.
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/register" class="btn-primary">Deploy Sentinel Now</a>
+            <a href="/contact" class="btn-outline" style="margin-left: 1rem;">Contact Support</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

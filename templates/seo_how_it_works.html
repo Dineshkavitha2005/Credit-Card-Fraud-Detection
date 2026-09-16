@@ -1,0 +1,70 @@
+{% extends "public_base.html" %}
+
+{% block title %}How It Works — Sentinel Architecture & Machine Learning Pipeline{% endblock %}
+{% block meta_description %}Learn how Sentinel detects credit card fraud in under 10ms: from API stream ingestion to feature normalization, ensemble model scoring, and automated verdict dispatch.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="cpu"></i>
+            <span>Pipeline Architecture</span>
+        </div>
+        <h1>How Sentinel Inspects Every Transaction</h1>
+        <p class="lead">
+            Sentinel combines statistical feature normalization, high-dimensional machine learning inference, and deterministic rule engines into an asynchronous evaluation pipeline designed to minimize false positives while preventing unauthorized settlements.
+        </p>
+
+        <h2>1. Transaction Ingestion & Payload Sanitization</h2>
+        <p>
+            Payment transactions enter Sentinel through structured REST APIs or automated simulator webhooks. The request undergoes immediate schema validation:
+        </p>
+        <ul>
+            <li>Non-negative numeric amount validation and currency normalization.</li>
+            <li>Card number structural validation and sanitization.</li>
+            <li>Client IP extraction with forward proxy header resolution (<code>X-Forwarded-For</code>).</li>
+            <li>Geographical lookup to map origin city, country, and ASN details.</li>
+        </ul>
+
+        <h2>2. High-Dimensional Feature Engineering</h2>
+        <p>
+            Machine learning models require consistent numerical scaling. Sentinel passes raw inputs through a pre-trained preprocessing pipeline:
+        </p>
+        <ul>
+            <li><strong>PCA Transformation:</strong> 28 principal component features (V1 through V28) capturing transaction dimensionality, user behavior history, and merchant clustering.</li>
+            <li><strong>Robust Scaling:</strong> Transaction amount and time deltas are scaled using trained scikit-learn standard scalers, preventing high-dollar outliers from skewing model weights.</li>
+            <li><strong>Temporal Features:</strong> Cyclical hour and day encodings detect nocturnal surges and off-hour transaction anomalies.</li>
+        </ul>
+
+        <h2>3. Supervised Model Inference</h2>
+        <p>
+            The normalized feature vector is supplied to the primary classification engine—an optimized ensemble model trained on over 284,000 transaction records. The model calculates a calibrated posterior fraud probability:
+        </p>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; margin: 1.5rem 0; font-family: var(--font-mono); font-size: 0.95rem;">
+            P(Fraud | X) = Model.predict_proba(X)[1]<br>
+            Verdict = "Fraudulent" if P(Fraud | X) &gt;= 0.50 else "Genuine"
+        </div>
+
+        <h2>4. Deterministic Heuristic Fusion</h2>
+        <p>
+            Machine learning probabilities are merged with real-time heuristic evaluations. If a transaction is statistically ambiguous (e.g. 0.35 risk score) but triggers multiple heuristic rules (such as a 3rd rapid transaction within 60 seconds from an unrecognized international IP), Sentinel elevates the risk level to <strong>High Risk</strong> or <strong>Manual Review</strong>.
+        </p>
+
+        <h2>5. Automated Enforcement & Audit Logging</h2>
+        <p>
+            Depending on the computed risk tier, Sentinel executes automated actions:
+        </p>
+        <ul>
+            <li><strong>Low Risk (&lt; 0.30):</strong> Approved automatically with minimal latency.</li>
+            <li><strong>Medium Risk (0.30 – 0.69):</strong> Flagged for supervisory review in the analyst console.</li>
+            <li><strong>High Risk (&gt;= 0.70):</strong> Intercepted, transaction declined, card auto-blocked, and immediate security alert dispatched.</li>
+            <li><strong>Audit Trail:</strong> Every evaluation is permanently recorded in PostgreSQL with timestamp, user agent, client IP, raw scores, and triggering rule IDs for regulatory compliance.</li>
+        </ul>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/fraud-detection" class="btn-primary">Review Fraud Typologies</a>
+            <a href="/security" class="btn-outline" style="margin-left: 1rem;">Inspect Security Architecture</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
