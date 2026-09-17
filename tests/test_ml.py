@@ -66,6 +66,8 @@ class TestMachineLearning:
             pytest.skip("Dataset file creditcard_2023.csv not present for holdout regression test")
 
         df = pd.read_csv('creditcard_2023.csv', nrows=100000)
+        if 'Class' not in df.columns:
+            pytest.skip("Dataset file does not contain Class column (likely Git LFS pointer content)")
         df_domain = prepare_training_dataset(df)
         preprocessor = TransactionPreprocessor()
         X_processed = preprocessor.transform_dataframe(df_domain)
