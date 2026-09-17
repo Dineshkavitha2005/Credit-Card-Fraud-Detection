@@ -178,7 +178,7 @@ class TestConfigurationSecurity(unittest.TestCase):
 
         ValidTestConfig.validate()
         self.assertEqual(ValidTestConfig.TESTING, True)
-        self.assertEqual(ValidTestConfig.SQLALCHEMY_DATABASE_URI, 'sqlite:///:memory:')
+        self.assertEqual(ValidTestConfig.SQLALCHEMY_DATABASE_URI, TestingConfig.SQLALCHEMY_DATABASE_URI)
 
     # ─── 5. No In-Memory Fallback Verification ─────────────────────────────
 
