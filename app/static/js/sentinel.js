@@ -7,96 +7,273 @@
 window.Sentinel = (function() {
   'use strict';
 
-  // Active theme tracking
-  let currentTheme = 'light';
+  // Theme state: selected preference ('system' | 'light' | 'dark') and resolved visual theme ('light' | 'dark')
+  let selectedTheme = 'system';
+  let resolvedTheme = 'light';
+  let osMediaQuery = null;
+  let osListenerAttached = false;
 
-  // Initialize theme from storage or OS preference
-  function initTheme() {
-    const savedTheme = localStorage.getItem('sentinel_theme');
-    if (savedTheme) {
-      currentTheme = savedTheme;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      currentTheme = 'dark';
-    } else {
-      currentTheme = 'light';
+  function getSystemPreference() {
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
     }
+    return 'light';
+  }
 
-    applyTheme(currentTheme);
+  function resolveTheme(pref) {
+    if (pref === 'system') {
+      return getSystemPreference();
+    }
+    return pref === 'dark' ? 'dark' : 'light';
+  }
 
-    // Listen for OS theme changes if not explicitly overridden
-    if (window.matchMedia) {
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem('sentinel_theme')) {
-          applyTheme(e.matches ? 'dark' : 'light');
-        }
-      });
+  function handleOSThemeChange(e) {
+    // CRITICAL: Only apply if selected theme is 'system'
+    if (selectedTheme === 'system') {
+      const newResolved = e.matches ? 'dark' : 'light';
+      applyTheme(newResolved, 'system', false);
     }
   }
 
-  function applyTheme(theme) {
-    currentTheme = theme;
-    if (theme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
+  function setupOSListener() {
+    if (osListenerAttached || typeof window === 'undefined' || !window.matchMedia) return;
+    try {
+      osMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      if (osMediaQuery.addEventListener) {
+        osMediaQuery.addEventListener('change', handleOSThemeChange);
+      } else if (osMediaQuery.addListener) {
+        osMediaQuery.addListener(handleOSThemeChange);
+      }
+      osListenerAttached = true;
+    } catch (err) {
+      console.warn('Sentinel: Failed to attach OS theme listener', err);
+    }
+  }
+
+  // Initialize theme from storage or default to system
+  function initTheme() {
+    const savedTheme = typeof localStorage !== 'undefined' ? localStorage.getItem('sentinel_theme') : null;
+    if (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system') {
+      selectedTheme = savedTheme;
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      selectedTheme = 'system';
     }
 
-    updateThemeToggleUI();
+    resolvedTheme = resolveTheme(selectedTheme);
+    applyTheme(resolvedTheme, selectedTheme, false);
+    setupOSListener();
+  }
+
+  function applyTheme(resolved, selected, persist = false) {
+    resolvedTheme = resolved;
+    if (selected) {
+      selectedTheme = selected;
+    }
+
+    if (persist && typeof localStorage !== 'undefined') {
+      // PERSIST ONLY USER SELECTION, NEVER RESOLVED THEME FOR SYSTEM
+      localStorage.setItem('sentinel_theme', selectedTheme);
+    }
+
+    if (typeof document !== 'undefined' && document.documentElement) {
+      if (resolvedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      document.documentElement.setAttribute('data-theme-preference', selectedTheme);
+    }
+
+    updateThemeUI();
     updateChartDefaults();
+
+    // Notify any listening components/charts
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      try {
+        window.dispatchEvent(new CustomEvent('sentinel:themechange', {
+          detail: {
+            selectedTheme: selectedTheme,
+            resolvedTheme: resolvedTheme
+          }
+        }));
+      } catch (e) {}
+    }
+  }
+
+  function setTheme(theme) {
+    if (theme !== 'system' && theme !== 'light' && theme !== 'dark') {
+      theme = 'system';
+    }
+    selectedTheme = theme;
+    const resolved = resolveTheme(selectedTheme);
+    applyTheme(resolved, selectedTheme, true);
+
+    const labelMap = {
+      system: `System (${resolved === 'dark' ? 'Dark' : 'Light'})`,
+      light: 'Light',
+      dark: 'Dark'
+    };
+    showToast(`Switched to ${labelMap[selectedTheme]} theme`, 'info', 2000);
+    closeAllThemeMenus();
   }
 
   function toggleTheme() {
-    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('sentinel_theme', nextTheme);
-    applyTheme(nextTheme);
-    showToast(`Switched to ${nextTheme === 'dark' ? 'Dark' : 'Light'} theme`, 'info', 2000);
+    // Cycle: system -> light -> dark -> system
+    const cycle = { system: 'light', light: 'dark', dark: 'system' };
+    const next = cycle[selectedTheme] || 'system';
+    setTheme(next);
   }
 
   function getTheme() {
-    return currentTheme;
+    // Retain backward compatibility: callers checking getTheme() === 'dark' get resolved theme
+    return resolvedTheme;
   }
 
-  function updateThemeToggleUI() {
+  function getSelectedTheme() {
+    return selectedTheme;
+  }
+
+  function getResolvedTheme() {
+    return resolvedTheme;
+  }
+
+  function updateThemeUI() {
+    if (typeof document === 'undefined') return;
+
+    // 1. Update all topbar & navbar toggle buttons
     const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
     toggleBtns.forEach(btn => {
-      if (currentTheme === 'dark') {
-        btn.innerHTML = `<i data-lucide="sun" style="width:15px;height:15px;"></i>`;
-        btn.setAttribute('title', 'Switch to Light Mode');
-        btn.setAttribute('aria-label', 'Switch to Light Mode');
+      let iconName = 'monitor';
+      let titleText = `Appearance: System (${resolvedTheme === 'dark' ? 'Dark' : 'Light'})`;
+      if (selectedTheme === 'light') {
+        iconName = 'sun';
+        titleText = 'Appearance: Light';
+      } else if (selectedTheme === 'dark') {
+        iconName = 'moon';
+        titleText = 'Appearance: Dark';
+      }
+
+      btn.setAttribute('title', titleText);
+      btn.setAttribute('aria-label', titleText);
+      btn.setAttribute('data-selected-theme', selectedTheme);
+      btn.setAttribute('data-resolved-theme', resolvedTheme);
+
+      btn.innerHTML = `<i data-lucide="${iconName}" style="width:15px;height:15px;"></i>`;
+    });
+
+    // 2. Update all dropdown menu items (in base and public templates)
+    const menuItems = document.querySelectorAll('.theme-menu-item');
+    menuItems.forEach(item => {
+      const choice = item.getAttribute('data-theme-choice');
+      const isSelected = choice === selectedTheme;
+      item.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      if (isSelected) {
+        item.classList.add('active');
       } else {
-        btn.innerHTML = `<i data-lucide="moon" style="width:15px;height:15px;"></i>`;
-        btn.setAttribute('title', 'Switch to Dark Mode');
-        btn.setAttribute('aria-label', 'Switch to Dark Mode');
+        item.classList.remove('active');
+      }
+      const checkIcon = item.querySelector('.theme-check-icon');
+      if (checkIcon) {
+        checkIcon.style.display = isSelected ? 'inline-block' : 'none';
       }
     });
+
+    // 3. Update Settings page segmented control buttons
+    const segmentBtns = document.querySelectorAll('.theme-segment-btn');
+    segmentBtns.forEach(btn => {
+      const choice = btn.getAttribute('data-theme-value');
+      const isSelected = choice === selectedTheme;
+      btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      if (isSelected) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // 4. Update Settings page description texts if present
+    const descText = document.getElementById('theme-description-text');
+    if (descText) {
+      if (selectedTheme === 'system') {
+        descText.textContent = 'Automatically follows your device preference.';
+      } else if (selectedTheme === 'light') {
+        descText.textContent = 'Always use clean, high-contrast light theme.';
+      } else if (selectedTheme === 'dark') {
+        descText.textContent = 'Always use quiet, dark fintech operations theme.';
+      }
+    }
+
+    const resolvedInfo = document.getElementById('theme-resolved-info');
+    if (resolvedInfo) {
+      if (selectedTheme === 'system') {
+        resolvedInfo.textContent = `Currently resolved to ${resolvedTheme === 'dark' ? 'Dark' : 'Light'} mode based on your device.`;
+      } else {
+        resolvedInfo.textContent = `Fixed to ${selectedTheme === 'dark' ? 'Dark' : 'Light'} mode (device preference ignored).`;
+      }
+    }
+
     initIcons();
+  }
+
+  function toggleThemeMenu(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const currentBtn = e && e.currentTarget ? e.currentTarget : document.getElementById('theme-toggle-btn');
+    const container = currentBtn ? currentBtn.closest('.theme-selector-wrapper') : null;
+    const menu = container ? container.querySelector('.theme-dropdown-menu') : document.getElementById('theme-dropdown');
+    if (!menu) return;
+
+    const isVisible = menu.style.display === 'block';
+    closeAllThemeMenus();
+    if (!isVisible) {
+      menu.style.display = 'block';
+      if (currentBtn) currentBtn.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function closeAllThemeMenus() {
+    if (typeof document === 'undefined') return;
+    const menus = document.querySelectorAll('.theme-dropdown-menu');
+    menus.forEach(m => { m.style.display = 'none'; });
+    const btns = document.querySelectorAll('.theme-toggle-btn');
+    btns.forEach(b => { b.setAttribute('aria-expanded', 'false'); });
   }
 
   // Configure Chart.js Defaults based on theme
   function updateChartDefaults() {
-    if (!window.Chart) return;
+    if (typeof window === 'undefined' || !window.Chart) return;
+    const C = window.Chart;
 
-    const isDark = currentTheme === 'dark';
+    const isDark = resolvedTheme === 'dark';
     const textColor = isDark ? '#A6AAA4' : '#686C67';
     const gridColor = isDark ? '#242723' : '#ECEEEA';
     const tooltipBg = isDark ? '#222522' : '#181A18';
     const tooltipBorder = isDark ? '#2D302C' : '#262925';
 
-    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-    Chart.defaults.font.size = 12;
-    Chart.defaults.color = textColor;
-    Chart.defaults.plugins.legend.labels.usePointStyle = true;
-    Chart.defaults.plugins.legend.labels.boxWidth = 8;
-    Chart.defaults.plugins.legend.labels.boxHeight = 8;
-    Chart.defaults.plugins.legend.labels.color = textColor;
-    Chart.defaults.plugins.tooltip.backgroundColor = tooltipBg;
-    Chart.defaults.plugins.tooltip.titleColor = '#FFFFFF';
-    Chart.defaults.plugins.tooltip.bodyColor = isDark ? '#F0F2EE' : '#F1F2EF';
-    Chart.defaults.plugins.tooltip.borderColor = tooltipBorder;
-    Chart.defaults.plugins.tooltip.borderWidth = 1;
-    Chart.defaults.plugins.tooltip.cornerRadius = 6;
-    Chart.defaults.plugins.tooltip.padding = 10;
-    Chart.defaults.plugins.tooltip.boxPadding = 4;
+    if (!C.defaults) return;
+    if (!C.defaults.font) C.defaults.font = {};
+    if (!C.defaults.plugins) C.defaults.plugins = {};
+    if (!C.defaults.plugins.legend) C.defaults.plugins.legend = {};
+    if (!C.defaults.plugins.legend.labels) C.defaults.plugins.legend.labels = {};
+    if (!C.defaults.plugins.tooltip) C.defaults.plugins.tooltip = {};
+
+    C.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    C.defaults.font.size = 12;
+    C.defaults.color = textColor;
+    C.defaults.plugins.legend.labels.usePointStyle = true;
+    C.defaults.plugins.legend.labels.boxWidth = 8;
+    C.defaults.plugins.legend.labels.boxHeight = 8;
+    C.defaults.plugins.legend.labels.color = textColor;
+    C.defaults.plugins.tooltip.backgroundColor = tooltipBg;
+    C.defaults.plugins.tooltip.titleColor = '#FFFFFF';
+    C.defaults.plugins.tooltip.bodyColor = isDark ? '#F0F2EE' : '#F1F2EF';
+    C.defaults.plugins.tooltip.borderColor = tooltipBorder;
+    C.defaults.plugins.tooltip.borderWidth = 1;
+    C.defaults.plugins.tooltip.cornerRadius = 6;
+    C.defaults.plugins.tooltip.padding = 10;
+    C.defaults.plugins.tooltip.boxPadding = 4;
   }
 
   // Hydrate Lucide Icons
@@ -483,6 +660,27 @@ window.Sentinel = (function() {
     if (userDd && userBtn && !userBtn.contains(e.target) && !userDd.contains(e.target)) {
       userDd.style.display = 'none';
     }
+
+    // Close theme dropdown on click outside
+    const themeWrappers = document.querySelectorAll('.theme-selector-wrapper');
+    let insideTheme = false;
+    themeWrappers.forEach(w => {
+      if (w.contains(e.target)) insideTheme = true;
+    });
+    if (!insideTheme) {
+      closeAllThemeMenus();
+    }
+  });
+
+  // Close dropdowns on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllThemeMenus();
+      const notifDd = document.getElementById('notif-dropdown');
+      if (notifDd) notifDd.style.display = 'none';
+      const userDd = document.getElementById('user-dropdown');
+      if (userDd) userDd.style.display = 'none';
+    }
   });
 
   // Auto-run core initialization on DOM ready
@@ -499,8 +697,14 @@ window.Sentinel = (function() {
 
   return {
     initTheme,
+    applyTheme,
+    setTheme,
     toggleTheme,
+    toggleThemeMenu,
+    closeThemeMenu: closeAllThemeMenus,
     getTheme,
+    getSelectedTheme,
+    getResolvedTheme,
     initIcons,
     showToast,
     openDrawer,

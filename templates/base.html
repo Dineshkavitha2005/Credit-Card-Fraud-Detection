@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sentinel{% endblock %} &mdash; Financial Security Platform</title>
     
+    <!-- Early Theme Initialization to Prevent FOUC -->
+    <script>
+        (function() {
+            try {
+                var pref = localStorage.getItem('sentinel_theme') || 'system';
+                var resolved = (pref === 'system')
+                    ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : pref;
+                if (resolved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+                document.documentElement.setAttribute('data-theme-preference', pref);
+            } catch (e) {}
+        })();
+    </script>
+    
     <!-- Typography: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -143,10 +161,33 @@
                         <span class="kbd-shortcut">/</span>
                     </div>
 
-                    <!-- Theme Toggle Button -->
-                    <button class="topbar-btn theme-toggle-btn" onclick="Sentinel.toggleTheme()" title="Switch Theme" aria-label="Toggle Dark/Light Theme">
-                        <i data-lucide="moon" style="width:15px;height:15px;"></i>
-                    </button>
+                    <!-- Theme Selector Control -->
+                    <div class="theme-selector-wrapper" style="position:relative;">
+                        <button class="topbar-btn theme-toggle-btn" id="theme-toggle-btn" onclick="Sentinel.toggleThemeMenu(event)" title="Appearance: System" aria-label="Appearance: System" aria-haspopup="menu" aria-expanded="false">
+                            <i data-lucide="monitor" style="width:15px;height:15px;"></i>
+                        </button>
+                        <!-- Theme Dropdown Menu -->
+                        <div id="theme-dropdown" class="theme-dropdown-menu" style="display:none;position:absolute;top:40px;right:0;min-width:150px;background:var(--bg-surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:var(--shadow-lg);z-index:220;padding:6px;" role="menu" aria-label="Appearance options">
+                            <div style="padding:4px 10px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border-subtle);margin-bottom:4px;">
+                                Appearance
+                            </div>
+                            <button type="button" class="theme-menu-item" data-theme-choice="system" onclick="Sentinel.setTheme('system')" role="menuitemradio" aria-checked="true">
+                                <i data-lucide="monitor" style="width:14px;height:14px;"></i>
+                                <span>System</span>
+                                <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;"></i>
+                            </button>
+                            <button type="button" class="theme-menu-item" data-theme-choice="light" onclick="Sentinel.setTheme('light')" role="menuitemradio" aria-checked="false">
+                                <i data-lucide="sun" style="width:14px;height:14px;"></i>
+                                <span>Light</span>
+                                <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;display:none;"></i>
+                            </button>
+                            <button type="button" class="theme-menu-item" data-theme-choice="dark" onclick="Sentinel.setTheme('dark')" role="menuitemradio" aria-checked="false">
+                                <i data-lucide="moon" style="width:14px;height:14px;"></i>
+                                <span>Dark</span>
+                                <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;display:none;"></i>
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- Notifications Dropdown Trigger -->
                     <div style="position:relative;">
