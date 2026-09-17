@@ -62,6 +62,7 @@
     <div class="ambient-glow"></div>
 
     <!-- Header Navigation -->
+    {% block header %}
     <header class="public-header">
         <div class="header-container">
             <a href="/" class="brand-link" aria-label="Sentinel Home">
@@ -94,6 +95,7 @@
             </div>
         </div>
     </header>
+    {% endblock %}
 
     <!-- Main Content -->
     <main>
@@ -153,5 +155,6 @@
     <script>
         lucide.createIcons();
     </script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>
