@@ -12,6 +12,41 @@
     </div>
 </div>
 
+<!-- Appearance & Theme Mode -->
+<div class="sentinel-card" style="margin-bottom:24px;">
+    <div class="sentinel-card-header">
+        <div>
+            <div class="sentinel-card-title">
+                <i data-lucide="palette" style="width:16px;height:16px;color:var(--accent);"></i>
+                <span>Appearance</span>
+            </div>
+            <div class="sentinel-card-subtitle" id="theme-description-text">Automatically follows your device preference.</div>
+        </div>
+    </div>
+    <div class="sentinel-card-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+            <div>
+                <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Interface Theme</div>
+                <div style="font-size:12px;color:var(--text-secondary);" id="theme-resolved-info">Currently resolved based on your device preference.</div>
+            </div>
+            <div class="theme-segmented-control" role="radiogroup" aria-label="Appearance selection">
+                <button type="button" class="theme-segment-btn" data-theme-value="system" onclick="Sentinel.setTheme('system')" role="radio" aria-checked="true">
+                    <i data-lucide="monitor" style="width:14px;height:14px;"></i>
+                    <span>System</span>
+                </button>
+                <button type="button" class="theme-segment-btn" data-theme-value="light" onclick="Sentinel.setTheme('light')" role="radio" aria-checked="false">
+                    <i data-lucide="sun" style="width:14px;height:14px;"></i>
+                    <span>Light</span>
+                </button>
+                <button type="button" class="theme-segment-btn" data-theme-value="dark" onclick="Sentinel.setTheme('dark')" role="radio" aria-checked="false">
+                    <i data-lucide="moon" style="width:14px;height:14px;"></i>
+                    <span>Dark</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="grid-2" style="margin-bottom:24px;">
     <!-- Fraud Detection Rules -->
     <div class="sentinel-card">

@@ -6,6 +6,24 @@
     <title>{% block title %}Sentinel — Real-Time Financial Fraud Detection & Surveillance{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Enterprise-grade credit card fraud detection system powered by real-time machine learning, adaptive risk rules, and instant threat alerting.{% endblock %}">
     
+    <!-- Early Theme Initialization to Prevent FOUC -->
+    <script>
+        (function() {
+            try {
+                var pref = localStorage.getItem('sentinel_theme') || 'system';
+                var resolved = (pref === 'system')
+                    ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : pref;
+                if (resolved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+                document.documentElement.setAttribute('data-theme-preference', pref);
+            } catch (e) {}
+        })();
+    </script>
+    
     <!-- Canonical URL -->
     <link rel="canonical" href="{% block canonical_url %}{{ CANONICAL_DOMAIN }}{{ request.path }}{% endblock %}">
     
@@ -33,7 +51,8 @@
     <!-- Icons: Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Stylesheet -->
+    <!-- Sentinel Scripts & Stylesheet -->
+    <script src="/static/js/sentinel.js"></script>
     <link rel="stylesheet" href="/static/css/landing.css">
     
     <!-- Structured Data (JSON-LD) -->
@@ -62,6 +81,7 @@
     <div class="ambient-glow"></div>
 
     <!-- Header Navigation -->
+    {% block header %}
     <header class="public-header">
         <div class="header-container">
             <a href="/" class="brand-link" aria-label="Sentinel Home">
@@ -82,6 +102,32 @@
             </nav>
 
             <div class="auth-actions">
+                <!-- Theme Selector Control -->
+                <div class="theme-selector-wrapper" style="position:relative;">
+                    <button class="topbar-btn theme-toggle-btn" onclick="Sentinel.toggleThemeMenu(event)" title="Appearance: System" aria-label="Appearance: System" aria-haspopup="menu" aria-expanded="false">
+                        <i data-lucide="monitor" style="width:15px;height:15px;"></i>
+                    </button>
+                    <div class="theme-dropdown-menu" style="display:none;position:absolute;top:40px;right:0;min-width:150px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:220;padding:6px;" role="menu" aria-label="Appearance options">
+                        <div style="padding:4px 10px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border-color);margin-bottom:4px;">
+                            Appearance
+                        </div>
+                        <button type="button" class="theme-menu-item" data-theme-choice="system" onclick="Sentinel.setTheme('system')" role="menuitemradio" aria-checked="true">
+                            <i data-lucide="monitor" style="width:14px;height:14px;"></i>
+                            <span>System</span>
+                            <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;"></i>
+                        </button>
+                        <button type="button" class="theme-menu-item" data-theme-choice="light" onclick="Sentinel.setTheme('light')" role="menuitemradio" aria-checked="false">
+                            <i data-lucide="sun" style="width:14px;height:14px;"></i>
+                            <span>Light</span>
+                            <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;display:none;"></i>
+                        </button>
+                        <button type="button" class="theme-menu-item" data-theme-choice="dark" onclick="Sentinel.setTheme('dark')" role="menuitemradio" aria-checked="false">
+                            <i data-lucide="moon" style="width:14px;height:14px;"></i>
+                            <span>Dark</span>
+                            <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;display:none;"></i>
+                        </button>
+                    </div>
+                </div>
                 {% if current_user.is_authenticated %}
                 <a href="/dashboard" class="btn-primary">
                     <i data-lucide="layout-dashboard"></i>
@@ -94,6 +140,7 @@
             </div>
         </div>
     </header>
+    {% endblock %}
 
     <!-- Main Content -->
     <main>
