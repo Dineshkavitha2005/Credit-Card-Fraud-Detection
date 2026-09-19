@@ -7,23 +7,29 @@
     <meta name="description" content="{% block meta_description %}Enterprise-grade credit card fraud detection system powered by real-time machine learning, adaptive risk rules, and instant threat alerting.{% endblock %}">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="{% block canonical_url %}{{ CANONICAL_DOMAIN }}{{ request.path }}{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ CANONICAL_DOMAIN }}{{ request.path if request.path != '/' else '/' }}{% endblock %}">
     
     <!-- Open Graph Metadata -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Sentinel Financial Surveillance">
     <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
-    <meta property="og:url" content="{% block og_url %}{{ CANONICAL_DOMAIN }}{{ request.path }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ CANONICAL_DOMAIN }}{{ request.path if request.path != '/' else '/' }}{% endblock %}">
     <meta property="og:image" content="{{ CANONICAL_DOMAIN }}/static/img/sentinel-og.png">
     
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
+    <meta name="twitter:image" content="{{ CANONICAL_DOMAIN }}/static/img/sentinel-og.png">
     
-    <!-- Favicon (SVG Shield) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z'/></svg>">
+    <!-- Complete Favicon Set & Web App Manifest -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <meta name="theme-color" content="#0F172A">
     
     <!-- Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,17 +61,34 @@
     }
     </script>
     {% endblock %}
+
+    <!-- Theme State Early Init (Prevents Theme Flash / FOUC) -->
+    <script>
+        (function() {
+            try {
+                var saved = localStorage.getItem('sentinel_theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
     
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <div class="ambient-glow"></div>
+    <div class="ambient-glow" aria-hidden="true"></div>
 
     <!-- Header Navigation -->
-    <header class="public-header">
+    <header class="public-header" role="banner">
         <div class="header-container">
             <a href="/" class="brand-link" aria-label="Sentinel Home">
-                <div class="brand-logo-icon">
+                <div class="brand-logo-icon" aria-hidden="true">
                     <i data-lucide="shield-check"></i>
                 </div>
                 <span>Sentinel</span>
@@ -82,30 +105,93 @@
             </nav>
 
             <div class="auth-actions">
+                <!-- Theme Toggle Button -->
+                <button class="public-theme-btn" id="publicThemeBtn" onclick="togglePublicTheme()" aria-label="Toggle theme" title="Toggle Light / Dark theme">
+                    <i data-lucide="moon" id="publicThemeIcon" aria-hidden="true"></i>
+                </button>
+
                 {% if current_user.is_authenticated %}
-                <a href="/dashboard" class="btn-primary">
-                    <i data-lucide="layout-dashboard"></i>
+                <a href="/dashboard" class="btn-primary" id="headerConsoleBtn">
+                    <i data-lucide="layout-dashboard" aria-hidden="true"></i>
                     <span>Console</span>
                 </a>
                 {% else %}
-                <a href="/login" class="btn-link">Sign In</a>
-                <a href="/register" class="btn-primary">Get Started</a>
+                <a href="/login" class="btn-link" id="headerSignInBtn">Sign In</a>
+                <a href="/register" class="btn-primary" id="headerGetStartedBtn">Get Started</a>
                 {% endif %}
+
+                <!-- Mobile Navigation Toggle -->
+                <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="toggleMobileNav()" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileNavDrawer">
+                    <i data-lucide="menu" id="mobileMenuIcon" aria-hidden="true"></i>
+                </button>
             </div>
+        </div>
+
+        <!-- Accessible Mobile Navigation Drawer -->
+        <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+            <nav class="mobile-nav-links" aria-label="Mobile Navigation">
+                <a href="/features" class="mobile-nav-link {% if request.path == '/features' %}active{% endif %}">
+                    <i data-lucide="sliders" aria-hidden="true"></i> Features
+                </a>
+                <a href="/how-it-works" class="mobile-nav-link {% if request.path == '/how-it-works' %}active{% endif %}">
+                    <i data-lucide="layers" aria-hidden="true"></i> How It Works
+                </a>
+                <a href="/fraud-detection" class="mobile-nav-link {% if request.path == '/fraud-detection' %}active{% endif %}">
+                    <i data-lucide="cpu" aria-hidden="true"></i> Detection Engine
+                </a>
+                <a href="/security" class="mobile-nav-link {% if request.path == '/security' %}active{% endif %}">
+                    <i data-lucide="shield" aria-hidden="true"></i> Security Architecture
+                </a>
+                <a href="/about" class="mobile-nav-link {% if request.path == '/about' %}active{% endif %}">
+                    <i data-lucide="info" aria-hidden="true"></i> About Sentinel
+                </a>
+                <a href="/faq" class="mobile-nav-link {% if request.path == '/faq' %}active{% endif %}">
+                    <i data-lucide="help-circle" aria-hidden="true"></i> Technical FAQ
+                </a>
+                <a href="/contact" class="mobile-nav-link {% if request.path == '/contact' %}active{% endif %}">
+                    <i data-lucide="mail" aria-hidden="true"></i> Contact & Support
+                </a>
+                <a href="/privacy" class="mobile-nav-link {% if request.path == '/privacy' %}active{% endif %}">
+                    <i data-lucide="lock" aria-hidden="true"></i> Privacy Policy
+                </a>
+                <a href="/terms" class="mobile-nav-link {% if request.path == '/terms' %}active{% endif %}">
+                    <i data-lucide="file-text" aria-hidden="true"></i> Terms of Service
+                </a>
+
+                <div class="mobile-nav-divider"></div>
+
+                <div class="mobile-nav-actions">
+                    {% if current_user.is_authenticated %}
+                    <a href="/dashboard" class="btn-primary" style="width: 100%; justify-content: center;">
+                        <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+                        <span>Open Console</span>
+                    </a>
+                    {% else %}
+                    <a href="/register" class="btn-primary" style="width: 100%; justify-content: center; margin-bottom: 0.75rem;">
+                        <i data-lucide="arrow-right" aria-hidden="true"></i>
+                        <span>Get Started</span>
+                    </a>
+                    <a href="/login" class="btn-outline" style="width: 100%; justify-content: center;">
+                        <i data-lucide="log-in" aria-hidden="true"></i>
+                        <span>Sign In</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </nav>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main>
+    <main id="main-content">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Public Footer -->
-    <footer class="public-footer">
+    <footer class="public-footer" role="contentinfo">
         <div class="footer-container">
             <div class="footer-brand">
-                <a href="/" class="brand-link">
-                    <div class="brand-logo-icon">
+                <a href="/" class="brand-link" aria-label="Sentinel Home">
+                    <div class="brand-logo-icon" aria-hidden="true">
                         <i data-lucide="shield-check"></i>
                     </div>
                     <span>Sentinel</span>
@@ -136,10 +222,12 @@
             <div class="footer-column">
                 <h4>Legal & Access</h4>
                 <ul>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
                     <li><a href="/security">PCI-DSS Standards</a></li>
+                    <li><a href="/sitemap.xml">XML Sitemap</a></li>
                     <li><a href="/login">Analyst Sign In</a></li>
                     <li><a href="/register">Register Account</a></li>
-                    <li><a href="/sitemap.xml">XML Sitemap</a></li>
                 </ul>
             </div>
         </div>
@@ -151,7 +239,58 @@
     </footer>
 
     <script>
-        lucide.createIcons();
+        // Mobile Navigation Drawer Toggle
+        function toggleMobileNav() {
+            var drawer = document.getElementById('mobileNavDrawer');
+            var btn = document.getElementById('mobileNavToggle');
+            var icon = document.getElementById('mobileMenuIcon');
+            if (!drawer || !btn) return;
+            
+            var isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            var nextState = !isExpanded;
+            
+            btn.setAttribute('aria-expanded', String(nextState));
+            drawer.setAttribute('aria-hidden', String(!nextState));
+            drawer.classList.toggle('open', nextState);
+            
+            if (icon) {
+                icon.setAttribute('data-lucide', nextState ? 'x' : 'menu');
+                lucide.createIcons();
+            }
+        }
+
+        // Close mobile drawer on Escape key or outside click
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                var drawer = document.getElementById('mobileNavDrawer');
+                var btn = document.getElementById('mobileNavToggle');
+                if (drawer && drawer.classList.contains('open')) {
+                    toggleMobileNav();
+                }
+            }
+        });
+
+        // Theme Toggle for Public Website
+        function updateThemeIcon(theme) {
+            var icon = document.getElementById('publicThemeIcon');
+            if (!icon) return;
+            icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+        function togglePublicTheme() {
+            var current = document.documentElement.getAttribute('data-theme') || 'dark';
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('sentinel_theme', next);
+            updateThemeIcon(next);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+            updateThemeIcon(theme);
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>

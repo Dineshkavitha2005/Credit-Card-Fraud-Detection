@@ -1,6 +1,6 @@
 {% extends "public_base.html" %}
 
-{% block title %}Sentinel — AI-Powered Credit Card Fraud Detection & Financial Surveillance{% endblock %}
+{% block title %}Sentinel — Intelligent Credit Card Fraud Detection & Financial Surveillance{% endblock %}
 {% block meta_description %}Protect payment pipelines with Sentinel: sub-10ms transaction scoring, trained scikit-learn machine learning inference, dynamic heuristic rules, and instant threat alerting.{% endblock %}
 
 {% block structured_data %}
@@ -32,23 +32,44 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="badge-tag">
-            <i data-lucide="zap"></i>
+            <i data-lucide="zap" aria-hidden="true"></i>
             <span>Real-Time Transaction Surveillance</span>
         </div>
         <h1>Intelligent Fraud Defense for <span class="gradient-text">Modern Payments</span></h1>
         <p>Sentinel stops fraudulent transactions before settlement with sub-10ms machine learning inference, dynamic velocity rules, encrypted card tokenization, and instant security alerting.</p>
         
         <div class="hero-actions">
-            <a href="/register" class="btn-primary">
-                <span>Start Free Analyst Trial</span>
-                <i data-lucide="arrow-right"></i>
+            {% if current_user.is_authenticated %}
+            <a href="/dashboard" class="btn-primary" id="heroPrimaryCta">
+                <span>Open Sentinel Console</span>
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
             </a>
-            <a href="/how-it-works" class="btn-outline">
-                <i data-lucide="layers"></i>
+            {% else %}
+            <a href="/register" class="btn-primary" id="heroPrimaryCta">
+                <span>Get Started</span>
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+            <a href="/how-it-works" class="btn-outline" id="heroSecondaryCta">
+                <i data-lucide="layers" aria-hidden="true"></i>
                 <span>Explore Technical Pipeline</span>
             </a>
         </div>
     </section>
+
+    <!-- Dashboard Live Preview Visual (Above the Fold / Hero Integration) -->
+    <div class="dashboard-preview-container" style="max-width: 860px; margin: 0 auto 3.5rem; text-align: center;">
+        <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 16px 40px rgba(0,0,0,0.35); background: var(--bg-card);">
+            <picture>
+                <source srcset="{{ url_for('static', filename='img/dashboard-preview.webp') }}" type="image/webp">
+                <img src="{{ url_for('static', filename='img/dashboard-preview.png') }}" 
+                     alt="Sentinel transaction risk dashboard showing fraud alerts, inference metrics, and real-time transaction scores" 
+                     width="800" height="480" 
+                     style="width: 100%; height: auto; display: block;" 
+                     loading="eager" decoding="async">
+            </picture>
+        </div>
+    </div>
 
     <!-- Operational Metrics Banner -->
     <section class="stats-banner" aria-label="Operational Metrics">
@@ -73,7 +94,7 @@
     <!-- The Problem Statement -->
     <section class="content-section" style="text-align: center; margin-bottom: 2rem;">
         <div class="badge-tag" style="background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3); color: var(--accent-rose);">
-            <i data-lucide="alert-triangle"></i>
+            <i data-lucide="alert-triangle" aria-hidden="true"></i>
             <span>The Financial Risk Reality</span>
         </div>
         <h2>The Escalating Crisis in Card-Not-Present Fraud</h2>
@@ -86,7 +107,7 @@
     <section class="architecture-box">
         <div style="text-align: center; max-width: 700px; margin: 0 auto;">
             <div class="badge-tag">
-                <i data-lucide="cpu"></i>
+                <i data-lucide="cpu" aria-hidden="true"></i>
                 <span>Multi-Tier Defense</span>
             </div>
             <h2>How Sentinel Intercepts Financial Fraud</h2>
@@ -121,7 +142,7 @@
     <section style="margin: 4rem 0;">
         <div style="text-align: center; max-width: 700px; margin: 0 auto 2.5rem;">
             <div class="badge-tag">
-                <i data-lucide="shield"></i>
+                <i data-lucide="shield" aria-hidden="true"></i>
                 <span>Enterprise Tooling</span>
             </div>
             <h2>Comprehensive Financial Surveillance</h2>
@@ -130,7 +151,7 @@
 
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="brain"></i>
                 </div>
                 <h3>Machine Learning Pipeline</h3>
@@ -138,7 +159,7 @@
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="sliders"></i>
                 </div>
                 <h3>Dynamic Rule Engine</h3>
@@ -146,7 +167,7 @@
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="lock"></i>
                 </div>
                 <h3>PCI-DSS Sensitive Vault</h3>
@@ -154,7 +175,7 @@
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="bell"></i>
                 </div>
                 <h3>Real-Time Threat Alerts</h3>
@@ -162,7 +183,7 @@
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="file-text"></i>
                 </div>
                 <h3>Audit-Ready Reporting</h3>
@@ -170,7 +191,7 @@
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="key"></i>
                 </div>
                 <h3>Enterprise IAM & PKCE</h3>
@@ -180,19 +201,26 @@
     </section>
 
     <!-- Bottom Call to Action -->
-    <section class="architecture-box" style="text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.05));">
+    <section class="architecture-box" style="text-align: center; background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(15, 23, 42, 0.2));">
         <h2>Deploy Sentinel to Secure Your Transaction Flow</h2>
         <p style="color: var(--text-secondary); max-width: 650px; margin: 1rem auto 2rem;">
             Experience turnkey financial surveillance. Inspect incoming transactions in real time or simulate high-volume payment bursts in an isolated sandbox.
         </p>
         <div class="hero-actions" style="margin-bottom: 0;">
+            {% if current_user.is_authenticated %}
+            <a href="/dashboard" class="btn-primary">
+                <span>Open Sentinel Console</span>
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
+            </a>
+            {% else %}
             <a href="/register" class="btn-primary">
-                <span>Create Analyst Account</span>
-                <i data-lucide="arrow-right"></i>
+                <span>Get Started</span>
+                <i data-lucide="arrow-right" aria-hidden="true"></i>
             </a>
             <a href="/login" class="btn-outline">
                 <span>Sign In to Console</span>
             </a>
+            {% endif %}
         </div>
     </section>
 </div>

@@ -204,8 +204,10 @@ def create_app(config_class=None):
 
     @app.errorhandler(404)
     def handle_not_found(e):
-        msg = getattr(e, 'description', 'The requested resource or page was not found')
-        return handle_error_response(msg, status_code=404, code="NOT_FOUND")
+        if is_json_request():
+            msg = getattr(e, 'description', 'The requested resource or page was not found')
+            return handle_error_response(msg, status_code=404, code="NOT_FOUND")
+        return render_template('404.html'), 404
 
     @app.errorhandler(405)
     def handle_method_not_allowed(e):
@@ -314,9 +316,9 @@ def create_app(config_class=None):
     # Global template context variables (canonical domain, current year)
     @app.context_processor
     def inject_global_template_vars():
-        canonical_domain = app.config.get('CANONICAL_DOMAIN', 'https://your-domain.com').rstrip('/')
+        from app.routes.main import get_canonical_domain
         return {
-            'CANONICAL_DOMAIN': canonical_domain,
+            'CANONICAL_DOMAIN': get_canonical_domain(),
             'current_year': 2026,
         }
 

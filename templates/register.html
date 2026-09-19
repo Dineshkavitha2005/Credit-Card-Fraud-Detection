@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account &mdash; Sentinel Security</title>
+    <!-- Complete Favicon Set -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <meta name="theme-color" content="#0F172A">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -168,80 +175,87 @@
                 <span>or</span>
             </div>
 
-            <form method="POST" id="registerForm" onsubmit="handleRegisterSubmit(event)">
+            <form method="POST" id="registerForm" novalidate onsubmit="return handleRegisterSubmit(event)">
                 <div class="grid-2" style="margin-bottom:12px;">
                     <div class="form-group">
-                        <label class="form-label">First Name <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="first_name" class="form-control" placeholder="John" required>
+                        <label class="form-label" for="first_name">First Name <span style="color:var(--danger);" aria-hidden="true">*</span></label>
+                        <input type="text" name="first_name" id="first_name" class="form-control" placeholder="John" required oninput="clearRegError('first_name')">
+                        <div class="form-field-error" id="first_name-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Last Name <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="last_name" class="form-control" placeholder="Doe" required>
+                        <label class="form-label" for="last_name">Last Name <span style="color:var(--danger);" aria-hidden="true">*</span></label>
+                        <input type="text" name="last_name" id="last_name" class="form-control" placeholder="Doe" required oninput="clearRegError('last_name')">
+                        <div class="form-field-error" id="last_name-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                     </div>
                 </div>
 
                 <div class="grid-2" style="margin-bottom:12px;">
                     <div class="form-group">
-                        <label class="form-label">Email Address <span style="color:var(--danger);">*</span></label>
-                        <input type="email" name="email" class="form-control" placeholder="john@example.com" required>
+                        <label class="form-label" for="email">Email Address <span style="color:var(--danger);" aria-hidden="true">*</span></label>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="john@example.com" required oninput="clearRegError('email')">
+                        <div class="form-field-error" id="email-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" name="phone" class="form-control" placeholder="+1 (555) 000-0000">
+                        <label class="form-label" for="phone">Phone Number</label>
+                        <input type="tel" name="phone" id="phone" class="form-control" placeholder="+1 (555) 000-0000">
                     </div>
                 </div>
 
                 <div class="grid-2" style="margin-bottom:12px;">
                     <div class="form-group">
-                        <label class="form-label">Username <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="username" class="form-control" placeholder="john_doe" required>
+                        <label class="form-label" for="username">Username <span style="color:var(--danger);" aria-hidden="true">*</span></label>
+                        <input type="text" name="username" id="username" class="form-control" placeholder="john_doe" required oninput="clearRegError('username')">
+                        <div class="form-field-error" id="username-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Password <span style="color:var(--danger);">*</span></label>
-                        <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required oninput="checkStrength()">
+                        <label class="form-label" for="password">Password <span style="color:var(--danger);" aria-hidden="true">*</span></label>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required oninput="checkStrength(); clearRegError('password');">
+                        <div class="form-field-error" id="password-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                     </div>
                 </div>
 
                 <div style="background:var(--bg-surface-secondary);border:1px solid var(--border-subtle);border-radius:6px;padding:10px 12px;margin-bottom:14px;">
-                    <div class="req-item" id="req-len"><i data-lucide="circle" style="width:10px;height:10px;"></i> At least 8 characters</div>
-                    <div class="req-item" id="req-upper"><i data-lucide="circle" style="width:10px;height:10px;"></i> One uppercase letter</div>
-                    <div class="req-item" id="req-num"><i data-lucide="circle" style="width:10px;height:10px;"></i> One numeric digit</div>
+                    <div class="req-item" id="req-len"><i data-lucide="circle" style="width:10px;height:10px;" aria-hidden="true"></i> At least 8 characters</div>
+                    <div class="req-item" id="req-upper"><i data-lucide="circle" style="width:10px;height:10px;" aria-hidden="true"></i> One uppercase letter</div>
+                    <div class="req-item" id="req-num"><i data-lucide="circle" style="width:10px;height:10px;" aria-hidden="true"></i> One numeric digit</div>
                 </div>
 
                 <div class="form-group" style="margin-bottom:14px;">
-                    <label class="form-label">Confirm Password <span style="color:var(--danger);">*</span></label>
-                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="••••••••" required>
+                    <label class="form-label" for="confirm_password">Confirm Password <span style="color:var(--danger);" aria-hidden="true">*</span></label>
+                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="••••••••" required oninput="clearRegError('confirm_password')">
+                    <div class="form-field-error" id="confirm_password-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                 </div>
 
                 <div class="form-group" style="margin-bottom:12px;">
-                    <label class="form-label">Street Address</label>
-                    <input type="text" name="address" class="form-control" placeholder="123 Financial Blvd">
+                    <label class="form-label" for="address">Street Address</label>
+                    <input type="text" name="address" id="address" class="form-control" placeholder="123 Financial Blvd">
                 </div>
 
                 <div class="grid-3" style="margin-bottom:16px;">
                     <div class="form-group">
-                        <label class="form-label">City</label>
-                        <input type="text" name="city" class="form-control" placeholder="New York">
+                        <label class="form-label" for="city">City</label>
+                        <input type="text" name="city" id="city" class="form-control" placeholder="New York">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">State</label>
-                        <input type="text" name="state" class="form-control" placeholder="NY">
+                        <label class="form-label" for="state">State</label>
+                        <input type="text" name="state" id="state" class="form-control" placeholder="NY">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Zip Code</label>
-                        <input type="text" name="zipcode" class="form-control" placeholder="10001">
+                        <label class="form-label" for="zipcode">Zip Code</label>
+                        <input type="text" name="zipcode" id="zipcode" class="form-control" placeholder="10001">
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-bottom:20px;">
                     <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
-                        <input type="checkbox" name="accept_terms" required style="margin-top:2px;">
-                        <span>I accept Sentinel Terms of Service, Cryptographic Keys Disclosure, and Security Policies.</span>
+                        <input type="checkbox" name="accept_terms" id="accept_terms" required style="margin-top:2px;" onchange="clearRegError('accept_terms')">
+                        <span>I accept Sentinel <a href="/terms" target="_blank" style="color:var(--accent);text-decoration:underline;">Terms of Service</a> and <a href="/privacy" target="_blank" style="color:var(--accent);text-decoration:underline;">Privacy Policy</a>.</span>
                     </label>
+                    <div class="form-field-error" id="accept_terms-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;align-items:center;gap:4px;"></div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="reg-submit-btn" style="width:100%;">
-                    <i data-lucide="user-check" style="width:14px;height:14px;"></i>
+                    <i data-lucide="user-check" style="width:14px;height:14px;" aria-hidden="true"></i>
                     <span>Create Account</span>
                 </button>
 
@@ -260,6 +274,33 @@
             Sentinel.initIcons();
         });
 
+        function showRegError(fieldId, msg) {
+            const input = document.getElementById(fieldId);
+            const err = document.getElementById(fieldId + '-error');
+            if (!input || !err) return;
+            input.setAttribute('aria-invalid', 'true');
+            input.setAttribute('aria-describedby', fieldId + '-error');
+            if (input.type !== 'checkbox') {
+                input.style.borderColor = 'var(--danger)';
+            }
+            err.innerHTML = `<i data-lucide="alert-circle" style="width:12px;height:12px;flex-shrink:0;"></i><span>${msg}</span>`;
+            err.style.display = 'flex';
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function clearRegError(fieldId) {
+            const input = document.getElementById(fieldId);
+            const err = document.getElementById(fieldId + '-error');
+            if (!input || !err) return;
+            input.removeAttribute('aria-invalid');
+            input.removeAttribute('aria-describedby');
+            if (input.type !== 'checkbox') {
+                input.style.borderColor = '';
+            }
+            err.innerHTML = '';
+            err.style.display = 'none';
+        }
+
         function checkStrength() {
             const pwd = document.getElementById('password').value;
             const rLen = document.getElementById('req-len');
@@ -272,18 +313,84 @@
         }
 
         function handleRegisterSubmit(e) {
+            let hasError = false;
+            let firstInvalid = null;
+
+            const fields = ['first_name', 'last_name', 'email', 'username', 'password', 'confirm_password', 'accept_terms'];
+            fields.forEach(clearRegError);
+
+            const fn = document.getElementById('first_name').value.trim();
+            const ln = document.getElementById('last_name').value.trim();
+            const em = document.getElementById('email').value.trim();
+            const un = document.getElementById('username').value.trim();
             const p1 = document.getElementById('password').value;
             const p2 = document.getElementById('confirm_password').value;
+            const terms = document.getElementById('accept_terms').checked;
 
-            if (p1 !== p2) {
-                e.preventDefault();
-                Sentinel.showToast('Passwords do not match', 'error');
-                return false;
+            if (!fn) {
+                showRegError('first_name', 'First name is required.');
+                if (!firstInvalid) firstInvalid = 'first_name';
+                hasError = true;
             }
 
-            if (p1.length < 8 || !/[A-Z]/.test(p1) || !/[0-9]/.test(p1)) {
+            if (!ln) {
+                showRegError('last_name', 'Last name is required.');
+                if (!firstInvalid) firstInvalid = 'last_name';
+                hasError = true;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!em) {
+                showRegError('email', 'Email address is required.');
+                if (!firstInvalid) firstInvalid = 'email';
+                hasError = true;
+            } else if (!emailRegex.test(em)) {
+                showRegError('email', 'Please enter a valid email address.');
+                if (!firstInvalid) firstInvalid = 'email';
+                hasError = true;
+            }
+
+            if (!un) {
+                showRegError('username', 'Username is required.');
+                if (!firstInvalid) firstInvalid = 'username';
+                hasError = true;
+            } else if (un.length < 3) {
+                showRegError('username', 'Username must be at least 3 characters.');
+                if (!firstInvalid) firstInvalid = 'username';
+                hasError = true;
+            }
+
+            if (!p1) {
+                showRegError('password', 'Password is required.');
+                if (!firstInvalid) firstInvalid = 'password';
+                hasError = true;
+            } else if (p1.length < 8 || !/[A-Z]/.test(p1) || !/[0-9]/.test(p1)) {
+                showRegError('password', 'Password must satisfy all 3 criteria above.');
+                if (!firstInvalid) firstInvalid = 'password';
+                hasError = true;
+            }
+
+            if (!p2) {
+                showRegError('confirm_password', 'Please confirm your password.');
+                if (!firstInvalid) firstInvalid = 'confirm_password';
+                hasError = true;
+            } else if (p1 !== p2) {
+                showRegError('confirm_password', 'Passwords do not match.');
+                if (!firstInvalid) firstInvalid = 'confirm_password';
+                hasError = true;
+            }
+
+            if (!terms) {
+                showRegError('accept_terms', 'You must accept the Terms of Service and Privacy Policy to proceed.');
+                if (!firstInvalid) firstInvalid = 'accept_terms';
+                hasError = true;
+            }
+
+            if (hasError) {
                 e.preventDefault();
-                Sentinel.showToast('Password does not meet requirements', 'error');
+                if (firstInvalid && document.getElementById(firstInvalid)) {
+                    document.getElementById(firstInvalid).focus();
+                }
                 return false;
             }
 
@@ -292,6 +399,7 @@
                 btn.disabled = true;
                 btn.innerHTML = `<span class="btn-spinner"></span> Creating Account...`;
             }
+            return true;
         }
     </script>
 </body>
