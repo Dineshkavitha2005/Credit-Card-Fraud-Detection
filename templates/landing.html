@@ -27,7 +27,7 @@
 {% endblock %}
 
 {% block header %}
-<!-- Compact Sticky Operations Navigation -->
+<!-- Compact Sticky Operations Navigation (Strict 3-Color) -->
 <header class="sentinel-nav-header" id="main-header">
     <div class="nav-inner-container">
         <a href="/" class="sentinel-brand" aria-label="Sentinel Financial Security Home">
@@ -49,6 +49,9 @@
         </nav>
 
         <div class="sentinel-nav-actions">
+            <button class="theme-toggle-btn" onclick="Sentinel.toggleTheme()" title="Switch Theme" aria-label="Toggle Dark/Light Theme">
+                <i data-lucide="moon"></i>
+            </button>
             {% if current_user.is_authenticated %}
             <a href="/dashboard" class="btn-console-cta">
                 <i data-lucide="terminal"></i>
@@ -67,9 +70,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="tech-grid-bg"></div>
-
-<!-- 1 & 2. HERO SECTION & RESTAINED ENTRANCE ANIMATION -->
+<!-- 1. HERO SECTION (White Background) -->
 <section class="hero" id="hero" aria-label="Real-Time Financial Security Overview">
     <div class="hero-grid">
         <div class="hero-narrative">
@@ -91,19 +92,20 @@
 
             <div class="hero-actions-group">
                 {% if current_user.is_authenticated %}
-                <a href="/dashboard" class="btn-primary" style="padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                <a href="/dashboard" class="btn-primary">
                     <span>Open Sentinel Console</span>
                     <i data-lucide="arrow-right"></i>
                 </a>
                 {% else %}
-                <a href="/register" class="btn-primary" style="padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                <a href="/register" class="btn-primary">
                     <span>Open Sentinel Console</span>
                     <i data-lucide="arrow-right"></i>
                 </a>
                 {% endif %}
-                <a href="#live-detection" class="btn-outline" style="padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                <a href="#live-detection" class="btn-outline">
                     <i data-lucide="eye"></i>
-                    <span>See how it works</span>
+                    <span>Explore the Detection Engine</span>
+                    <span class="sr-only">See how it works</span>
                 </a>
             </div>
 
@@ -127,7 +129,7 @@
             </div>
         </div>
 
-        <!-- Realistic Animated Sentinel Transaction Console -->
+        <!-- Realistic Sentinel Transaction Console (White, Deep Navy, Blue) -->
         <div class="hero-console-wrapper">
             <div class="sentinel-console-frame">
                 <div class="console-chrome-bar">
@@ -160,9 +162,9 @@
                             </div>
                             <div class="row-amount">$842.00</div>
                             <div class="row-risk">
-                                <span class="risk-pill low">LOW RISK</span>
+                                <span class="risk-pill low">○ LOW RISK</span>
                             </div>
-                            <div class="row-decision allow">ALLOW</div>
+                            <div class="row-decision allow">✓ ALLOW</div>
                         </div>
 
                         <!-- Row 2 -->
@@ -173,22 +175,22 @@
                             </div>
                             <div class="row-amount">$124.50</div>
                             <div class="row-risk">
-                                <span class="risk-pill low">LOW RISK</span>
+                                <span class="risk-pill low">○ LOW RISK</span>
                             </div>
-                            <div class="row-decision allow">ALLOW</div>
+                            <div class="row-decision allow">✓ ALLOW</div>
                         </div>
 
-                        <!-- Row 3: Triggered threat -->
+                        <!-- Row 3: Threat Flagged -->
                         <div class="stream-row active-threat">
                             <div class="row-card-info">
-                                <span class="scheme-tag" style="color: var(--status-blocked);">AMEX</span>
+                                <span class="scheme-tag">AMEX</span>
                                 <span>•••• 3349</span>
                             </div>
-                            <div class="row-amount" style="color: #ffffff;">$4,920.00</div>
+                            <div class="row-amount">$4,920.00</div>
                             <div class="row-risk">
-                                <span class="risk-pill high">HIGH RISK</span>
+                                <span class="risk-pill high">× HIGH RISK</span>
                             </div>
-                            <div class="row-decision block">BLOCK</div>
+                            <div class="row-decision block">× BLOCK</div>
                         </div>
                     </div>
 
@@ -217,8 +219,8 @@
     </div>
 </section>
 
-<!-- 4 & 5. SECTION 01 — THE PROBLEM -->
-<section class="editorial-section" id="problem" aria-label="The Fraud Problem">
+<!-- 2. SECTION 01 — THE PROBLEM (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="problem" aria-label="The Fraud Problem">
     <div class="problem-narrative-header">
         <div class="editorial-label">01 — THE PROBLEM</div>
         <h2 class="section-headline">Fraud moves faster than manual review.</h2>
@@ -264,7 +266,7 @@
                 <div class="node-icon-circle">
                     <i data-lucide="cpu"></i>
                 </div>
-                <div class="node-step-tag" style="color: var(--status-blocked);">04 / SCORING</div>
+                <div class="node-step-tag">04 / SCORING</div>
                 <div class="node-title">Risk</div>
                 <div class="node-desc">Dual-engine evaluation calculates composite score crossing 90+ threshold.</div>
             </div>
@@ -274,7 +276,7 @@
                 <div class="node-icon-circle">
                     <i data-lucide="shield-alert"></i>
                 </div>
-                <div class="node-step-tag" style="color: var(--status-blocked);">05 / VERDICT</div>
+                <div class="node-step-tag">05 / VERDICT</div>
                 <div class="node-title">Decision</div>
                 <div class="node-desc">Sub-10ms automated block halts settlement before fund disbursement.</div>
             </div>
@@ -282,8 +284,8 @@
     </div>
 </section>
 
-<!-- 6. SECTION 02 — LIVE DETECTION EXPERIENCE (Visual Signature) -->
-<section class="editorial-section" id="live-detection" aria-label="Watch Sentinel evaluate a transaction">
+<!-- 3. SECTION 02 — LIVE DETECTION EXPERIENCE (White Background) -->
+<section class="editorial-section section-white" id="live-detection" aria-label="Watch Sentinel evaluate a transaction">
     <div style="text-align: center; max-width: 760px; margin: 0 auto 1rem;">
         <div class="editorial-label">02 — LIVE EVALUATION</div>
         <h2 class="section-headline">Watch Sentinel evaluate a transaction.</h2>
@@ -308,7 +310,7 @@
             <div class="workbench-card">
                 <div class="wb-card-header">
                     <span class="wb-card-title">TRANSACTION DETAILS</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan);">INGRESS BUFFER</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #2563EB; font-weight: 700;">INGRESS BUFFER</span>
                 </div>
                 <div class="telemetry-kv-list">
                     <div class="kv-row">
@@ -342,11 +344,11 @@
                 </div>
             </div>
 
-            <!-- Right: Risk Engine -->
+            <!-- Right: Risk Engine Evaluation -->
             <div class="workbench-card">
                 <div class="wb-card-header">
                     <span class="wb-card-title">RISK ENGINE EVALUATION</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--status-allowed);">CALIBRATED</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #2563EB; font-weight: 700;">CALIBRATED</span>
                 </div>
 
                 <!-- Signal Indicators Matrix -->
@@ -405,8 +407,8 @@
     </div>
 </section>
 
-<!-- 7. SECTION 03 — DETECTION PIPELINE -->
-<section class="editorial-section" id="platform" aria-label="Sentinel Detection Pipeline">
+<!-- 4. SECTION 03 — DETECTION PIPELINE (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="platform" aria-label="Sentinel Detection Pipeline">
     <div style="text-align: center; max-width: 760px; margin: 0 auto;">
         <div class="editorial-label">03 — DETECTION PIPELINE</div>
         <h2 class="section-headline">Deterministic 7-stage transaction pipeline.</h2>
@@ -474,8 +476,8 @@
     </div>
 </section>
 
-<!-- 8. SECTION 04 — INSIDE THE DECISION (Risk Explainability) -->
-<section class="editorial-section" id="explainability" aria-label="Inside a Decision">
+<!-- 5. SECTION 04 — INSIDE THE DECISION / RISK EXPLAINABILITY (White Background) -->
+<section class="editorial-section section-white" id="explainability" aria-label="Inside a Decision">
     <div style="text-align: center; max-width: 760px; margin: 0 auto;">
         <div class="editorial-label">04 — INSIDE A DECISION</div>
         <h2 class="section-headline">No black boxes. Pure risk explainability.</h2>
@@ -493,7 +495,7 @@
                     <span class="factor-impact">+38 pts</span>
                 </div>
                 <div class="factor-bar-bg">
-                    <div class="factor-bar-fill" style="width: 85%; background: var(--status-blocked);"></div>
+                    <div class="factor-bar-fill" style="width: 85%;"></div>
                 </div>
                 <div class="factor-note">7 payment attempts recorded within a 120-second rolling sliding window.</div>
             </div>
@@ -505,7 +507,7 @@
                     <span class="factor-impact">+24 pts</span>
                 </div>
                 <div class="factor-bar-bg">
-                    <div class="factor-bar-fill" style="width: 65%; background: var(--status-blocked);"></div>
+                    <div class="factor-bar-fill" style="width: 65%;"></div>
                 </div>
                 <div class="factor-note">Headless browser signature with missing canvas rendering context.</div>
             </div>
@@ -517,7 +519,7 @@
                     <span class="factor-impact">+16 pts</span>
                 </div>
                 <div class="factor-bar-bg">
-                    <div class="factor-bar-fill" style="width: 48%; background: var(--status-review);"></div>
+                    <div class="factor-bar-fill" style="width: 48%;"></div>
                 </div>
                 <div class="factor-note">IP resolved to datacenter proxy 2,100km from cardholder primary residence.</div>
             </div>
@@ -529,7 +531,7 @@
                     <span class="factor-impact">+11 pts</span>
                 </div>
                 <div class="factor-bar-bg">
-                    <div class="factor-bar-fill" style="width: 38%; background: var(--status-review);"></div>
+                    <div class="factor-bar-fill" style="width: 38%;"></div>
                 </div>
                 <div class="factor-note">Transaction amount represents 6.2x standard deviation above average spend.</div>
             </div>
@@ -541,14 +543,14 @@
                     <span class="factor-impact">+4 pts</span>
                 </div>
                 <div class="factor-bar-bg">
-                    <div class="factor-bar-fill" style="width: 20%; background: var(--accent-cyan);"></div>
+                    <div class="factor-bar-fill" style="width: 20%;"></div>
                 </div>
                 <div class="factor-note">Merchant tier categorized under high-liquidity digital gift cards.</div>
             </div>
         </div>
 
         <div class="decision-formula-card">
-            <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: #ffffff;">Scoring Formula</h3>
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: #0F172A;">Scoring Formula</h3>
             <p style="font-size: 0.85rem; color: var(--text-secondary);">
                 Sentinel calculates deterministic risk utilizing a weighted ensemble that bridges trained statistical classification with hard compliance thresholds:
             </p>
@@ -561,14 +563,14 @@ Thresholds:<br>
             </div>
             <div style="display: flex; align-items: baseline; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
                 <span style="font-size: 0.85rem; color: var(--text-muted);">Current Transaction Score</span>
-                <span style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--status-blocked);">93 / 100</span>
+                <span style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: #0F172A;">93 / 100</span>
             </div>
         </div>
     </div>
 </section>
 
-<!-- 9. SECTION 05 — SECURITY ARCHITECTURE -->
-<section class="editorial-section" id="security" aria-label="Security Architecture">
+<!-- 6. SECTION 05 — SECURITY ARCHITECTURE (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="security" aria-label="Security Architecture">
     <div style="text-align: center; max-width: 760px; margin: 0 auto;">
         <div class="editorial-label">05 — SECURITY ARCHITECTURE</div>
         <h2 class="section-headline">Enterprise security engineered into every layer.</h2>
@@ -652,8 +654,8 @@ Thresholds:<br>
     </div>
 </section>
 
-<!-- 10. SECTION 06 — AUDIT TRAIL -->
-<section class="editorial-section" id="audit" aria-label="Deterministic Audit Trail">
+<!-- 7. SECTION 06 — AUDIT TRAIL (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="audit" aria-label="Deterministic Audit Trail">
     <div style="text-align: center; max-width: 760px; margin: 0 auto;">
         <div class="editorial-label">06 — AUDIT TRAIL</div>
         <h2 class="section-headline">Sub-second deterministic audit resolution.</h2>
@@ -692,16 +694,16 @@ Thresholds:<br>
             <div class="audit-event-row blocked-step">
                 <span class="audit-timestamp">10:32:19.055</span>
                 <span class="audit-bullet"></span>
-                <span class="audit-event-name" style="color: var(--status-blocked);">Velocity rule triggered</span>
-                <span class="audit-event-meta" style="color: var(--status-blocked);">Rule #R-402</span>
+                <span class="audit-event-name">Velocity rule triggered</span>
+                <span class="audit-event-meta">Rule #R-402</span>
             </div>
 
             <!-- Event 5 -->
             <div class="audit-event-row blocked-step">
                 <span class="audit-timestamp">10:32:19.068</span>
                 <span class="audit-bullet"></span>
-                <span class="audit-event-name" style="color: var(--status-blocked); font-weight: 700;">Transaction blocked</span>
-                <span class="audit-event-meta" style="color: var(--status-blocked);">Gateway Code 59</span>
+                <span class="audit-event-name" style="font-weight: 700;">Transaction blocked</span>
+                <span class="audit-event-meta">Gateway Code 59</span>
             </div>
 
             <!-- Event 6 -->
@@ -715,8 +717,8 @@ Thresholds:<br>
     </div>
 </section>
 
-<!-- 11. SECTION 07 — REAL PRODUCT PREVIEW -->
-<section class="editorial-section" id="product-console" aria-label="Sentinel Console Preview">
+<!-- 8. SECTION 07 — REAL PRODUCT PREVIEW / CONSOLE (White Background) -->
+<section class="editorial-section section-white" id="product-console" aria-label="Sentinel Console Preview">
     <div style="text-align: center; max-width: 760px; margin: 0 auto;">
         <div class="editorial-label">07 — CONSOLE OPERATIONS</div>
         <h2 class="section-headline">A unified command center for risk teams.</h2>
@@ -750,15 +752,15 @@ Thresholds:<br>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Fraud Intercepted</div>
-                    <div class="kpi-value" style="color: var(--status-blocked);">1,284</div>
+                    <div class="kpi-value">1,284</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">False Positive Rate</div>
-                    <div class="kpi-value" style="color: var(--status-allowed);">0.08%</div>
+                    <div class="kpi-value">0.08%</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label">Avg Scoring Latency</div>
-                    <div class="kpi-value" style="color: var(--accent-cyan);">4.8ms</div>
+                    <div class="kpi-value" style="color: #2563EB;">4.8ms</div>
                 </div>
             </div>
 
@@ -782,32 +784,32 @@ Thresholds:<br>
                                 <td>AMEX •••• 3349</td>
                                 <td>$4,920.00</td>
                                 <td>Amazon Digital</td>
-                                <td style="color: var(--status-blocked); font-weight: 700;">93 / 100</td>
-                                <td><span class="risk-pill high">BLOCKED</span></td>
+                                <td style="font-weight: 800;">93 / 100</td>
+                                <td><span class="risk-pill high">× BLOCKED</span></td>
                             </tr>
                             <tr>
                                 <td>#TX-8920</td>
                                 <td>VISA •••• 4921</td>
                                 <td>$842.00</td>
                                 <td>Apple Retail</td>
-                                <td style="color: var(--status-allowed); font-weight: 700;">12 / 100</td>
-                                <td><span class="risk-pill low">APPROVED</span></td>
+                                <td style="font-weight: 700; color: #2563EB;">12 / 100</td>
+                                <td><span class="risk-pill low">✓ APPROVED</span></td>
                             </tr>
                             <tr>
                                 <td>#TX-8919</td>
                                 <td>MC •••• 7812</td>
                                 <td>$124.50</td>
                                 <td>Uber Rides</td>
-                                <td style="color: var(--status-allowed); font-weight: 700;">08 / 100</td>
-                                <td><span class="risk-pill low">APPROVED</span></td>
+                                <td style="font-weight: 700; color: #2563EB;">08 / 100</td>
+                                <td><span class="risk-pill low">✓ APPROVED</span></td>
                             </tr>
                             <tr>
                                 <td>#TX-8918</td>
                                 <td>VISA •••• 1092</td>
                                 <td>$1,850.00</td>
                                 <td>CryptoExchange</td>
-                                <td style="color: var(--status-review); font-weight: 700;">68 / 100</td>
-                                <td><span class="risk-pill" style="background: var(--status-review-bg); color: var(--status-review); border: 1px solid var(--status-review-border);">MANUAL REVIEW</span></td>
+                                <td style="font-weight: 700;">68 / 100</td>
+                                <td><span class="risk-pill" style="border: 1px dashed rgba(15, 23, 42, 0.4); font-weight: 700;">△ MANUAL REVIEW</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -845,8 +847,8 @@ Thresholds:<br>
     </div>
 </section>
 
-<!-- 12. SECTION 08 — ENGINEERING CREDIBILITY -->
-<section class="editorial-section" id="engineering" aria-label="Engineering Credibility">
+<!-- 9. SECTION 08 — ENGINEERING CREDIBILITY (White Background) -->
+<section class="editorial-section section-white" id="engineering" aria-label="Engineering Credibility">
     <div style="text-align: center; max-width: 760px; margin: 0 auto;">
         <div class="editorial-label">08 — ENGINEERING FOUNDATION</div>
         <h2 class="section-headline">Verifiable architectural capabilities.</h2>
@@ -930,8 +932,8 @@ Thresholds:<br>
     </div>
 </section>
 
-<!-- DEPLOYMENT CALL TO ACTION -->
-<section class="deployment-cta-section" aria-label="Deploy Sentinel">
+<!-- 10. DEPLOYMENT CALL TO ACTION (Deep Navy Background) -->
+<section class="deployment-cta-section section-navy" aria-label="Deploy Sentinel">
     <div class="deployment-cta-card">
         <h2>Command your financial risk in real time.</h2>
         <p>

@@ -1,7 +1,7 @@
 {% extends "public_base.html" %}
 
-{% block title %}Sentinel — AI-Powered Credit Card Fraud Detection & Financial Surveillance{% endblock %}
-{% block meta_description %}Protect payment pipelines with Sentinel: sub-10ms transaction scoring, trained scikit-learn machine learning inference, dynamic heuristic rules, and instant threat alerting.{% endblock %}
+{% block title %}Sentinel — Real-Time Financial Fraud Detection & Surveillance{% endblock %}
+{% block meta_description %}Enterprise financial security operations console. Detect transactions, evaluate multi-dimensional risk scores, and stop fraudulent payment settlement in sub-10ms.{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -14,186 +14,951 @@
       "applicationCategory": "SecurityApplication",
       "operatingSystem": "Linux / Docker",
       "url": "{{ CANONICAL_DOMAIN }}",
-      "description": "High-throughput real-time payment fraud detection and surveillance engine combining machine learning and heuristic risk scoring."
+      "description": "Enterprise-grade real-time financial fraud detection and transaction surveillance console combining machine learning risk scoring and heuristic rules."
     },
     {
       "@type": "Organization",
       "name": "Sentinel Financial Surveillance",
-      "url": "{{ CANONICAL_DOMAIN }}",
-      "logo": "{{ CANONICAL_DOMAIN }}/static/img/sentinel-logo.png"
+      "url": "{{ CANONICAL_DOMAIN }}"
     }
   ]
 }
 </script>
 {% endblock %}
 
+{% block header %}
+<!-- Compact Sticky Operations Navigation (Strict 3-Color) -->
+<header class="sentinel-nav-header" id="main-header">
+    <div class="nav-inner-container">
+        <a href="/" class="sentinel-brand" aria-label="Sentinel Financial Security Home">
+            <div class="brand-icon-box">
+                <i data-lucide="shield-check"></i>
+            </div>
+            <span class="brand-name">Sentinel</span>
+            <div class="brand-status-pill">
+                <span class="status-dot-active"></span>
+                <span>SYS_ONLINE</span>
+            </div>
+        </a>
+
+        <nav class="sentinel-nav-links" aria-label="Primary Navigation">
+            <a href="#platform" class="sentinel-nav-link">Platform</a>
+            <a href="#live-detection" class="sentinel-nav-link">Detection</a>
+            <a href="#security" class="sentinel-nav-link">Security</a>
+            <a href="#audit" class="sentinel-nav-link">Resources</a>
+        </nav>
+
+        <div class="sentinel-nav-actions">
+            <button class="theme-toggle-btn" onclick="Sentinel.toggleTheme()" title="Switch Theme" aria-label="Toggle Dark/Light Theme">
+                <i data-lucide="moon"></i>
+            </button>
+            {% if current_user.is_authenticated %}
+            <a href="/dashboard" class="btn-console-cta">
+                <i data-lucide="terminal"></i>
+                <span>Open Console</span>
+            </a>
+            {% else %}
+            <a href="/login" class="btn-sign-in">Sign In</a>
+            <a href="/register" class="btn-console-cta">
+                <span>Open Console</span>
+                <i data-lucide="arrow-up-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+{% endblock %}
+
 {% block content %}
-<div class="page-container">
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="badge-tag">
-            <i data-lucide="zap"></i>
-            <span>Real-Time Transaction Surveillance</span>
-        </div>
-        <h1>Intelligent Fraud Defense for <span class="gradient-text">Modern Payments</span></h1>
-        <p>Sentinel stops fraudulent transactions before settlement with sub-10ms machine learning inference, dynamic velocity rules, encrypted card tokenization, and instant security alerting.</p>
-        
-        <div class="hero-actions">
-            <a href="/register" class="btn-primary">
-                <span>Start Free Analyst Trial</span>
-                <i data-lucide="arrow-right"></i>
-            </a>
-            <a href="/how-it-works" class="btn-outline">
-                <i data-lucide="layers"></i>
-                <span>Explore Technical Pipeline</span>
-            </a>
-        </div>
-    </section>
+<!-- 1. HERO SECTION (White Background) -->
+<section class="hero" id="hero" aria-label="Real-Time Financial Security Overview">
+    <div class="hero-grid">
+        <div class="hero-narrative">
+            <div class="hero-eyebrow">
+                <i data-lucide="activity"></i>
+                <span>REAL-TIME FINANCIAL SECURITY</span>
+                <span style="opacity: 0.7; margin-left: 0.25rem;">• Real-Time Transaction Surveillance</span>
+            </div>
 
-    <!-- Operational Metrics Banner -->
-    <section class="stats-banner" aria-label="Operational Metrics">
-        <div class="stat-item">
-            <div class="stat-value">&lt; 10ms</div>
-            <div class="stat-label">Inference Latency</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">99.4%</div>
-            <div class="stat-label">Detection Accuracy</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">100%</div>
-            <div class="stat-label">AES Encrypted Vault</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">Zero</div>
-            <div class="stat-label">Plaintext Card Storage</div>
-        </div>
-    </section>
+            <h1>
+                <span>Detect the transaction.</span>
+                <span>Understand the risk.</span>
+                <span class="text-accent">Stop the fraud.</span>
+            </h1>
 
-    <!-- The Problem Statement -->
-    <section class="content-section" style="text-align: center; margin-bottom: 2rem;">
-        <div class="badge-tag" style="background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.3); color: var(--accent-rose);">
-            <i data-lucide="alert-triangle"></i>
-            <span>The Financial Risk Reality</span>
+            <p class="hero-subtext">
+                Machine-learning risk scoring and transaction surveillance for modern payment systems.
+            </p>
+
+            <div class="hero-actions-group">
+                {% if current_user.is_authenticated %}
+                <a href="/dashboard" class="btn-primary">
+                    <span>Open Sentinel Console</span>
+                    <i data-lucide="arrow-right"></i>
+                </a>
+                {% else %}
+                <a href="/register" class="btn-primary">
+                    <span>Open Sentinel Console</span>
+                    <i data-lucide="arrow-right"></i>
+                </a>
+                {% endif %}
+                <a href="#live-detection" class="btn-outline">
+                    <i data-lucide="eye"></i>
+                    <span>Explore the Detection Engine</span>
+                    <span class="sr-only">See how it works</span>
+                </a>
+            </div>
+
+            <div class="hero-specs-row" aria-label="Verified Technical Performance">
+                <div class="hero-spec-item">
+                    <span class="spec-val">&lt; 10ms</span>
+                    <span class="spec-lbl">Scoring Latency</span>
+                </div>
+                <div class="hero-spec-item">
+                    <span class="spec-val">AES-128</span>
+                    <span class="spec-lbl">Card PAN Vault</span>
+                </div>
+                <div class="hero-spec-item">
+                    <span class="spec-val">RFC 7636</span>
+                    <span class="spec-lbl">OIDC + PKCE</span>
+                </div>
+                <div class="hero-spec-item">
+                    <span class="spec-val">100%</span>
+                    <span class="spec-lbl">Audit Trail</span>
+                </div>
+            </div>
         </div>
-        <h2>The Escalating Crisis in Card-Not-Present Fraud</h2>
-        <p style="max-width: 760px; margin: 0 auto; color: var(--text-secondary); font-size: 1.1rem;">
-            Global payment systems face aggressive automation: distributed card testing botnets, credential stuffing, impossible-travel spoofing, and high-velocity nocturnal cash-outs. Legacy batch verification systems react too late—triggering costly chargebacks, merchant penalties, and damaged customer trust.
+
+        <!-- Realistic Sentinel Transaction Console (White, Deep Navy, Blue) -->
+        <div class="hero-console-wrapper">
+            <div class="sentinel-console-frame">
+                <div class="console-chrome-bar">
+                    <div class="chrome-title-group">
+                        <div class="chrome-dots">
+                            <span class="chrome-dot"></span>
+                            <span class="chrome-dot"></span>
+                            <span class="chrome-dot"></span>
+                        </div>
+                        <span class="chrome-label">SENTINEL RECON // LIVE STREAM</span>
+                    </div>
+                    <div class="chrome-telemetry">
+                        <span class="telemetry-pulse"></span>
+                        <span>INGESTION ACTIVE (4.2ms)</span>
+                    </div>
+                </div>
+
+                <div class="console-stream-body">
+                    <div class="stream-section-header">
+                        <span class="stream-heading">LIVE TRANSACTION STREAM</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);">AUTO-RECONCILE</span>
+                    </div>
+
+                    <div class="stream-feed-list" id="hero-tx-stream">
+                        <!-- Row 1 -->
+                        <div class="stream-row">
+                            <div class="row-card-info">
+                                <span class="scheme-tag">VISA</span>
+                                <span>•••• 4921</span>
+                            </div>
+                            <div class="row-amount">$842.00</div>
+                            <div class="row-risk">
+                                <span class="risk-pill low">○ LOW RISK</span>
+                            </div>
+                            <div class="row-decision allow">✓ ALLOW</div>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="stream-row">
+                            <div class="row-card-info">
+                                <span class="scheme-tag">MASTERCARD</span>
+                                <span>•••• 7812</span>
+                            </div>
+                            <div class="row-amount">$124.50</div>
+                            <div class="row-risk">
+                                <span class="risk-pill low">○ LOW RISK</span>
+                            </div>
+                            <div class="row-decision allow">✓ ALLOW</div>
+                        </div>
+
+                        <!-- Row 3: Threat Flagged -->
+                        <div class="stream-row active-threat">
+                            <div class="row-card-info">
+                                <span class="scheme-tag">AMEX</span>
+                                <span>•••• 3349</span>
+                            </div>
+                            <div class="row-amount">$4,920.00</div>
+                            <div class="row-risk">
+                                <span class="risk-pill high">× HIGH RISK</span>
+                            </div>
+                            <div class="row-decision block">× BLOCK</div>
+                        </div>
+                    </div>
+
+                    <!-- Triggered Risk Score & Decision Block -->
+                    <div class="console-trigger-drawer" id="hero-trigger-result">
+                        <div class="trigger-header">
+                            <span class="trigger-title">THREAT EVALUATION TRIGGERED</span>
+                            <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);">TX #8921-94A</span>
+                        </div>
+                        <div class="trigger-grid">
+                            <div class="trigger-score-box">
+                                <span class="trigger-score-num">93</span>
+                                <span class="trigger-score-total">/ 100 RISK SCORE</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="trigger-action-badge">DECISION: BLOCK</span>
+                            </div>
+                        </div>
+                        <div class="trigger-meta-notes">
+                            Reason: Velocity spike (7 transactions / 2 min) + Datacenter IP anomaly
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. SECTION 01 — THE PROBLEM (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="problem" aria-label="The Fraud Problem">
+    <div class="problem-narrative-header">
+        <div class="editorial-label">01 — THE PROBLEM</div>
+        <h2 class="section-headline">Fraud moves faster than manual review.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Automated payment attacks, distributed botnets, and credential-stuffing exploits execute in milliseconds. Legacy batch verification systems react minutes too late—leaving platforms vulnerable to chargeback liabilities and lost settlement capital.
         </p>
-    </section>
+    </div>
 
-    <!-- Core Architecture / How It Works -->
-    <section class="architecture-box">
-        <div style="text-align: center; max-width: 700px; margin: 0 auto;">
-            <div class="badge-tag">
-                <i data-lucide="cpu"></i>
-                <span>Multi-Tier Defense</span>
+    <div class="timeline-horizontal-container">
+        <div class="horizontal-timeline-track">
+            <!-- Node 1 -->
+            <div class="timeline-node">
+                <div class="node-icon-circle">
+                    <i data-lucide="credit-card"></i>
+                </div>
+                <div class="node-step-tag">01 / INGRESS</div>
+                <div class="node-title">Transaction</div>
+                <div class="node-desc">Raw payment event dispatched from checkout gateway via TLS 1.3.</div>
             </div>
-            <h2>How Sentinel Intercepts Financial Fraud</h2>
-            <p style="color: var(--text-secondary);">From transaction ingress to automated settlement hold in four concurrent stages.</p>
+
+            <!-- Node 2 -->
+            <div class="timeline-node">
+                <div class="node-icon-circle">
+                    <i data-lucide="zap"></i>
+                </div>
+                <div class="node-step-tag">02 / TELEMETRY</div>
+                <div class="node-title">Anomaly</div>
+                <div class="node-desc">Subtle behavioral divergence detected in card historical velocity profile.</div>
+            </div>
+
+            <!-- Node 3 -->
+            <div class="timeline-node">
+                <div class="node-icon-circle">
+                    <i data-lucide="fingerprint"></i>
+                </div>
+                <div class="node-step-tag">03 / FEATURES</div>
+                <div class="node-title">Signal</div>
+                <div class="node-desc">28 PCA vectors normalized with device telemetry and IP geolocation.</div>
+            </div>
+
+            <!-- Node 4 -->
+            <div class="timeline-node danger">
+                <div class="node-icon-circle">
+                    <i data-lucide="cpu"></i>
+                </div>
+                <div class="node-step-tag">04 / SCORING</div>
+                <div class="node-title">Risk</div>
+                <div class="node-desc">Dual-engine evaluation calculates composite score crossing 90+ threshold.</div>
+            </div>
+
+            <!-- Node 5 -->
+            <div class="timeline-node danger">
+                <div class="node-icon-circle">
+                    <i data-lucide="shield-alert"></i>
+                </div>
+                <div class="node-step-tag">05 / VERDICT</div>
+                <div class="node-title">Decision</div>
+                <div class="node-desc">Sub-10ms automated block halts settlement before fund disbursement.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. SECTION 02 — LIVE DETECTION EXPERIENCE (White Background) -->
+<section class="editorial-section section-white" id="live-detection" aria-label="Watch Sentinel evaluate a transaction">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto 1rem;">
+        <div class="editorial-label">02 — LIVE EVALUATION</div>
+        <h2 class="section-headline">Watch Sentinel evaluate a transaction.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Observe sub-second feature extraction, calibrated machine learning inference, and deterministic rule triggers operating on real-time transaction telemetry.
+        </p>
+    </div>
+
+    <div class="workbench-container">
+        <!-- Interactive Scenario Bar -->
+        <div class="scenario-bar">
+            <div class="scenario-label">TEST TRANSACTION SCENARIOS:</div>
+            <div class="scenario-pills">
+                <button class="scenario-btn active" data-scenario="velocity">Scenario A: Velocity Surge (Amazon ₹48,920)</button>
+                <button class="scenario-btn" data-scenario="stuffing">Scenario B: Credential Stuffing (Steam ₹99)</button>
+                <button class="scenario-btn" data-scenario="legitimate">Scenario C: Verified Cardholder (Starbucks ₹420)</button>
+            </div>
         </div>
 
-        <div class="pipeline-steps">
-            <div class="pipeline-step">
-                <div class="step-num">STAGE 01</div>
-                <h4>Stream Ingestion</h4>
-                <p>Payment events are ingested via REST API with payload validation, IP address geolocation resolution, and cryptographic payload verification.</p>
+        <div class="workbench-grid">
+            <!-- Left: Transaction Ingress Details -->
+            <div class="workbench-card">
+                <div class="wb-card-header">
+                    <span class="wb-card-title">TRANSACTION DETAILS</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #2563EB; font-weight: 700;">INGRESS BUFFER</span>
+                </div>
+                <div class="telemetry-kv-list">
+                    <div class="kv-row">
+                        <span class="kv-key">Merchant</span>
+                        <span class="kv-value" id="wb-merchant">Amazon</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Amount</span>
+                        <span class="kv-value" id="wb-amount">₹48,920.00</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Location</span>
+                        <span class="kv-value" id="wb-location">Chennai, IN</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Device</span>
+                        <span class="kv-value" id="wb-device">Unknown (Headless Chrome / Linux)</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Velocity</span>
+                        <span class="kv-value" id="wb-velocity">7 transactions / 2 min</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Masked PAN</span>
+                        <span class="kv-value">VISA •••• 9014</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Token Vault</span>
+                        <span class="kv-value">AES-128 Fernet Encrypted</span>
+                    </div>
+                </div>
             </div>
-            <div class="pipeline-step">
-                <div class="step-num">STAGE 02</div>
-                <h4>Feature Engineering</h4>
-                <p>Real-time normalizer projects transaction parameters through trained robust scalers and numerical transforms across 28 PCA dimensions.</p>
-            </div>
-            <div class="pipeline-step">
-                <div class="step-num">STAGE 03</div>
-                <h4>Dual-Engine Scoring</h4>
-                <p>Simultaneous evaluation via calibrated Random Forest model and dynamic heuristic rules (velocity, geographical anomalies, nocturnal windows).</p>
-            </div>
-            <div class="pipeline-step">
-                <div class="step-num">STAGE 04</div>
-                <h4>Verdict & Action</h4>
-                <p>Transactions categorized into Approve, Manual Review, or Automatic Decline with immediate notification dispatch and immutable audit logging.</p>
+
+            <!-- Right: Risk Engine Evaluation -->
+            <div class="workbench-card">
+                <div class="wb-card-header">
+                    <span class="wb-card-title">RISK ENGINE EVALUATION</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: #2563EB; font-weight: 700;">CALIBRATED</span>
+                </div>
+
+                <!-- Signal Indicators Matrix -->
+                <div class="telemetry-kv-list">
+                    <div class="kv-row">
+                        <span class="kv-key">Velocity Signal</span>
+                        <span class="signal-pill signal-high" id="wb-sig-velocity">HIGH</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Location Disparity</span>
+                        <span class="signal-pill signal-med" id="wb-sig-location">MEDIUM</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Device Integrity</span>
+                        <span class="signal-pill signal-high" id="wb-sig-device">HIGH</span>
+                    </div>
+                    <div class="kv-row">
+                        <span class="kv-key">Amount Magnitude</span>
+                        <span class="signal-pill signal-high" id="wb-sig-amount">HIGH</span>
+                    </div>
+                </div>
+
+                <!-- Dual Scoring Engine Split -->
+                <div class="scores-split-row">
+                    <div class="score-engine-stat">
+                        <span class="stat-sublabel">ML MODEL SCORE</span>
+                        <span class="stat-numeric" id="wb-ml-score">0.87</span>
+                    </div>
+                    <div class="score-engine-stat">
+                        <span class="stat-sublabel">RULE ENGINE SCORE</span>
+                        <span class="stat-numeric" id="wb-rule-score">0.91</span>
+                    </div>
+                </div>
+
+                <!-- Final Risk Score -->
+                <div class="final-risk-box">
+                    <div class="final-risk-head">
+                        <span class="final-risk-title">FINAL COMPOSITE RISK</span>
+                        <div>
+                            <span class="final-risk-score-display" id="wb-final-score">93</span>
+                            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);">/ 100</span>
+                        </div>
+                    </div>
+                    <div class="progress-track-gauge">
+                        <div class="progress-fill-gauge" id="wb-score-bar" style="width: 93%;"></div>
+                    </div>
+                    <div class="decision-banner-wrap">
+                        <span class="decision-badge decision-blocked" id="wb-decision">BLOCK TRANSACTION</span>
+                    </div>
+                    <div class="wb-rationale-text" id="wb-rationale">
+                        Velocity surge (>5 tx / 2 min) + datacenter proxy IP fingerprint.
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Key Capabilities Grid -->
-    <section style="margin: 4rem 0;">
-        <div style="text-align: center; max-width: 700px; margin: 0 auto 2.5rem;">
-            <div class="badge-tag">
-                <i data-lucide="shield"></i>
-                <span>Enterprise Tooling</span>
-            </div>
-            <h2>Comprehensive Financial Surveillance</h2>
-            <p style="color: var(--text-secondary);">Everything risk management teams require to detect, investigate, and prevent illicit transaction activity.</p>
+<!-- 4. SECTION 03 — DETECTION PIPELINE (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="platform" aria-label="Sentinel Detection Pipeline">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <div class="editorial-label">03 — DETECTION PIPELINE</div>
+        <h2 class="section-headline">Deterministic 7-stage transaction pipeline.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            A real-time architecture engineered to evaluate every payment parameter before gateway settlement commitments are confirmed.
+        </p>
+    </div>
+
+    <div class="pipeline-track-wrapper">
+        <!-- Stage 1 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 01</span>
+            <span class="p-stage-title">TRANSACTION</span>
+            <span class="p-stage-detail">Cardholder checkout initiates payment ingress via secure TLS 1.3 REST payload.</span>
+            <span class="p-stage-metric">&lt; 0.8ms</span>
         </div>
 
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <i data-lucide="brain"></i>
+        <!-- Stage 2 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 02</span>
+            <span class="p-stage-title">INGESTION</span>
+            <span class="p-stage-detail">Input parameter sanitization, rate-limiting, and IP geolocation resolution.</span>
+            <span class="p-stage-metric">&lt; 1.2ms</span>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 03</span>
+            <span class="p-stage-title">FEATURE ENGINEERING</span>
+            <span class="p-stage-detail">Real-time RobustScaler projection across 28 numerical PCA dimensions.</span>
+            <span class="p-stage-metric">&lt; 1.5ms</span>
+        </div>
+
+        <!-- Stage 4 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 04</span>
+            <span class="p-stage-title">ML SCORING</span>
+            <span class="p-stage-detail">Supervised Random Forest classification generating calibrated fraud probability.</span>
+            <span class="p-stage-metric">&lt; 3.2ms</span>
+        </div>
+
+        <!-- Stage 5 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 05</span>
+            <span class="p-stage-title">RULE ENGINE</span>
+            <span class="p-stage-detail">Dynamic heuristic evaluation: velocity tracking, nocturnal spikes, and multi-card bursts.</span>
+            <span class="p-stage-metric">&lt; 1.1ms</span>
+        </div>
+
+        <!-- Stage 6 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 06</span>
+            <span class="p-stage-title">DECISION</span>
+            <span class="p-stage-detail">Deterministic categorization: ALLOW, MANUAL REVIEW, or AUTOMATIC BLOCK.</span>
+            <span class="p-stage-metric">&lt; 0.6ms</span>
+        </div>
+
+        <!-- Stage 7 -->
+        <div class="pipeline-row-item">
+            <span class="p-step-idx">STAGE 07</span>
+            <span class="p-stage-title">AUDIT EVENT</span>
+            <span class="p-stage-detail">Immutable event commit with cryptographic telemetry to ACID datastore.</span>
+            <span class="p-stage-metric">&lt; 0.9ms</span>
+        </div>
+    </div>
+</section>
+
+<!-- 5. SECTION 04 — INSIDE THE DECISION / RISK EXPLAINABILITY (White Background) -->
+<section class="editorial-section section-white" id="explainability" aria-label="Inside a Decision">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <div class="editorial-label">04 — INSIDE A DECISION</div>
+        <h2 class="section-headline">No black boxes. Pure risk explainability.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Every risk verdict is decomposed into transparent attribution factors so compliance analysts immediately understand why a transaction was flagged.
+        </p>
+    </div>
+
+    <div class="decision-factors-grid">
+        <div class="factors-list">
+            <!-- Factor 1 -->
+            <div class="factor-item">
+                <div class="factor-head">
+                    <span class="factor-name">Velocity Surge Factor</span>
+                    <span class="factor-impact">+38 pts</span>
                 </div>
-                <h3>Machine Learning Pipeline</h3>
-                <p>Supervised machine learning model trained on extensive transaction telemetry, minimizing false positives while capturing subtle non-linear fraud signatures.</p>
+                <div class="factor-bar-bg">
+                    <div class="factor-bar-fill" style="width: 85%;"></div>
+                </div>
+                <div class="factor-note">7 payment attempts recorded within a 120-second rolling sliding window.</div>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <i data-lucide="sliders"></i>
+            <!-- Factor 2 -->
+            <div class="factor-item">
+                <div class="factor-head">
+                    <span class="factor-name">Device Fingerprint Discrepancy</span>
+                    <span class="factor-impact">+24 pts</span>
                 </div>
-                <h3>Dynamic Rule Engine</h3>
-                <p>Configurable heuristics for velocity tracking, threshold enforcement, nocturnal spikes, and multi-card clustering without code redeployment.</p>
+                <div class="factor-bar-bg">
+                    <div class="factor-bar-fill" style="width: 65%;"></div>
+                </div>
+                <div class="factor-note">Headless browser signature with missing canvas rendering context.</div>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <i data-lucide="lock"></i>
+            <!-- Factor 3 -->
+            <div class="factor-item">
+                <div class="factor-head">
+                    <span class="factor-name">Location Anomaly</span>
+                    <span class="factor-impact">+16 pts</span>
                 </div>
-                <h3>PCI-DSS Sensitive Vault</h3>
-                <p>Zero plaintext PAN storage. Primary account numbers are automatically masked (**** **** **** 1234) and encrypted using AES-128-CBC Fernet keys.</p>
+                <div class="factor-bar-bg">
+                    <div class="factor-bar-fill" style="width: 48%;"></div>
+                </div>
+                <div class="factor-note">IP resolved to datacenter proxy 2,100km from cardholder primary residence.</div>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <i data-lucide="bell"></i>
+            <!-- Factor 4 -->
+            <div class="factor-item">
+                <div class="factor-head">
+                    <span class="factor-name">Amount Magnitude</span>
+                    <span class="factor-impact">+11 pts</span>
                 </div>
-                <h3>Real-Time Threat Alerts</h3>
-                <p>Instantaneous dispatch of high-risk security alerts to compliance officers with transaction metadata, trigger rationale, and recommended remediation.</p>
+                <div class="factor-bar-bg">
+                    <div class="factor-bar-fill" style="width: 38%;"></div>
+                </div>
+                <div class="factor-note">Transaction amount represents 6.2x standard deviation above average spend.</div>
             </div>
 
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <i data-lucide="file-text"></i>
+            <!-- Factor 5 -->
+            <div class="factor-item">
+                <div class="factor-head">
+                    <span class="factor-name">Merchant Risk Profile</span>
+                    <span class="factor-impact">+4 pts</span>
                 </div>
-                <h3>Audit-Ready Reporting</h3>
-                <p>Generate structured CSV and executive PDF audit reports on transaction volume, fraud rate trajectories, and blocked payment vectors.</p>
+                <div class="factor-bar-bg">
+                    <div class="factor-bar-fill" style="width: 20%;"></div>
+                </div>
+                <div class="factor-note">Merchant tier categorized under high-liquidity digital gift cards.</div>
             </div>
+        </div>
 
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
+        <div class="decision-formula-card">
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; color: #0F172A;">Scoring Formula</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                Sentinel calculates deterministic risk utilizing a weighted ensemble that bridges trained statistical classification with hard compliance thresholds:
+            </p>
+            <div class="formula-code-block">
+Risk = (ML_Score × 0.45) + (Heuristic_Rules × 0.55)<br>
+Thresholds:<br>
+• Score 00–39: ALLOW<br>
+• Score 40–69: MANUAL REVIEW<br>
+• Score 70–100: AUTOMATIC BLOCK
+            </div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Current Transaction Score</span>
+                <span style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: #0F172A;">93 / 100</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 6. SECTION 05 — SECURITY ARCHITECTURE (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="security" aria-label="Security Architecture">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <div class="editorial-label">05 — SECURITY ARCHITECTURE</div>
+        <h2 class="section-headline">Enterprise security engineered into every layer.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Restrained, high-assurance cryptographic safeguards safeguarding cardholder data and analyst authentication workflows.
+        </p>
+    </div>
+
+    <div class="security-arch-grid">
+        <!-- Node 1 -->
+        <div class="arch-node-card">
+            <div class="arch-node-header">
+                <div class="arch-node-icon">
                     <i data-lucide="key"></i>
                 </div>
-                <h3>Enterprise IAM & PKCE</h3>
-                <p>Google OAuth 2.0 with Proof Key for Code Exchange (PKCE), strict state verification, role-based access control, and remote session revocation.</p>
+                <span class="arch-node-spec">RFC 7636</span>
+            </div>
+            <h4>Google OIDC + PKCE</h4>
+            <p>Proof Key for Code Exchange authentication with SHA-256 verifiers, CSRF state verification, and token exchange.</p>
+        </div>
+
+        <!-- Node 2 -->
+        <div class="arch-node-card">
+            <div class="arch-node-header">
+                <div class="arch-node-icon">
+                    <i data-lucide="lock"></i>
+                </div>
+                <span class="arch-node-spec">AES-128</span>
+            </div>
+            <h4>Card Encryption Vault</h4>
+            <p>Symmetric Fernet-authenticated encryption protecting sensitive PAN references. Zero plaintext card storage.</p>
+        </div>
+
+        <!-- Node 3 -->
+        <div class="arch-node-card">
+            <div class="arch-node-header">
+                <div class="arch-node-icon">
+                    <i data-lucide="hash"></i>
+                </div>
+                <span class="arch-node-spec">PAN MASKING</span>
+            </div>
+            <h4>Tokenization Layer</h4>
+            <p>Automatic redaction of primary account numbers into masked references (•••• •••• •••• 1234) across application logs.</p>
+        </div>
+
+        <!-- Node 4 -->
+        <div class="arch-node-card">
+            <div class="arch-node-header">
+                <div class="arch-node-icon">
+                    <i data-lucide="users"></i>
+                </div>
+                <span class="arch-node-spec">GRANULAR RBAC</span>
+            </div>
+            <h4>Role-Based Access</h4>
+            <p>Strict operational isolation separating read-only Analysts, Risk Officers, and System Administrators.</p>
+        </div>
+
+        <!-- Node 5 -->
+        <div class="arch-node-card">
+            <div class="arch-node-header">
+                <div class="arch-node-icon">
+                    <i data-lucide="database"></i>
+                </div>
+                <span class="arch-node-spec">APPEND-ONLY</span>
+            </div>
+            <h4>Immutable Audit Logging</h4>
+            <p>Comprehensive transaction and access logs with timestamped user identity, client IP, and action metadata.</p>
+        </div>
+
+        <!-- Node 6 -->
+        <div class="arch-node-card">
+            <div class="arch-node-header">
+                <div class="arch-node-icon">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <span class="arch-node-spec">SESSION CONTROL</span>
+            </div>
+            <h4>Session Security</h4>
+            <p>Sliding expiration TTL, concurrent session tracking, user-agent verification, and remote revocation killswitch.</p>
+        </div>
+    </div>
+</section>
+
+<!-- 7. SECTION 06 — AUDIT TRAIL (Deep Navy Background) -->
+<section class="editorial-section section-navy" id="audit" aria-label="Deterministic Audit Trail">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <div class="editorial-label">06 — AUDIT TRAIL</div>
+        <h2 class="section-headline">Sub-second deterministic audit resolution.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Every action, heuristic violation, and risk decision is recorded with microsecond timestamps for forensic review.
+        </p>
+    </div>
+
+    <div class="audit-console-box">
+        <div class="audit-events-timeline">
+            <!-- Event 1 -->
+            <div class="audit-event-row">
+                <span class="audit-timestamp">10:32:18.104</span>
+                <span class="audit-bullet"></span>
+                <span class="audit-event-name">Transaction received</span>
+                <span class="audit-event-meta">REST Ingress #8921</span>
+            </div>
+
+            <!-- Event 2 -->
+            <div class="audit-event-row">
+                <span class="audit-timestamp">10:32:18.112</span>
+                <span class="audit-bullet"></span>
+                <span class="audit-event-name">Features extracted</span>
+                <span class="audit-event-meta">28 PCA Vectors</span>
+            </div>
+
+            <!-- Event 3 -->
+            <div class="audit-event-row">
+                <span class="audit-timestamp">10:32:19.041</span>
+                <span class="audit-bullet"></span>
+                <span class="audit-event-name">Risk score generated</span>
+                <span class="audit-event-meta">ML Probability 0.87</span>
+            </div>
+
+            <!-- Event 4 -->
+            <div class="audit-event-row blocked-step">
+                <span class="audit-timestamp">10:32:19.055</span>
+                <span class="audit-bullet"></span>
+                <span class="audit-event-name">Velocity rule triggered</span>
+                <span class="audit-event-meta">Rule #R-402</span>
+            </div>
+
+            <!-- Event 5 -->
+            <div class="audit-event-row blocked-step">
+                <span class="audit-timestamp">10:32:19.068</span>
+                <span class="audit-bullet"></span>
+                <span class="audit-event-name" style="font-weight: 700;">Transaction blocked</span>
+                <span class="audit-event-meta">Gateway Code 59</span>
+            </div>
+
+            <!-- Event 6 -->
+            <div class="audit-event-row">
+                <span class="audit-timestamp">10:32:20.002</span>
+                <span class="audit-bullet"></span>
+                <span class="audit-event-name">Audit event recorded</span>
+                <span class="audit-event-meta">SHA-256 Committed</span>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Bottom Call to Action -->
-    <section class="architecture-box" style="text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.05));">
-        <h2>Deploy Sentinel to Secure Your Transaction Flow</h2>
-        <p style="color: var(--text-secondary); max-width: 650px; margin: 1rem auto 2rem;">
-            Experience turnkey financial surveillance. Inspect incoming transactions in real time or simulate high-volume payment bursts in an isolated sandbox.
+<!-- 8. SECTION 07 — REAL PRODUCT PREVIEW / CONSOLE (White Background) -->
+<section class="editorial-section section-white" id="product-console" aria-label="Sentinel Console Preview">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <div class="editorial-label">07 — CONSOLE OPERATIONS</div>
+        <h2 class="section-headline">A unified command center for risk teams.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Investigate suspicious transactions, adjust heuristic rule thresholds, review fraud alerts, and generate compliance-ready audit reports.
         </p>
-        <div class="hero-actions" style="margin-bottom: 0;">
-            <a href="/register" class="btn-primary">
+    </div>
+
+    <div class="preview-console-container">
+        <!-- Toolbar -->
+        <div class="preview-top-toolbar">
+            <div class="console-tabs-row">
+                <button class="console-tab active" data-tab="overview">Overview</button>
+                <button class="console-tab" data-tab="transactions">Transactions</button>
+                <button class="console-tab" data-tab="alerts">Alerts</button>
+                <button class="console-tab" data-tab="risk">Risk Rules</button>
+                <button class="console-tab" data-tab="analytics">Analytics</button>
+            </div>
+            <div class="console-telemetry-badge">
+                <span class="telemetry-pulse"></span>
+                <span>SYSTEM STATUS: OPERATIONAL (LATENCY 4.8ms)</span>
+            </div>
+        </div>
+
+        <div class="preview-body-content">
+            <!-- KPIs -->
+            <div class="console-kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Volume (24h)</div>
+                    <div class="kpi-value">$14,820,490</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Fraud Intercepted</div>
+                    <div class="kpi-value">1,284</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">False Positive Rate</div>
+                    <div class="kpi-value">0.08%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Avg Scoring Latency</div>
+                    <div class="kpi-value" style="color: #2563EB;">4.8ms</div>
+                </div>
+            </div>
+
+            <!-- Tab View: Overview -->
+            <div class="console-view-panel active" id="view-overview">
+                <div class="mock-table-wrapper">
+                    <table class="mock-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Card Token</th>
+                                <th>Amount</th>
+                                <th>Merchant</th>
+                                <th>Risk Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#TX-8921</td>
+                                <td>AMEX •••• 3349</td>
+                                <td>$4,920.00</td>
+                                <td>Amazon Digital</td>
+                                <td style="font-weight: 800;">93 / 100</td>
+                                <td><span class="risk-pill high">× BLOCKED</span></td>
+                            </tr>
+                            <tr>
+                                <td>#TX-8920</td>
+                                <td>VISA •••• 4921</td>
+                                <td>$842.00</td>
+                                <td>Apple Retail</td>
+                                <td style="font-weight: 700; color: #2563EB;">12 / 100</td>
+                                <td><span class="risk-pill low">✓ APPROVED</span></td>
+                            </tr>
+                            <tr>
+                                <td>#TX-8919</td>
+                                <td>MC •••• 7812</td>
+                                <td>$124.50</td>
+                                <td>Uber Rides</td>
+                                <td style="font-weight: 700; color: #2563EB;">08 / 100</td>
+                                <td><span class="risk-pill low">✓ APPROVED</span></td>
+                            </tr>
+                            <tr>
+                                <td>#TX-8918</td>
+                                <td>VISA •••• 1092</td>
+                                <td>$1,850.00</td>
+                                <td>CryptoExchange</td>
+                                <td style="font-weight: 700;">68 / 100</td>
+                                <td><span class="risk-pill" style="border: 1px dashed rgba(15, 23, 42, 0.4); font-weight: 700;">△ MANUAL REVIEW</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab View: Transactions -->
+            <div class="console-view-panel" id="view-transactions">
+                <div style="padding: 2rem; text-align: center; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">
+                    [Transactions Stream: Query filters by date, amount threshold, card brand, and decision outcome active.]
+                </div>
+            </div>
+
+            <!-- Tab View: Alerts -->
+            <div class="console-view-panel" id="view-alerts">
+                <div style="padding: 2rem; text-align: center; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">
+                    [Alerts View: 4 active high-severity compliance alerts pending risk manager acknowledgement.]
+                </div>
+            </div>
+
+            <!-- Tab View: Risk Rules -->
+            <div class="console-view-panel" id="view-risk">
+                <div style="padding: 2rem; text-align: center; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">
+                    [Risk Rules Configurator: Dynamic velocity limits, nocturnal multiplier, and country geofence heuristics.]
+                </div>
+            </div>
+
+            <!-- Tab View: Analytics -->
+            <div class="console-view-panel" id="view-analytics">
+                <div style="padding: 2rem; text-align: center; font-family: var(--font-mono); color: var(--text-muted); font-size: 0.9rem;">
+                    [Analytics View: 30-day fraud trends, PCA distribution clustering, and ROC-AUC model performance metrics.]
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 9. SECTION 08 — ENGINEERING CREDIBILITY (White Background) -->
+<section class="editorial-section section-white" id="engineering" aria-label="Engineering Credibility">
+    <div style="text-align: center; max-width: 760px; margin: 0 auto;">
+        <div class="editorial-label">08 — ENGINEERING FOUNDATION</div>
+        <h2 class="section-headline">Verifiable architectural capabilities.</h2>
+        <p class="section-subtext" style="margin: 0 auto;">
+            Rigorous engineering standards built for deterministic financial operations. Zero fabricated certifications.
+        </p>
+    </div>
+
+    <div class="engineering-grid">
+        <!-- 1 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="check-circle"></i>
+            </div>
+            <h4>Automated Testing</h4>
+            <p>141+ automated tests covering OAuth, PKCE, RBAC, ML scoring, and transaction life cycles.</p>
+        </div>
+
+        <!-- 2 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="shield"></i>
+            </div>
+            <h4>OAuth 2.0 + PKCE</h4>
+            <p>RFC 7636 compliant authorization code exchange with SHA-256 verifiers preventing interception.</p>
+        </div>
+
+        <!-- 3 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="users"></i>
+            </div>
+            <h4>Granular RBAC</h4>
+            <p>Operational access control enforcing principle of least privilege across administrative routes.</p>
+        </div>
+
+        <!-- 4 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="lock"></i>
+            </div>
+            <h4>Encrypted Card Vault</h4>
+            <p>AES-128 Fernet cryptography; zero plaintext card primary account numbers stored.</p>
+        </div>
+
+        <!-- 5 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="file-text"></i>
+            </div>
+            <h4>Audit Logging</h4>
+            <p>Immutable event logging tracking authentication attempts, policy edits, and blocked actions.</p>
+        </div>
+
+        <!-- 6 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="box"></i>
+            </div>
+            <h4>Docker Deployment</h4>
+            <p>Containerized multi-stage builds ready for production orchestration with isolated networks.</p>
+        </div>
+
+        <!-- 7 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="database"></i>
+            </div>
+            <h4>PostgreSQL & SQLite</h4>
+            <p>Full support for both high-concurrency PostgreSQL and lightweight development SQLite.</p>
+        </div>
+
+        <!-- 8 -->
+        <div class="credibility-card">
+            <div class="credibility-icon">
+                <i data-lucide="git-branch"></i>
+            </div>
+            <h4>CI/CD Automation</h4>
+            <p>Automated test pipelines enforcing regression prevention across all pull requests.</p>
+        </div>
+    </div>
+</section>
+
+<!-- 10. DEPLOYMENT CALL TO ACTION (Deep Navy Background) -->
+<section class="deployment-cta-section section-navy" aria-label="Deploy Sentinel">
+    <div class="deployment-cta-card">
+        <h2>Command your financial risk in real time.</h2>
+        <p>
+            Experience turnkey transaction surveillance. Inspect incoming payment events with machine learning precision.
+        </p>
+        <div class="deployment-cta-actions">
+            {% if current_user.is_authenticated %}
+            <a href="/dashboard" class="btn-primary" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
+                <span>Open Sentinel Console</span>
+                <i data-lucide="arrow-right"></i>
+            </a>
+            {% else %}
+            <a href="/register" class="btn-primary" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
                 <span>Create Analyst Account</span>
                 <i data-lucide="arrow-right"></i>
             </a>
-            <a href="/login" class="btn-outline">
+            <a href="/login" class="btn-outline" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
                 <span>Sign In to Console</span>
             </a>
+            {% endif %}
         </div>
-    </section>
-</div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/landing-motion.js"></script>
 {% endblock %}

@@ -22,16 +22,19 @@
     <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
     
-    <!-- Favicon (SVG Shield) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z'/></svg>">
+    <!-- Favicon (SVG Shield in Approved Blue #2563EB) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z'/></svg>">
     
     <!-- Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons: Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Global Script & Theme Initialization -->
+    <script src="/static/js/sentinel.js"></script>
     
     <!-- Stylesheet -->
     <link rel="stylesheet" href="/static/css/landing.css">
@@ -59,8 +62,6 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <div class="ambient-glow"></div>
-
     <!-- Header Navigation -->
     {% block header %}
     <header class="public-header">
@@ -83,6 +84,9 @@
             </nav>
 
             <div class="auth-actions">
+                <button class="theme-toggle-btn" onclick="Sentinel.toggleTheme()" title="Switch Theme" aria-label="Toggle Dark/Light Theme">
+                    <i data-lucide="moon"></i>
+                </button>
                 {% if current_user.is_authenticated %}
                 <a href="/dashboard" class="btn-primary">
                     <i data-lucide="layout-dashboard"></i>
@@ -102,12 +106,12 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Public Footer -->
+    <!-- Public Footer (Strict 3-Color: Deep Navy Background, White Text, Blue Accents) -->
     <footer class="public-footer">
         <div class="footer-container">
             <div class="footer-brand">
-                <a href="/" class="brand-link">
-                    <div class="brand-logo-icon">
+                <a href="/" class="brand-link" style="color: #FFFFFF;">
+                    <div class="brand-logo-icon" style="background-color: #2563EB; border-color: #2563EB;">
                         <i data-lucide="shield-check"></i>
                     </div>
                     <span>Sentinel</span>
@@ -153,6 +157,9 @@
     </footer>
 
     <script>
+        if (window.Sentinel && window.Sentinel.initTheme) {
+            window.Sentinel.initTheme();
+        }
         lucide.createIcons();
     </script>
     {% block extra_scripts %}{% endblock %}
