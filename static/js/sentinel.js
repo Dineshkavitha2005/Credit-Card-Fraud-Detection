@@ -4,69 +4,104 @@
  * keyboard shortcuts, Lucide icon hydration, network state monitoring, and Chart.js theme defaults.
  */
 
-window.Sentinel = (function() {
+window.Sentinel = (function () {
   'use strict';
 
-  // Active theme tracking
+  // Active theme tracking & user preference ('light', 'dark', or 'system')
   let currentTheme = 'light';
+  let themePreference = 'system';
+
+  // Helper to query OS dark mode
+  function getSystemTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
 
   // Initialize theme from storage or OS preference
   function initTheme() {
-    const savedTheme = localStorage.getItem('sentinel_theme');
-    if (savedTheme) {
-      currentTheme = savedTheme;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      currentTheme = 'dark';
+    const saved = localStorage.getItem('sentinel_theme');
+    if (saved === 'dark' || saved === 'light' || saved === 'system') {
+      themePreference = saved;
     } else {
-      currentTheme = 'light';
+      themePreference = 'system';
     }
 
-    applyTheme(currentTheme);
+    const effectiveTheme = themePreference === 'system' ? getSystemTheme() : themePreference;
+    applyTheme(effectiveTheme, themePreference);
 
-    // Listen for OS theme changes if not explicitly overridden
+    // Listen for OS theme changes
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem('sentinel_theme')) {
-          applyTheme(e.matches ? 'dark' : 'light');
+        if (themePreference === 'system' || !localStorage.getItem('sentinel_theme')) {
+          applyTheme(e.matches ? 'dark' : 'light', 'system');
         }
       });
     }
   }
 
-  function applyTheme(theme) {
+  function applyTheme(theme, pref) {
     currentTheme = theme;
+    if (pref) themePreference = pref;
+
     if (theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
+    document.documentElement.setAttribute('data-color-mode', themePreference);
 
     updateThemeToggleUI();
     updateChartDefaults();
   }
 
+  function setTheme(pref) {
+    if (pref !== 'dark' && pref !== 'light' && pref !== 'system') return;
+    themePreference = pref;
+    localStorage.setItem('sentinel_theme', pref);
+    const effective = pref === 'system' ? getSystemTheme() : pref;
+    applyTheme(effective, pref);
+    const label = pref === 'system' ? 'System' : (pref === 'dark' ? 'Dark' : 'Light');
+    showToast(`Switched to ${label} theme`, 'info', 2000);
+  }
+
   function toggleTheme() {
-    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('sentinel_theme', nextTheme);
-    applyTheme(nextTheme);
-    showToast(`Switched to ${nextTheme === 'dark' ? 'Dark' : 'Light'} theme`, 'info', 2000);
+    // Intuitive cycle: system -> opposite of current -> system
+    // Or light -> dark -> system -> light
+    let nextPref = 'dark';
+    if (themePreference === 'system') {
+      nextPref = currentTheme === 'dark' ? 'light' : 'dark';
+    } else if (themePreference === 'light') {
+      nextPref = 'dark';
+    } else if (themePreference === 'dark') {
+      nextPref = 'system';
+    } else {
+      nextPref = 'light';
+    }
+    setTheme(nextPref);
   }
 
   function getTheme() {
     return currentTheme;
   }
 
+  function getThemePreference() {
+    return themePreference;
+  }
+
   function updateThemeToggleUI() {
     const toggleBtns = document.querySelectorAll('.theme-toggle-btn');
     toggleBtns.forEach(btn => {
-      if (currentTheme === 'dark') {
+      if (themePreference === 'system') {
+        btn.innerHTML = `<i data-lucide="laptop" style="width:15px;height:15px;"></i>`;
+        btn.setAttribute('title', `System Theme (${currentTheme === 'dark' ? 'Dark' : 'Light'}) — Click to switch to Light`);
+        btn.setAttribute('aria-label', 'System Theme Mode');
+      } else if (themePreference === 'dark') {
         btn.innerHTML = `<i data-lucide="sun" style="width:15px;height:15px;"></i>`;
-        btn.setAttribute('title', 'Switch to Light Mode');
-        btn.setAttribute('aria-label', 'Switch to Light Mode');
+        btn.setAttribute('title', 'Dark Theme — Click to switch to System');
+        btn.setAttribute('aria-label', 'Dark Theme Mode');
       } else {
         btn.innerHTML = `<i data-lucide="moon" style="width:15px;height:15px;"></i>`;
-        btn.setAttribute('title', 'Switch to Dark Mode');
-        btn.setAttribute('aria-label', 'Switch to Dark Mode');
+        btn.setAttribute('title', 'Light Theme — Click to switch to Dark');
+        btn.setAttribute('aria-label', 'Light Theme Mode');
       }
     });
     initIcons();
@@ -118,7 +153,7 @@ window.Sentinel = (function() {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     let iconName = 'info';
     if (type === 'success') iconName = 'check-circle';
     else if (type === 'error') iconName = 'alert-circle';
@@ -161,7 +196,7 @@ window.Sentinel = (function() {
       `;
       document.body.appendChild(backdrop);
 
-      backdrop.addEventListener('click', function(e) {
+      backdrop.addEventListener('click', function (e) {
         if (e.target === this) {
           closeDrawer();
         }
@@ -170,7 +205,7 @@ window.Sentinel = (function() {
 
     document.getElementById('sentinel-drawer-title').innerHTML = title;
     document.getElementById('sentinel-drawer-body').innerHTML = bodyHtml;
-    
+
     const footerEl = document.getElementById('sentinel-drawer-footer');
     if (footerHtml) {
       footerEl.innerHTML = footerHtml;
@@ -230,7 +265,7 @@ window.Sentinel = (function() {
       try {
         const controller = activeControllers.get(key);
         controller.abort('Operation cancelled by Sentinel');
-      } catch (e) {}
+      } catch (e) { }
       activeControllers.delete(key);
     }
   }
@@ -242,7 +277,7 @@ window.Sentinel = (function() {
     activeControllers.forEach((controller) => {
       try {
         controller.abort('Navigation in progress');
-      } catch (e) {}
+      } catch (e) { }
     });
     activeControllers.clear();
   }
@@ -434,7 +469,7 @@ window.Sentinel = (function() {
   }
 
   // Global Quick Search trigger helper
-  window.focusSearchInput = function() {
+  window.focusSearchInput = function () {
     const searchInputs = [
       document.getElementById('filter-search'),
       document.getElementById('search-input'),
@@ -452,7 +487,7 @@ window.Sentinel = (function() {
   };
 
   // Topbar dropdown toggles
-  window.toggleNotifDropdown = function() {
+  window.toggleNotifDropdown = function () {
     const dd = document.getElementById('notif-dropdown');
     const userDd = document.getElementById('user-dropdown');
     if (userDd) userDd.style.display = 'none';
@@ -461,7 +496,7 @@ window.Sentinel = (function() {
     }
   };
 
-  window.toggleUserDropdown = function() {
+  window.toggleUserDropdown = function () {
     const dd = document.getElementById('user-dropdown');
     const notifDd = document.getElementById('notif-dropdown');
     if (notifDd) notifDd.style.display = 'none';

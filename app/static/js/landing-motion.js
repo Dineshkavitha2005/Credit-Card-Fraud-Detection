@@ -1,246 +1,351 @@
 /**
- * Sentinel Landing Page — Motion & Interaction Controller
- * Strict 3-Color Design System Implementation (#FFFFFF, #0F172A, #2563EB).
- * Restrained, production-grade interactions with full prefers-reduced-motion support.
+ * Sentinel Landing Page — Dynamic Scrolling Animations & Interactions Engine
+ * Provides:
+ * 1. Top Reading/Scroll Progress Bar (#scroll-progress-bar)
+ * 2. Floating Navbar Scroll Morphing (.omrix-navbar.scrolled)
+ * 3. Dynamic Section ScrollSpy (.omrix-nav-item.active)
+ * 4. Interactive Back-to-Top Floating Button with Circular SVG Progress Ring
+ * 5. Hardware-Accelerated Scroll Reveal System with Stagger Waves (IntersectionObserver)
+ * 6. Background Ambient Glow Aura Scroll Parallax
+ * 7. Interactive Number Telemetry Shimmer & Counters on Viewport Entry
+ * 8. Smooth Anchor Navigation with Proper Offsets
+ * 9. Accessibility & Graceful Degradation (prefers-reduced-motion)
  */
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    // Respect user's motion preferences
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Check user preference for reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 1. Sticky Navigation Scroll State
-    function initStickyNav() {
-        const header = document.querySelector('.sentinel-nav-header');
-        if (!header) return;
+  // =========================================================================
+  // 1. Top Scroll Progress Bar & Back-to-Top Progress Ring
+  // =========================================================================
+  function initScrollProgress() {
+    const progressBar = document.getElementById('scroll-progress-bar');
+    const backToTopBtn = document.getElementById('back-to-top');
+    const backToTopRing = document.getElementById('back-to-top-ring');
+    const circumference = 2 * Math.PI * 20; // r = 20 => ~125.66
 
-        function updateNav() {
-            if (window.scrollY > 20) {
-                header.classList.add('scrolled');
+    if (backToTopRing) {
+      backToTopRing.style.strokeDasharray = `${circumference} ${circumference}`;
+      backToTopRing.style.strokeDashoffset = `${circumference}`;
+    }
+
+    let ticking = false;
+
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const scrollPercent = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+
+          // Update Top Progress Bar
+          if (progressBar) {
+            progressBar.style.width = `${scrollPercent}%`;
+          }
+
+          // Update Back to Top Button Visibility & Circular Ring
+          if (backToTopBtn) {
+            if (scrollTop > 350) {
+              backToTopBtn.classList.add('visible');
             } else {
-                header.classList.remove('scrolled');
+              backToTopBtn.classList.remove('visible');
             }
-        }
 
-        window.addEventListener('scroll', updateNav, { passive: true });
-        updateNav();
-    }
-
-    // 2. Live Transaction Stream Animation (Required by test suite)
-    function initLiveTransactionStream() {
-        const streamContainer = document.getElementById('hero-tx-stream');
-        if (!streamContainer) return;
-
-        const transactions = [
-            { scheme: 'VISA', pan: '•••• 4921', amount: '$842.00', risk: '○ LOW RISK', score: '12', status: '✓ ALLOW', statusClass: 'status-allow', badgeClass: 'risk-pill low' },
-            { scheme: 'MASTERCARD', pan: '•••• 7812', amount: '$124.50', risk: '○ LOW RISK', score: '08', status: '✓ ALLOW', statusClass: 'status-allow', badgeClass: 'risk-pill low' },
-            { scheme: 'AMEX', pan: '•••• 3349', amount: '$4,920.00', risk: '× HIGH RISK', score: '93', status: '× BLOCK', statusClass: 'status-block', badgeClass: 'risk-pill high', alert: true },
-            { scheme: 'VISA', pan: '•••• 1928', amount: '$310.00', risk: '○ LOW RISK', score: '19', status: '✓ ALLOW', statusClass: 'status-allow', badgeClass: 'risk-pill low' },
-            { scheme: 'MASTERCARD', pan: '•••• 6401', amount: '$1,420.00', risk: '△ REVIEW', score: '62', status: '△ REVIEW', statusClass: 'status-review', badgeClass: 'risk-pill review' }
-        ];
-
-        let index = 0;
-        const triggerCard = document.getElementById('hero-trigger-result');
-
-        function cycleStream() {
-            if (prefersReducedMotion) return;
-
-            const tx = transactions[index % transactions.length];
-            index++;
-
-            if (tx.alert && triggerCard) {
-                triggerCard.classList.add('pulse-alert');
-                setTimeout(() => triggerCard.classList.remove('pulse-alert'), 1200);
+            if (backToTopRing) {
+              const offset = circumference - (scrollPercent / 100) * circumference;
+              backToTopRing.style.strokeDashoffset = `${offset}`;
             }
-        }
+          }
 
-        if (!prefersReducedMotion) {
-            setInterval(cycleStream, 4500);
-        }
-    }
-
-    // 3. Live Detection Workbench Scenarios
-    const SCENARIOS = {
-        velocity: {
-            merchant: 'Amazon Marketplace',
-            amount: '₹48,920.00',
-            location: 'Chennai, IN',
-            device: 'Unknown (Headless Chrome / Linux)',
-            velocity: '7 transactions / 2 min',
-            channel: 'Card-Not-Present (eCommerce)',
-            signals: {
-                velocity: { level: 'HIGH', class: 'signal-high' },
-                location: { level: 'MEDIUM', class: 'signal-med' },
-                device: { level: 'HIGH', class: 'signal-high' },
-                amount: { level: 'HIGH', class: 'signal-high' }
-            },
-            mlScore: '0.87',
-            ruleScore: '0.91',
-            finalScore: 93,
-            decision: 'BLOCK TRANSACTION',
-            decisionClass: 'decision-blocked',
-            rationale: 'Velocity surge (>5 tx / 2 min) + datacenter proxy IP fingerprint.'
-        },
-        stuffing: {
-            merchant: 'Steam Games Digital',
-            amount: '₹99.00',
-            location: 'Bucharest, RO',
-            device: 'Emulated Mobile (Android 10)',
-            velocity: '24 transactions / 3 min',
-            channel: 'Card-Not-Present (API Ingress)',
-            signals: {
-                velocity: { level: 'CRITICAL', class: 'signal-high' },
-                location: { level: 'HIGH', class: 'signal-high' },
-                device: { level: 'HIGH', class: 'signal-high' },
-                amount: { level: 'LOW', class: 'signal-low' }
-            },
-            mlScore: '0.94',
-            ruleScore: '0.96',
-            finalScore: 97,
-            decision: 'BLOCK TRANSACTION',
-            decisionClass: 'decision-blocked',
-            rationale: 'Distributed card testing bot pattern detected across multiple PAN fragments.'
-        },
-        legitimate: {
-            merchant: 'Starbucks Coffee',
-            amount: '₹420.00',
-            location: 'Mumbai, IN',
-            device: 'Apple iPhone 15 Pro (Safari)',
-            velocity: '1 transaction / 24 hr',
-            channel: 'EMV Contactless Token',
-            signals: {
-                velocity: { level: 'LOW', class: 'signal-low' },
-                location: { level: 'LOW', class: 'signal-low' },
-                device: { level: 'VERIFIED', class: 'signal-low' },
-                amount: { level: 'NORMAL', class: 'signal-low' }
-            },
-            mlScore: '0.04',
-            ruleScore: '0.08',
-            finalScore: 6,
-            decision: 'ALLOW TRANSACTION',
-            decisionClass: 'decision-allowed',
-            rationale: 'All features conform to cardholder historical spending profile and trusted device hash.'
-        }
-    };
-
-    function initDetectionWorkbench() {
-        const buttons = document.querySelectorAll('.scenario-btn');
-        if (!buttons.length) return;
-
-        buttons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                buttons.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const key = this.getAttribute('data-scenario');
-                applyScenario(SCENARIOS[key]);
-            });
+          ticking = false;
         });
+        ticking = true;
+      }
     }
 
-    function applyScenario(data) {
-        if (!data) return;
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 
-        // Telemetry Ingress
-        const elMerchant = document.getElementById('wb-merchant');
-        const elAmount = document.getElementById('wb-amount');
-        const elLocation = document.getElementById('wb-location');
-        const elDevice = document.getElementById('wb-device');
-        const elVelocity = document.getElementById('wb-velocity');
+    if (backToTopBtn) {
+      backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth'
+        });
+      });
+    }
+  }
 
-        if (elMerchant) elMerchant.textContent = data.merchant;
-        if (elAmount) elAmount.textContent = data.amount;
-        if (elLocation) elLocation.textContent = data.location;
-        if (elDevice) elDevice.textContent = data.device;
-        if (elVelocity) elVelocity.textContent = data.velocity;
+  // =========================================================================
+  // 2. Floating Navbar Scroll Morphing
+  // =========================================================================
+  function initNavbarScroll() {
+    const navbar = document.getElementById('main-header') || document.querySelector('.omrix-navbar');
+    if (!navbar) return;
 
-        // Signals Matrix
-        updateSignal('wb-sig-velocity', data.signals.velocity);
-        updateSignal('wb-sig-location', data.signals.location);
-        updateSignal('wb-sig-device', data.signals.device);
-        updateSignal('wb-sig-amount', data.signals.amount);
+    let ticking = false;
 
-        // Scores & Final Composite Risk
-        const elMl = document.getElementById('wb-ml-score');
-        const elRule = document.getElementById('wb-rule-score');
-        const elFinal = document.getElementById('wb-final-score');
-        const elBar = document.getElementById('wb-score-bar');
-        const elDecision = document.getElementById('wb-decision');
-        const elRationale = document.getElementById('wb-rationale');
+    function updateNav() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > 24) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+      ticking = false;
+    }
 
-        if (elMl) elMl.textContent = data.mlScore;
-        if (elRule) elRule.textContent = data.ruleScore;
-        if (elFinal) elFinal.textContent = data.finalScore;
-        if (elBar) elBar.style.width = data.finalScore + '%';
-        
-        if (elDecision) {
-            elDecision.textContent = data.decision;
-            elDecision.className = 'decision-badge ' + data.decisionClass;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateNav);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    updateNav();
+  }
+
+  // =========================================================================
+  // 3. ScrollSpy Navigation (Active Nav Item on Scroll)
+  // =========================================================================
+  function initScrollSpy() {
+    const navLinks = document.querySelectorAll('.omrix-nav-item');
+    if (!navLinks.length) return;
+
+    const sectionIds = ['hero', 'how-it-works', 'features', 'testimonials', 'pricing', 'faq', 'resources'];
+    const sections = sectionIds
+      .map(id => document.getElementById(id))
+      .filter(el => el !== null);
+
+    if (!sections.length) return;
+
+    let ticking = false;
+
+    function highlightNav() {
+      const scrollPos = (window.pageYOffset || document.documentElement.scrollTop) + 160;
+
+      let currentSectionId = '';
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        const top = section.offsetTop;
+        const height = section.offsetHeight;
+        if (scrollPos >= top && scrollPos < top + height) {
+          currentSectionId = section.id;
+          break;
         }
+      }
 
-        if (elRationale) elRationale.textContent = data.rationale;
+      if (!currentSectionId && sections.length > 0 && scrollPos < sections[0].offsetTop) {
+        currentSectionId = sections[0].id;
+      }
+
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === `#${currentSectionId}`) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+
+      ticking = false;
     }
 
-    function updateSignal(elementId, signalData) {
-        const el = document.getElementById(elementId);
-        if (!el || !signalData) return;
-        el.textContent = signalData.level;
-        el.className = 'signal-pill ' + signalData.class;
-    }
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(highlightNav);
+        ticking = true;
+      }
+    }, { passive: true });
 
-    // 4. Product Console Tabs
-    function initConsoleTabs() {
-        const tabs = document.querySelectorAll('.console-tab');
-        const views = document.querySelectorAll('.console-view-panel');
-        if (!tabs.length) return;
+    highlightNav();
+  }
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const target = this.getAttribute('data-tab');
-                tabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
+  // =========================================================================
+  // 4. Background Ambient Glow Aura Scroll Parallax
+  // =========================================================================
+  function initAuraParallax() {
+    if (prefersReducedMotion) return;
+    const aura = document.querySelector('.aura-glow-center');
+    if (!aura) return;
 
-                views.forEach(view => {
-                    if (view.id === 'view-' + target) {
-                        view.classList.add('active');
-                    } else {
-                        view.classList.remove('active');
-                    }
-                });
-            });
+    let ticking = false;
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+          aura.style.transform = `translate3d(0, ${scrollY * 0.12}px, 0)`;
+          ticking = false;
         });
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  // =========================================================================
+  // 5. Scroll Reveal System using IntersectionObserver
+  // =========================================================================
+  function initScrollReveal() {
+    // Prime scroll animation mode on body
+    document.body.classList.add('scroll-animated');
+
+    if (prefersReducedMotion) {
+      document.querySelectorAll(
+        '.scroll-reveal, .scroll-reveal-scale, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-hero-mockup'
+      ).forEach(el => {
+        el.classList.add('is-revealed');
+      });
+      return;
     }
 
-    // 5. Scroll-linked Pipeline Step Observer
-    function initPipelineObserver() {
-        const steps = document.querySelectorAll('.pipeline-row-item');
-        if (!steps.length || prefersReducedMotion) return;
+    // Auto-detect and register sections if explicit classes aren't yet added
+    // Section headers & eyebrow labels
+    document.querySelectorAll('.section-header, .section-eyebrow, .marquee-title, .hero-pill-badge, .hero-title, .hero-subtext, .hero-cta-group, .hero-guarantees-row').forEach(el => {
+      if (!el.classList.contains('scroll-reveal')) {
+        el.classList.add('scroll-reveal');
+      }
+    });
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('in-view');
-                }
-            });
-        }, { threshold: 0.2 });
+    // Step cards stagger
+    document.querySelectorAll('.step-card').forEach((card, index) => {
+      if (!card.classList.contains('scroll-reveal')) {
+        card.classList.add('scroll-reveal');
+        card.classList.add(`delay-${Math.min(index + 1, 6)}`);
+      }
+    });
 
-        steps.forEach(step => observer.observe(step));
+    // Bento cards stagger
+    document.querySelectorAll('.bento-card').forEach((card, index) => {
+      if (!card.classList.contains('scroll-reveal') && !card.classList.contains('scroll-reveal-scale')) {
+        if (card.classList.contains('span-2') && index === 0) {
+          card.classList.add('scroll-reveal-scale');
+        } else {
+          card.classList.add('scroll-reveal');
+          card.classList.add(`delay-${Math.min(index + 1, 6)}`);
+        }
+      }
+    });
+
+    // Testimonials spotlight & cards
+    const quote = document.querySelector('.featured-quote-card');
+    if (quote && !quote.classList.contains('scroll-reveal-scale')) {
+      quote.classList.add('scroll-reveal-scale');
+    }
+    document.querySelectorAll('.testimonial-item-card').forEach((card, index) => {
+      if (!card.classList.contains('scroll-reveal')) {
+        card.classList.add('scroll-reveal');
+        card.classList.add(`delay-${Math.min(index + 1, 6)}`);
+      }
+    });
+
+    // Pricing toggle & cards
+    const pricingToggle = document.querySelector('.pricing-toggle-wrap');
+    if (pricingToggle && !pricingToggle.classList.contains('scroll-reveal')) {
+      pricingToggle.classList.add('scroll-reveal');
+    }
+    document.querySelectorAll('.pricing-card').forEach((card, index) => {
+      if (!card.classList.contains('scroll-reveal')) {
+        card.classList.add('scroll-reveal');
+        card.classList.add(`delay-${Math.min(index + 1, 6)}`);
+      }
+    });
+
+    // FAQ Accordion items
+    const faqCol = document.querySelector('.faq-left-col');
+    if (faqCol && !faqCol.classList.contains('scroll-reveal-left')) {
+      faqCol.classList.add('scroll-reveal-left');
+    }
+    document.querySelectorAll('.accordion-item').forEach((item, index) => {
+      if (!item.classList.contains('scroll-reveal')) {
+        item.classList.add('scroll-reveal');
+        item.classList.add(`delay-${Math.min(index + 1, 6)}`);
+      }
+    });
+
+    // Resource cards
+    document.querySelectorAll('.resource-card').forEach((card, index) => {
+      if (!card.classList.contains('scroll-reveal')) {
+        card.classList.add('scroll-reveal');
+        card.classList.add(`delay-${Math.min(index + 1, 6)}`);
+      }
+    });
+
+    // CTA Banner Card
+    const ctaCard = document.querySelector('.cta-banner-card');
+    if (ctaCard && !ctaCard.classList.contains('scroll-reveal-scale')) {
+      ctaCard.classList.add('scroll-reveal-scale');
     }
 
-    // Initialize all controllers on DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            initStickyNav();
-            initLiveTransactionStream();
-            initDetectionWorkbench();
-            initConsoleTabs();
-            initPipelineObserver();
-        });
-    } else {
-        initStickyNav();
-        initLiveTransactionStream();
-        initDetectionWorkbench();
-        initConsoleTabs();
-        initPipelineObserver();
+    // Hero Mockup Cockpit
+    const heroMockup = document.querySelector('.hero-mockup-wrapper');
+    if (heroMockup && !heroMockup.classList.contains('scroll-reveal-hero-mockup')) {
+      heroMockup.classList.add('scroll-reveal-hero-mockup');
     }
+
+    // Intersection Observer for all reveal elements
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0.08,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    const revealElements = document.querySelectorAll(
+      '.scroll-reveal, .scroll-reveal-scale, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-hero-mockup'
+    );
+    revealElements.forEach(el => revealObserver.observe(el));
+  }
+
+  // =========================================================================
+  // 6. Telemetry & Metric Pulse Shimmer on Viewport Entry
+  // =========================================================================
+  function initTelemetryEffects() {
+    const telemRow = document.querySelector('.cockpit-telemetry-row');
+    if (!telemRow) return;
+
+    const telemObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.telem-value').forEach((val, idx) => {
+            val.classList.add('pulse-glow');
+            setTimeout(() => val.classList.remove('pulse-glow'), 1200 + idx * 200);
+          });
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    telemObserver.observe(telemRow);
+  }
+
+  // =========================================================================
+  // Initialize on DOM Ready
+  // =========================================================================
+  function init() {
+    initScrollProgress();
+    initNavbarScroll();
+    initScrollSpy();
+    initAuraParallax();
+    initScrollReveal();
+    initTelemetryEffects();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
