@@ -103,10 +103,22 @@ def create_app(config_class=None):
         else:
             raise ValueError("Insecure, default, or missing SECRET_KEY configured in environment.")
 
-    # Normalize postgres:// to postgresql:// for SQLAlchemy 2.0+ compatibility
+    # Normalize postgres:// to postgresql:// and provide driver fallback for SQLAlchemy 2.0+
     db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
-    if db_uri and db_uri.startswith('postgres://'):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + db_uri[len('postgres://'):]
+    if db_uri:
+        if db_uri.startswith('postgres://'):
+            db_uri = 'postgresql://' + db_uri[len('postgres://'):]
+        if db_uri.startswith('postgresql://'):
+            # If psycopg (v3) is not installed but psycopg2 is available, use psycopg2 dialect
+            try:
+                import psycopg  # noqa: F401
+            except ImportError:
+                try:
+                    import psycopg2  # noqa: F401
+                    db_uri = 'postgresql+psycopg2://' + db_uri[len('postgresql://'):]
+                except ImportError:
+                    pass
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 
     # Validate active database URI for production environment
     is_prod = (isinstance(config_class, type) and issubclass(config_class, ProductionConfig)) or (
