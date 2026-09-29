@@ -9,7 +9,8 @@
  *   - Complete Light & Dark mode parity with fluid CSS custom properties
  */
 
-:root {
+:root,
+[data-theme="light"] {
   /* Color Palette - Neutral Light Theme */
   --bg-app: #F7F7F5;
   --bg-surface: #FFFFFF;
@@ -503,6 +504,117 @@ button, input, select, textarea {
   background-color: var(--bg-surface-secondary);
   color: var(--text-primary);
   border-color: var(--text-muted);
+}
+
+/* Theme Selector & Dropdown Controls */
+.theme-selector-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 40px;
+  right: 0;
+  min-width: 156px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  z-index: 220;
+  padding: 6px;
+  animation: themeDropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes themeDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-btn);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.theme-menu-item:hover, .theme-menu-item:focus-visible {
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.theme-menu-item.active {
+  color: var(--accent);
+  background-color: var(--accent-light);
+  font-weight: 600;
+}
+
+.theme-check-icon {
+  margin-left: auto;
+  color: var(--accent);
+}
+
+/* Theme Segmented Control (Settings Page) */
+.theme-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  padding: 3px;
+  gap: 3px;
+}
+
+.theme-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.theme-segment-btn:hover {
+  color: var(--text-primary);
+}
+
+.theme-segment-btn.active {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-segment-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .notification-badge-dot {
@@ -1521,6 +1633,19 @@ button, input, select, textarea {
   .preset-btn-group {
     overflow-x: auto;
     max-width: 100%;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none !important;
+  }
+  .theme-dropdown-menu {
+    animation: none !important;
+  }
+  .theme-segment-btn, .theme-menu-item, .topbar-btn {
+    transition: none !important;
   }
 }
 

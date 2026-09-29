@@ -886,5 +886,12 @@
             Sentinel.initIcons();
         }
     }
+
+    // Re-render dashboard charts dynamically when theme changes
+    window.addEventListener('sentinel:themechange', () => {
+        if (dashboardData && dashboardData.charts) {
+            renderCharts(dashboardData.charts);
+        }
+    });
 </script>
 {% endblock %}

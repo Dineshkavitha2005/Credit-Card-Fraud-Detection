@@ -157,6 +157,7 @@
 {% block scripts %}
 <script>
     let analyticsCharts = {};
+    let cachedAnalyticsData = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         loadAnalyticsData();
@@ -173,6 +174,7 @@
 
             if (!Sentinel.isLatest('analytics-overview', res)) return;
 
+            cachedAnalyticsData = data;
             const c = data.charts || {};
 
             renderCategoryChart(c.top_categories);
@@ -376,5 +378,16 @@
             </tr>
         `).join('');
     }
+
+    // Re-render analytics charts dynamically when theme changes
+    window.addEventListener('sentinel:themechange', () => {
+        if (cachedAnalyticsData && cachedAnalyticsData.charts) {
+            const c = cachedAnalyticsData.charts || {};
+            renderCategoryChart(c.top_categories);
+            renderRiskChart(c.risk_distribution);
+            renderHourlyChart(c.hourly_pattern);
+            renderMonthlyChart(c.trends_by_month);
+        }
+    });
 </script>
 {% endblock %}
