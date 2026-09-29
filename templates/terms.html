@@ -1,0 +1,106 @@
+{% extends "public_base.html" %}
+
+{% block title %}Terms of Service — Sentinel Financial Surveillance{% endblock %}
+{% block meta_description %}Review the Terms of Service for Sentinel: platform usage guidelines, transaction monitoring parameters, security responsibilities, and API conditions.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="file-text" aria-hidden="true"></i>
+            <span>Platform Governance</span>
+        </div>
+        <h1>Terms of Service</h1>
+        <p class="lead">
+            These Terms of Service ("Terms") govern access to and use of the Sentinel Financial Surveillance platform, including the real-time scoring API, analyst console, dynamic rule engine, and reporting services.
+        </p>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem;">
+            <strong>Last Updated:</strong> September 19, 2026 &bull; <strong>Status:</strong> Active Operational Draft
+        </p>
+
+        <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 2.5rem;">
+            <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                <i data-lucide="alert-circle" style="width: 20px; height: 20px; color: var(--accent-indigo); flex-shrink: 0; margin-top: 2px;" aria-hidden="true"></i>
+                <div style="font-size: 0.925rem; color: var(--text-primary); line-height: 1.6;">
+                    <strong>Legal Review Requirement:</strong> This document represents a technical terms-of-service framework reflecting Sentinel's functional parameters. Prior to public production deployment, it must be customized with the deployment organization's registered corporate name, jurisdiction, and legal counsel approval.
+                </div>
+            </div>
+        </div>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>
+            By accessing the Sentinel console, generating API keys, or routing payment telemetry through the scoring engine, you agree to be bound by these Terms. If you are accessing Sentinel on behalf of an enterprise entity, you represent that you hold the authority to bind that entity.
+        </p>
+
+        <h2>2. Description of Surveillance Service</h2>
+        <p>
+            Sentinel provides high-throughput real-time payment anomaly detection and surveillance. Features include:
+        </p>
+        <ul>
+            <li>Sub-10ms machine learning inference utilizing pre-trained scikit-learn ensemble models.</li>
+            <li>Dynamic heuristic risk rule evaluation (velocity tracking, nocturnal anomaly windows, geographical impossible travel).</li>
+            <li>PCI-DSS sensitive encrypted card vault (AES-128 Fernet encryption with PAN masking).</li>
+            <li>Security incident dispatch, audit logging, and downloadable compliance reporting.</li>
+        </ul>
+
+        <h2>3. Acceptable & Prohibited Use</h2>
+        <p>You agree to utilize Sentinel exclusively for legitimate payment verification, fraud defense, and security operations. You strictly agree NOT to:</p>
+        <ul>
+            <li><strong>Card Testing:</strong> Ingest unauthorized, stolen, card-generator, or illicit cardholder data to validate live card validity.</li>
+            <li><strong>Adversarial Model Attacks:</strong> Attempt to craft adversarial perturbation vectors to reverse-engineer model weights, determine evasion thresholds, or extract training data distributions.</li>
+            <li><strong>Denial of Service:</strong> Overwhelm the scoring API, saturate database connection pools, or bypass configured API rate limits.</li>
+            <li><strong>Unauthorized Access:</strong> Escalate privileges, tamper with role-based access controls (RBAC), or harvest credentials of other analysts.</li>
+        </ul>
+
+        <h2>4. User Accounts & Credential Security</h2>
+        <p>
+            Access to Sentinel requires authenticated credentials (username/password or enterprise Google OAuth with PKCE). Users are responsible for:
+        </p>
+        <ul>
+            <li>Maintaining strict confidentiality of account passwords and OAuth session tokens.</li>
+            <li>Immediately notifying the system administrator of suspected credential compromise.</li>
+            <li>Ensuring that administrative privileges are utilized solely in accordance with organizational policies.</li>
+        </ul>
+
+        <h2>5. Ingested Transaction Data Obligations</h2>
+        <p>
+            You represent and warrant that all payment event streams and cardholder telemetry routed into Sentinel have been collected with necessary legal authorization and cardholder consent where applicable. Sentinel processes ingested data in accordance with our <a href="/privacy" style="color: var(--accent-indigo);">Privacy Policy</a>.
+        </p>
+
+        <h2>6. Intellectual Property</h2>
+        <p>
+            All rights, title, and interest in and to Sentinel—including its source code, trained machine learning model artifacts (`fraud_model.pkl`, `scaler.pkl`), user interface styling, and documentation—are the exclusive intellectual property of the platform deployment owner and its licensors.
+        </p>
+
+        <h2>7. Performance Disclaimer & Warranty Limitations</h2>
+        <p>
+            SENTINEL IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. WHILE TRAINED TO DELIVER HIGH CLASSIFICATION ACCURACY (E.G. 99.4%), NO AUTOMATED FRAUD DETECTION SYSTEM CAN GUARANTEE 100% INTERCEPTION OF ALL ILLICIT TRANSACTIONS OR ZERO FALSE-POSITIVE ANOMALIES. THE OPERATING ENTITY DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+        </p>
+
+        <h2>8. Limitation of Liability</h2>
+        <p>
+            IN NO EVENT SHALL SENTINEL DEVELOPERS OR THE OPERATING ENTITY BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING FROM ERRONEOUS TRANSACTION BLOCKS, CHARGEBACK LOSSES, OR SYSTEM DOWNTIME, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+        </p>
+
+        <h2>9. Modifications & Termination</h2>
+        <p>
+            The platform operator reserves the right to modify these Terms, update heuristic algorithms, or suspend accounts violating acceptable use policies at any time. Notice of material modifications will be posted to this page.
+        </p>
+
+        <h2>10. Contact & Governance</h2>
+        <p>
+            For legal inquiries or terms clarification, please contact the designated platform authority:
+        </p>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-family: var(--font-mono); font-size: 0.925rem;">
+            <div><strong>Entity:</strong> [Operating Legal Entity Name Configured by Deployment Owner]</div>
+            <div style="margin-top: 0.5rem;"><strong>Legal Desk:</strong> legal@[your-domain.com] (Configure via environment)</div>
+            <div style="margin-top: 0.5rem;"><strong>Compliance:</strong> compliance@[your-domain.com]</div>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/" class="btn-primary">Return to Sentinel</a>
+            <a href="/privacy" class="btn-outline" style="margin-left: 1rem;">View Privacy Policy</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

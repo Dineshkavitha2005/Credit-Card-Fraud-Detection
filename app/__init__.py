@@ -103,10 +103,22 @@ def create_app(config_class=None):
         else:
             raise ValueError("Insecure, default, or missing SECRET_KEY configured in environment.")
 
-    # Normalize postgres:// to postgresql:// for SQLAlchemy 2.0+ compatibility
+    # Normalize postgres:// to postgresql:// and provide driver fallback for SQLAlchemy 2.0+
     db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
-    if db_uri and db_uri.startswith('postgres://'):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://' + db_uri[len('postgres://'):]
+    if db_uri:
+        if db_uri.startswith('postgres://'):
+            db_uri = 'postgresql://' + db_uri[len('postgres://'):]
+        if db_uri.startswith('postgresql://'):
+            # If psycopg (v3) is not installed but psycopg2 is available, use psycopg2 dialect
+            try:
+                import psycopg  # noqa: F401
+            except ImportError:
+                try:
+                    import psycopg2  # noqa: F401
+                    db_uri = 'postgresql+psycopg2://' + db_uri[len('postgresql://'):]
+                except ImportError:
+                    pass
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 
     # Validate active database URI for production environment
     is_prod = (isinstance(config_class, type) and issubclass(config_class, ProductionConfig)) or (
@@ -204,8 +216,10 @@ def create_app(config_class=None):
 
     @app.errorhandler(404)
     def handle_not_found(e):
-        msg = getattr(e, 'description', 'The requested resource or page was not found')
-        return handle_error_response(msg, status_code=404, code="NOT_FOUND")
+        if is_json_request():
+            msg = getattr(e, 'description', 'The requested resource or page was not found')
+            return handle_error_response(msg, status_code=404, code="NOT_FOUND")
+        return render_template('404.html'), 404
 
     @app.errorhandler(405)
     def handle_method_not_allowed(e):
@@ -314,9 +328,9 @@ def create_app(config_class=None):
     # Global template context variables (canonical domain, current year)
     @app.context_processor
     def inject_global_template_vars():
-        canonical_domain = app.config.get('CANONICAL_DOMAIN', 'https://your-domain.com').rstrip('/')
+        from app.routes.main import get_canonical_domain
         return {
-            'CANONICAL_DOMAIN': canonical_domain,
+            'CANONICAL_DOMAIN': get_canonical_domain(),
             'current_year': 2026,
         }
 

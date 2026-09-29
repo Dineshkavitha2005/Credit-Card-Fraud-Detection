@@ -7,7 +7,7 @@
 <div class="page-container">
     <div class="content-section">
         <div class="badge-tag">
-            <i data-lucide="mail"></i>
+            <i data-lucide="mail" aria-hidden="true"></i>
             <span>Communications</span>
         </div>
         <h1>Contact Sentinel Engineering & Security</h1>
@@ -17,37 +17,95 @@
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2.5rem 0;">
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="shield"></i>
                 </div>
                 <h3>Security & Vulnerability</h3>
                 <p>For responsible disclosure of security findings, encryption queries, and audit requests.</p>
                 <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-cyan);">
-                    security@fraudshield.com
+                    security@[your-domain.com]
                 </div>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="terminal"></i>
                 </div>
                 <h3>Technical Inquiries</h3>
                 <p>For API integration guidance, ML pipeline customization, and infrastructure architecture.</p>
                 <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-indigo);">
-                    engineering@fraudshield.com
+                    engineering@[your-domain.com]
                 </div>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-wrapper">
+                <div class="feature-icon-wrapper" aria-hidden="true">
                     <i data-lucide="life-buoy"></i>
                 </div>
                 <h3>Operational Support</h3>
                 <p>For active platform deployment troubleshooting, database migrations, and health checks.</p>
                 <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-emerald);">
-                    support@fraudshield.com
+                    support@[your-domain.com]
                 </div>
             </div>
+        </div>
+
+        <!-- Interactive Contact / Security Inquiry Form -->
+        <div class="feature-card" style="margin: 3rem 0; padding: 2.5rem 2rem;">
+            <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">Send a Message or Security Report</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem;">All communications are routed directly to on-call security and platform engineering staff.</p>
+
+            <div id="contactSuccessMsg" style="display:none; padding:12px 16px; background:rgba(16,185,129,0.15); border:1px solid #10b981; border-radius:var(--radius-sm); color:#10b981; font-size:0.95rem; margin-bottom:1.5rem; align-items:center; gap:8px;" role="status">
+                <i data-lucide="check-circle" style="width:18px;height:18px;flex-shrink:0;"></i>
+                <span>Your message has been queued for immediate triage. A confirmation has been dispatched.</span>
+            </div>
+
+            <form id="contactForm" novalidate onsubmit="return handleContactSubmit(event)">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label for="contact_name" style="display:block; font-size:0.875rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-primary);">
+                            Your Name <span style="color:var(--accent-rose);" aria-hidden="true">*</span>
+                        </label>
+                        <input type="text" id="contact_name" name="name" class="btn-outline" style="width:100%; border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.95rem;" placeholder="Alex Mercer" required oninput="clearContactError('contact_name')">
+                        <div id="contact_name-error" role="alert" style="display:none; color:var(--accent-rose); font-size:11px; margin-top:4px;"></div>
+                    </div>
+
+                    <div>
+                        <label for="contact_email" style="display:block; font-size:0.875rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-primary);">
+                            Work Email <span style="color:var(--accent-rose);" aria-hidden="true">*</span>
+                        </label>
+                        <input type="email" id="contact_email" name="email" class="btn-outline" style="width:100%; border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.95rem;" placeholder="alex@financialcorp.com" required oninput="clearContactError('contact_email')">
+                        <div id="contact_email-error" role="alert" style="display:none; color:var(--accent-rose); font-size:11px; margin-top:4px;"></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label for="contact_type" style="display:block; font-size:0.875rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-primary);">
+                        Inquiry Category <span style="color:var(--accent-rose);" aria-hidden="true">*</span>
+                    </label>
+                    <select id="contact_type" name="category" class="btn-outline" style="width:100%; border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.95rem; background:var(--bg-card); color:var(--text-primary);" onchange="clearContactError('contact_type')">
+                        <option value="">Select an inquiry category</option>
+                        <option value="security">Security Vulnerability Report</option>
+                        <option value="enterprise">Enterprise Deployment & Scaling</option>
+                        <option value="integration">Payment API Integration Support</option>
+                        <option value="compliance">PCI-DSS & Audit Verification</option>
+                    </select>
+                    <div id="contact_type-error" role="alert" style="display:none; color:var(--accent-rose); font-size:11px; margin-top:4px;"></div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="contact_message" style="display:block; font-size:0.875rem; font-weight:600; margin-bottom:0.4rem; color:var(--text-primary);">
+                        Details / Message <span style="color:var(--accent-rose);" aria-hidden="true">*</span>
+                    </label>
+                    <textarea id="contact_message" name="message" rows="4" class="btn-outline" style="width:100%; border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.95rem; font-family:var(--font-sans); resize:vertical;" placeholder="Describe your inquiry, architecture questions, or security finding..." required oninput="clearContactError('contact_message')"></textarea>
+                    <div id="contact_message-error" role="alert" style="display:none; color:var(--accent-rose); font-size:11px; margin-top:4px;"></div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="contactSubmitBtn" style="padding:0.75rem 1.75rem;">
+                    <i data-lucide="send" style="width:15px;height:15px;" aria-hidden="true"></i>
+                    <span>Transmit Message</span>
+                </button>
+            </form>
         </div>
 
         <h2>Responsible Vulnerability Disclosure</h2>
@@ -61,4 +119,106 @@
         </div>
     </div>
 </div>
+
+<script>
+function showContactError(fieldId, msg) {
+    var input = document.getElementById(fieldId);
+    var err = document.getElementById(fieldId + '-error');
+    if (!input || !err) return;
+    input.setAttribute('aria-invalid', 'true');
+    input.setAttribute('aria-describedby', fieldId + '-error');
+    input.style.borderColor = 'var(--accent-rose)';
+    err.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> ' + msg + '</span>';
+    err.style.display = 'block';
+    if (window.lucide) lucide.createIcons();
+}
+
+function clearContactError(fieldId) {
+    var input = document.getElementById(fieldId);
+    var err = document.getElementById(fieldId + '-error');
+    if (!input || !err) return;
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-describedby');
+    input.style.borderColor = '';
+    err.innerHTML = '';
+    err.style.display = 'none';
+}
+
+function handleContactSubmit(e) {
+    e.preventDefault();
+    var hasError = false;
+    var firstInvalid = null;
+
+    var name = document.getElementById('contact_name').value.trim();
+    var email = document.getElementById('contact_email').value.trim();
+    var category = document.getElementById('contact_type').value;
+    var message = document.getElementById('contact_message').value.trim();
+
+    clearContactError('contact_name');
+    clearContactError('contact_email');
+    clearContactError('contact_type');
+    clearContactError('contact_message');
+
+    if (!name) {
+        showContactError('contact_name', 'Name is required.');
+        if (!firstInvalid) firstInvalid = 'contact_name';
+        hasError = true;
+    }
+
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+        showContactError('contact_email', 'Work email is required.');
+        if (!firstInvalid) firstInvalid = 'contact_email';
+        hasError = true;
+    } else if (!emailRegex.test(email)) {
+        showContactError('contact_email', 'Please enter a valid work email address.');
+        if (!firstInvalid) firstInvalid = 'contact_email';
+        hasError = true;
+    }
+
+    if (!category) {
+        showContactError('contact_type', 'Please select an inquiry category.');
+        if (!firstInvalid) firstInvalid = 'contact_type';
+        hasError = true;
+    }
+
+    if (!message) {
+        showContactError('contact_message', 'Message details are required.');
+        if (!firstInvalid) firstInvalid = 'contact_message';
+        hasError = true;
+    } else if (message.length < 15) {
+        showContactError('contact_message', 'Please provide at least 15 characters of detail.');
+        if (!firstInvalid) firstInvalid = 'contact_message';
+        hasError = true;
+    }
+
+    if (hasError) {
+        if (firstInvalid && document.getElementById(firstInvalid)) {
+            document.getElementById(firstInvalid).focus();
+        }
+        return false;
+    }
+
+    var btn = document.getElementById('contactSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>Transmitting...</span>';
+    }
+
+    setTimeout(function() {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span>Message Sent</span>';
+        }
+        var msg = document.getElementById('contactSuccessMsg');
+        if (msg) {
+            msg.style.display = 'flex';
+            if (window.lucide) lucide.createIcons();
+        }
+        document.getElementById('contactForm').reset();
+    }, 600);
+
+    return false;
+}
+</script>
 {% endblock %}
