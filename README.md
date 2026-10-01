@@ -130,5 +130,4 @@ A rule-based layer adds expert knowledge to catch common fraud patterns:
 | POST | `/api/fraud-rules/:id/toggle` | Toggle a fraud rule on/off |
 
 ## License
-
 MIT
