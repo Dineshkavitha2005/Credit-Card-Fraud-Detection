@@ -1,7 +1,5 @@
 # FraudShield - Credit Card Fraud Detection System
-
 A real-time credit card fraud detection web application with admin analytics dashboard, transaction monitoring, and automated security alerts.
-
 ## Features
 
 - **Real-time Fraud Detection** — ML-enhanced rule-based scoring engine that analyzes transactions instantly
