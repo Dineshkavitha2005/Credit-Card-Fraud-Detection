@@ -46,18 +46,18 @@
             progressBar.style.width = `${scrollPercent}%`;
           }
 
-          // Update Back to Top Button Visibility & Circular Ring
+          // Update Back to Top Button Visibility & Circular Progress Ring
           if (backToTopBtn) {
             if (scrollTop > 350) {
               backToTopBtn.classList.add('visible');
             } else {
               backToTopBtn.classList.remove('visible');
             }
+          }
 
-            if (backToTopRing) {
-              const offset = circumference - (scrollPercent / 100) * circumference;
-              backToTopRing.style.strokeDashoffset = `${offset}`;
-            }
+          if (backToTopRing) {
+            const offset = circumference - (scrollPercent / 100) * circumference;
+            backToTopRing.style.strokeDashoffset = `${offset}`;
           }
 
           ticking = false;
@@ -115,7 +115,7 @@
     const navLinks = document.querySelectorAll('.omrix-nav-item');
     if (!navLinks.length) return;
 
-    const sectionIds = ['hero', 'how-it-works', 'features', 'testimonials', 'pricing', 'faq', 'resources'];
+    const sectionIds = ['hero', 'how-it-works', 'features', 'testimonials', 'faq', 'resources'];
     const sections = sectionIds
       .map(id => document.getElementById(id))
       .filter(el => el !== null);
@@ -242,17 +242,6 @@
       }
     });
 
-    // Pricing toggle & cards
-    const pricingToggle = document.querySelector('.pricing-toggle-wrap');
-    if (pricingToggle && !pricingToggle.classList.contains('scroll-reveal')) {
-      pricingToggle.classList.add('scroll-reveal');
-    }
-    document.querySelectorAll('.pricing-card').forEach((card, index) => {
-      if (!card.classList.contains('scroll-reveal')) {
-        card.classList.add('scroll-reveal');
-        card.classList.add(`delay-${Math.min(index + 1, 6)}`);
-      }
-    });
 
     // FAQ Accordion items
     const faqCol = document.querySelector('.faq-left-col');

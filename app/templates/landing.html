@@ -45,10 +45,6 @@
                 <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
             </div>
             <span class="brand-title">Sentinel</span>
-            <div class="brand-status-tag">
-                <span class="status-pulse-dot"></span>
-                <span>v2.4</span>
-            </div>
         </a>
 
         <!-- Desktop Navigation Links -->
@@ -57,9 +53,9 @@
             <a href="#how-it-works" class="omrix-nav-item">How It Works</a>
             <a href="#features" class="omrix-nav-item">Features</a>
             <a href="#testimonials" class="omrix-nav-item">Testimonials</a>
-            <a href="#pricing" class="omrix-nav-item">Pricing</a>
             <a href="#faq" class="omrix-nav-item">FAQ</a>
             <a href="#resources" class="omrix-nav-item">Resources</a>
+            <a href="#contact" class="omrix-nav-item">Contact</a>
         </nav>
 
         <!-- Navigation Actions (Theme Switcher + Auth / Demo) -->
@@ -108,9 +104,9 @@
         <a href="#how-it-works" class="mobile-drawer-link" onclick="toggleMobileNav(false)">How It Works</a>
         <a href="#features" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Features (Bento)</a>
         <a href="#testimonials" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Testimonials</a>
-        <a href="#pricing" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Pricing</a>
         <a href="#faq" class="mobile-drawer-link" onclick="toggleMobileNav(false)">FAQ</a>
         <a href="#resources" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Resources</a>
+        <a href="#contact" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Contact</a>
     </nav>
     <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
         {% if current_user.is_authenticated %}
@@ -694,95 +690,6 @@
     </div>
 </section>
 
-<!-- ==============================================================================
-     06 SIMPLE PRICING (Omrix Section 6 with Interactive Monthly/Yearly Toggle)
-     ============================================================================== -->
-<section class="pricing-section" id="pricing" aria-label="Simple Transparent Pricing">
-    <div class="omrix-container text-center">
-        <div class="section-eyebrow">
-            <span class="eyebrow-dot"></span>
-            <span>SIMPLE PRICING</span>
-        </div>
-        <h2 class="section-title">Start free. Scale without limits.</h2>
-        <p class="section-subtitle">
-            No hidden fees. No surprise invoices. Pick the plan that fits your transaction volume and upgrade anytime.
-        </p>
-
-        <!-- Interactive Billing Toggle Switch -->
-        <div class="pricing-toggle-wrap">
-            <div class="toggle-pill-container" role="radiogroup" aria-label="Billing Frequency">
-                <button type="button" class="toggle-opt-btn active" id="btn-monthly" onclick="setBillingCycle('monthly')">Monthly</button>
-                <button type="button" class="toggle-opt-btn" id="btn-yearly" onclick="setBillingCycle('yearly')">Yearly</button>
-            </div>
-            <span class="discount-badge-pill">20% off</span>
-        </div>
-
-        <!-- 3 Pricing Cards Grid -->
-        <div class="pricing-cards-grid">
-            <!-- Tier 1: Starter -->
-            <div class="pricing-card">
-                <h3 class="plan-name">Starter</h3>
-                <p class="plan-desc">Perfect for individuals and small merchants just getting started with fraud prevention.</p>
-                <div class="plan-price-wrap">
-                    <span class="price-currency">$</span>
-                    <span class="price-number" id="price-starter">19</span>
-                    <span class="price-period" id="period-starter">/mo</span>
-                </div>
-                <a href="/register" class="plan-cta-btn btn-outline-plan">Get Started Free</a>
-                <div class="plan-features-heading">Plan Includes:</div>
-                <ul class="plan-feature-items">
-                    <li><i data-lucide="check"></i> <span>Up to 10,000 transactions/mo</span></li>
-                    <li><i data-lucide="check"></i> <span>3 payment gateway connections</span></li>
-                    <li><i data-lucide="check"></i> <span>Real-time ML risk scoring</span></li>
-                    <li><i data-lucide="check"></i> <span>Basic analytics dashboard</span></li>
-                    <li><i data-lucide="check"></i> <span>Community & email support</span></li>
-                </ul>
-            </div>
-
-            <!-- Tier 2: Pro (Featured with Popular Pill) -->
-            <div class="pricing-card featured">
-                <div class="card-popular-pill">MOST POPULAR</div>
-                <h3 class="plan-name">Pro</h3>
-                <p class="plan-desc">For growing fintechs and merchants that need more power, flexibility, and speed to scale.</p>
-                <div class="plan-price-wrap">
-                    <span class="price-currency">$</span>
-                    <span class="price-number" id="price-pro">79</span>
-                    <span class="price-period" id="period-pro">/mo</span>
-                </div>
-                <a href="/register" class="plan-cta-btn btn-primary-plan">Start Free Trial</a>
-                <div class="plan-features-heading">Everything in Starter, plus:</div>
-                <ul class="plan-feature-items">
-                    <li><i data-lucide="check"></i> <span>Up to 100,000 transactions/mo</span></li>
-                    <li><i data-lucide="check"></i> <span>Unlimited payment gateways</span></li>
-                    <li><i data-lucide="check"></i> <span>Visual rule & heuristics engine</span></li>
-                    <li><i data-lucide="check"></i> <span>Sub-10ms latency SLA</span></li>
-                    <li><i data-lucide="check"></i> <span>Advanced forensics & dispute export</span></li>
-                    <li><i data-lucide="check"></i> <span>24/7 priority support</span></li>
-                </ul>
-            </div>
-
-            <!-- Tier 3: Business / Enterprise -->
-            <div class="pricing-card">
-                <h3 class="plan-name">Business</h3>
-                <p class="plan-desc">For scaling companies running mission-critical, high-volume payment operations.</p>
-                <div class="plan-price-wrap">
-                    <span class="price-currency">$</span>
-                    <span class="price-number" id="price-business">249</span>
-                    <span class="price-period" id="period-business">/mo</span>
-                </div>
-                <button type="button" class="plan-cta-btn btn-outline-plan" onclick="openDemoModal()">Contact Sales</button>
-                <div class="plan-features-heading">Everything in Pro, plus:</div>
-                <ul class="plan-feature-items">
-                    <li><i data-lucide="check"></i> <span>Unlimited monthly volume</span></li>
-                    <li><i data-lucide="check"></i> <span>Custom ML model fine-tuning</span></li>
-                    <li><i data-lucide="check"></i> <span>Dedicated VPC / on-premise option</span></li>
-                    <li><i data-lucide="check"></i> <span>Team collaboration & RBAC roles</span></li>
-                    <li><i data-lucide="check"></i> <span>Dedicated fraud onboarding specialist</span></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- ==============================================================================
      07 COMMON QUESTIONS / FAQ (Omrix Section 7 with Accordion)
@@ -1026,8 +933,8 @@
 <!-- Floating Back to Top Button with Dynamic Circular Scroll Progress Ring -->
 <button type="button" class="back-to-top-btn" id="back-to-top" aria-label="Back to top" title="Scroll back to top">
     <svg class="progress-ring" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">
-        <circle class="progress-ring-bg" cx="24" cy="24" r="20"></circle>
-        <circle class="progress-ring-fill" id="back-to-top-ring" cx="24" cy="24" r="20"></circle>
+        <circle class="progress-ring-bg" cx="24" cy="24" r="20" fill="none"></circle>
+        <circle class="progress-ring-fill" id="back-to-top-ring" cx="24" cy="24" r="20" fill="none"></circle>
     </svg>
     <i data-lucide="arrow-up" style="width: 18px; height: 18px;"></i>
 </button>
@@ -1084,7 +991,7 @@
 <!-- ==============================================================================
      12 HIGH QUALITY FOOTER (Omrix Style)
      ============================================================================== -->
-<footer class="omrix-footer" role="contentinfo">
+<footer class="omrix-footer" id="contact" role="contentinfo">
     <div class="omrix-container">
         <div class="footer-top-grid">
             <!-- Brand Column -->
@@ -1098,10 +1005,6 @@
                 <p class="footer-brand-desc">
                     The real-time financial intelligence and fraud prevention platform built for modern commerce. Sub-10ms scoring, zero false positives.
                 </p>
-                <div class="footer-status-pill">
-                    <span class="status-pulse-dot"></span>
-                    <span>All Systems Operational • Latency: 3.8ms</span>
-                </div>
             </div>
 
             <!-- Col 1: Platform -->
@@ -1112,7 +1015,6 @@
                     <li class="footer-link-item"><a href="#how-it-works">How It Works</a></li>
                     <li class="footer-link-item"><a href="#features">AI Scoring Engine</a></li>
                     <li class="footer-link-item"><a href="#features">Visual Rule Builder</a></li>
-                    <li class="footer-link-item"><a href="#pricing">Pricing Plans</a></li>
                 </ul>
             </div>
 
@@ -1127,14 +1029,14 @@
                 </ul>
             </div>
 
-            <!-- Col 3: Company -->
+            <!-- Col 3: Contact & Company -->
             <div>
-                <h4 class="footer-col-title">Company</h4>
+                <h4 class="footer-col-title">Contact & Company</h4>
                 <ul class="footer-links-list">
+                    <li class="footer-link-item"><a href="mailto:support@fraudshield.com">support@fraudshield.com</a></li>
+                    <li class="footer-link-item"><a href="mailto:security@fraudshield.com">security@fraudshield.com</a></li>
                     <li class="footer-link-item"><a href="/about">About Sentinel</a></li>
-                    <li class="footer-link-item"><a href="/contact">Contact Support</a></li>
-                    <li class="footer-link-item"><a href="#testimonials">Customer Stories</a></li>
-                    <li class="footer-link-item"><a href="https://github.com" target="_blank" rel="noopener">GitHub Repository</a></li>
+                    <li class="footer-link-item"><a href="https://github.com/Dineshkavitha2005/Credit-Card-Fraud-Detection" target="_blank" rel="noopener">GitHub Repository</a></li>
                 </ul>
             </div>
 
@@ -1153,20 +1055,6 @@
         <div class="footer-bottom-bar">
             <div>
                 &copy; 2026 Sentinel Financial Surveillance Inc. All rights reserved.
-            </div>
-            <div class="footer-social-links">
-                <a href="https://github.com" target="_blank" rel="noopener" class="footer-social-icon" aria-label="GitHub">
-                    <i data-lucide="github"></i>
-                </a>
-                <a href="https://x.com" target="_blank" rel="noopener" class="footer-social-icon" aria-label="X / Twitter">
-                    <i data-lucide="twitter"></i>
-                </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener" class="footer-social-icon" aria-label="LinkedIn">
-                    <i data-lucide="linkedin"></i>
-                </a>
-                <a href="https://discord.com" target="_blank" rel="noopener" class="footer-social-icon" aria-label="Discord">
-                    <i data-lucide="message-square"></i>
-                </a>
             </div>
         </div>
     </div>
@@ -1272,37 +1160,6 @@ function simulateScenario(key) {
   }
 }
 
-// 2. Billing Cycle Toggle (Monthly vs Yearly - 20% off)
-function setBillingCycle(cycle) {
-  const btnMonthly = document.getElementById('btn-monthly');
-  const btnYearly = document.getElementById('btn-yearly');
-  const starterPrice = document.getElementById('price-starter');
-  const starterPeriod = document.getElementById('period-starter');
-  const proPrice = document.getElementById('price-pro');
-  const proPeriod = document.getElementById('period-pro');
-  const bizPrice = document.getElementById('price-business');
-  const bizPeriod = document.getElementById('period-business');
-
-  if (cycle === 'yearly') {
-    btnMonthly.classList.remove('active');
-    btnYearly.classList.add('active');
-    starterPrice.textContent = '15';
-    starterPeriod.textContent = '/mo (billed annually)';
-    proPrice.textContent = '63';
-    proPeriod.textContent = '/mo (billed annually)';
-    bizPrice.textContent = '199';
-    bizPeriod.textContent = '/mo (billed annually)';
-  } else {
-    btnYearly.classList.remove('active');
-    btnMonthly.classList.add('active');
-    starterPrice.textContent = '19';
-    starterPeriod.textContent = '/mo';
-    proPrice.textContent = '79';
-    proPeriod.textContent = '/mo';
-    bizPrice.textContent = '249';
-    bizPeriod.textContent = '/mo';
-  }
-}
 
 // 3. Interactive Accordion (FAQ)
 function toggleFaq(btn) {

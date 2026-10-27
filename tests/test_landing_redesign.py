@@ -98,20 +98,23 @@ class TestLandingPageRedesign:
         assert 'Sophie Bennett' in html
         assert 'Ethan Walker' in html
 
-    def test_pricing_plans_and_toggle(self, client):
-        """Verify pricing cards and interactive monthly/yearly billing toggle."""
+    def test_pricing_and_version_badge_removed(self, client):
+        """Verify version display badge and pricing details are removed from the landing page."""
         res = client.get('/', follow_redirects=False)
         assert res.status_code == 200
         html = res.data.decode('utf-8')
 
-        assert 'Start free. Scale without limits.' in html
-        assert 'btn-monthly' in html
-        assert 'btn-yearly' in html
-        assert '20% off' in html
-        assert 'Starter' in html
-        assert 'Pro' in html
-        assert 'Business' in html
-        assert 'MOST POPULAR' in html
+        # Version display removed
+        assert 'brand-status-tag' not in html
+        assert 'v2.4' not in html
+
+        # Pricing section removed
+        assert 'Start free. Scale without limits.' not in html
+        assert 'SIMPLE PRICING' not in html
+        assert 'pricing-section' not in html
+        assert 'btn-monthly' not in html
+        assert 'btn-yearly' not in html
+        assert 'href="#pricing"' not in html
 
     def test_faq_accordion_items(self, client):
         """Verify FAQ section and expandable accordion questions."""

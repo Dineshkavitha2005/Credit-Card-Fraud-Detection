@@ -104,7 +104,7 @@
                 <a href="/security" class="nav-link {% if request.path == '/security' %}active{% endif %}">Security</a>
                 <a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a>
                 <a href="/faq" class="nav-link {% if request.path == '/faq' %}active{% endif %}">FAQ</a>
-                <a href="/contact" class="nav-link {% if request.path == '/contact' %}active{% endif %}">Contact</a>
+                <a href="/#contact" class="nav-link">Contact</a>
             </nav>
 
             <div class="auth-actions">
@@ -132,11 +132,11 @@
     </main>
 
     <!-- Public Footer (Strict 3-Color: Deep Navy Background, White Text, Blue Accents) -->
-    <footer class="public-footer">
+    <footer class="public-footer" id="contact">
         <div class="footer-container">
             <div class="footer-brand">
-                <a href="/" class="brand-link" style="color: #FFFFFF;">
-                    <div class="brand-logo-icon" style="background-color: #2563EB; border-color: #2563EB;">
+                <a href="/" class="brand-link">
+                    <div class="brand-logo-icon">
                         <i data-lucide="shield-check"></i>
                     </div>
                     <span>Sentinel</span>
@@ -159,7 +159,7 @@
                 <h4>Company & Trust</h4>
                 <ul>
                     <li><a href="/about">About Sentinel</a></li>
-                    <li><a href="/contact">Security Contacts</a></li>
+                    <li><a href="mailto:support@fraudshield.com">Contact Support</a></li>
                     <li><a href="/faq">Technical FAQ</a></li>
                     <li><a href="/health">System Health</a></li>
                 </ul>
@@ -188,10 +188,19 @@
     </button>
 
     <script>
-        if (window.Sentinel && window.Sentinel.initTheme) {
-            window.Sentinel.initTheme();
+        function initPublicPage() {
+            if (window.Sentinel && window.Sentinel.initTheme) {
+                window.Sentinel.initTheme();
+            }
+            if (window.lucide) {
+                lucide.createIcons();
+            }
         }
-        lucide.createIcons();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPublicPage);
+        } else {
+            initPublicPage();
+        }
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>
