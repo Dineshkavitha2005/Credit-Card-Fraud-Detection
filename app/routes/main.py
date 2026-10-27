@@ -1,10 +1,39 @@
-from flask import Blueprint, render_template, redirect, url_for, jsonify, current_app, Response, request
+from flask import Blueprint, render_template, redirect, url_for, jsonify, current_app, Response, request, send_from_directory
 from flask_login import login_required, current_user
 from datetime import datetime
+import os
 from app.extensions import db
 from app.models.user import User
 
 main_bp = Blueprint('main', __name__)
+
+# Centralized list of public canonical routes for SEO indexing & sitemaps
+PUBLIC_ROUTES = [
+    {'path': '/', 'priority': '1.0', 'changefreq': 'daily'},
+    {'path': '/features', 'priority': '0.9', 'changefreq': 'weekly'},
+    {'path': '/how-it-works', 'priority': '0.9', 'changefreq': 'weekly'},
+    {'path': '/fraud-detection', 'priority': '0.8', 'changefreq': 'weekly'},
+    {'path': '/security', 'priority': '0.8', 'changefreq': 'monthly'},
+    {'path': '/about', 'priority': '0.7', 'changefreq': 'monthly'},
+    {'path': '/contact', 'priority': '0.7', 'changefreq': 'monthly'},
+    {'path': '/faq', 'priority': '0.8', 'changefreq': 'weekly'},
+    {'path': '/privacy', 'priority': '0.6', 'changefreq': 'monthly'},
+    {'path': '/terms', 'priority': '0.6', 'changefreq': 'monthly'},
+]
+
+
+def get_canonical_domain():
+    """Resolve the production canonical domain without leaking placeholder domains."""
+    cfg_domain = (current_app.config.get('CANONICAL_DOMAIN') or '').strip().rstrip('/')
+    if cfg_domain and 'your-domain.com' not in cfg_domain and 'localhost' not in cfg_domain:
+        return cfg_domain
+    
+    # In request context, determine canonical HTTPS domain from request headers or host
+    if request and request.host:
+        return f"https://{request.host}".rstrip('/')
+    
+    return 'https://sentinel.internal'
+
 
 @main_bp.route('/')
 def index():
@@ -60,6 +89,42 @@ def faq_page():
     return render_template('seo_faq.html')
 
 
+@main_bp.route('/privacy')
+def privacy_page():
+    """Render public Privacy Policy page based on actual Sentinel implementation."""
+    return render_template('privacy.html')
+
+
+@main_bp.route('/terms')
+def terms_page():
+    """Render public Terms of Service page based on actual Sentinel service parameters."""
+    return render_template('terms.html')
+
+
+# ==============================================================================
+# Static Icons & Manifest Endpoints
+# ==============================================================================
+
+@main_bp.route('/favicon.ico')
+def favicon():
+    """Serve favicon for browser default requests."""
+    return send_from_directory(
+        os.path.join(current_app.static_folder, 'img'),
+        'favicon-32x32.png',
+        mimetype='image/png'
+    )
+
+
+@main_bp.route('/site.webmanifest')
+def site_webmanifest():
+    """Serve site.webmanifest for PWA and mobile bookmark metadata."""
+    return send_from_directory(
+        current_app.static_folder,
+        'site.webmanifest',
+        mimetype='application/manifest+json'
+    )
+
+
 # ==============================================================================
 # Search Engine Indexing Directives (robots.txt & sitemap.xml)
 # ==============================================================================
@@ -67,16 +132,11 @@ def faq_page():
 @main_bp.route('/robots.txt')
 def robots_txt():
     """Serve robots.txt directive for search engine crawlers."""
-    canonical_domain = current_app.config.get('CANONICAL_DOMAIN', 'https://your-domain.com').rstrip('/')
+    domain = get_canonical_domain()
+    
+    allow_lines = "\n".join([f"Allow: {route['path']}" for route in PUBLIC_ROUTES])
     content = f"""User-agent: *
-Allow: /
-Allow: /features
-Allow: /how-it-works
-Allow: /fraud-detection
-Allow: /security
-Allow: /about
-Allow: /contact
-Allow: /faq
+{allow_lines}
 Allow: /static/
 
 # Disallow private application routes and authenticated dashboards
@@ -87,42 +147,33 @@ Disallow: /alerts
 Disallow: /cards
 Disallow: /reports
 Disallow: /settings
+Disallow: /admin
 Disallow: /admin/
 Disallow: /api/
 Disallow: /auth/
 
-Sitemap: {canonical_domain}/sitemap.xml
+Sitemap: {domain}/sitemap.xml
 """
     return Response(content, mimetype='text/plain')
 
 
 @main_bp.route('/sitemap.xml')
 def sitemap_xml():
-    """Generate XML sitemap listing canonical public pages."""
-    canonical_domain = current_app.config.get('CANONICAL_DOMAIN', 'https://your-domain.com').rstrip('/')
+    """Generate XML sitemap listing canonical public pages from centralized route registry."""
+    domain = get_canonical_domain()
     today = datetime.utcnow().strftime('%Y-%m-%d')
-    
-    pages = [
-        {'loc': f"{canonical_domain}/", 'priority': '1.0', 'changefreq': 'daily'},
-        {'loc': f"{canonical_domain}/features", 'priority': '0.9', 'changefreq': 'weekly'},
-        {'loc': f"{canonical_domain}/how-it-works", 'priority': '0.9', 'changefreq': 'weekly'},
-        {'loc': f"{canonical_domain}/fraud-detection", 'priority': '0.8', 'changefreq': 'weekly'},
-        {'loc': f"{canonical_domain}/security", 'priority': '0.8', 'changefreq': 'monthly'},
-        {'loc': f"{canonical_domain}/about", 'priority': '0.7', 'changefreq': 'monthly'},
-        {'loc': f"{canonical_domain}/contact", 'priority': '0.7', 'changefreq': 'monthly'},
-        {'loc': f"{canonical_domain}/faq", 'priority': '0.8', 'changefreq': 'weekly'},
-    ]
     
     xml_lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     ]
-    for page in pages:
+    for route in PUBLIC_ROUTES:
+        loc = f"{domain}{route['path']}" if route['path'] != '/' else f"{domain}/"
         xml_lines.append('  <url>')
-        xml_lines.append(f'    <loc>{page["loc"]}</loc>')
+        xml_lines.append(f'    <loc>{loc}</loc>')
         xml_lines.append(f'    <lastmod>{today}</lastmod>')
-        xml_lines.append(f'    <changefreq>{page["changefreq"]}</changefreq>')
-        xml_lines.append(f'    <priority>{page["priority"]}</priority>')
+        xml_lines.append(f'    <changefreq>{route["changefreq"]}</changefreq>')
+        xml_lines.append(f'    <priority>{route["priority"]}</priority>')
         xml_lines.append('  </url>')
     xml_lines.append('</urlset>')
     

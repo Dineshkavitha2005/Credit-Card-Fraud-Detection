@@ -42,6 +42,8 @@ class TestSEOAndProductionArchitecture:
             ('/about', 'About'),
             ('/contact', 'Contact'),
             ('/faq', 'FAQ'),
+            ('/privacy', 'Privacy'),
+            ('/terms', 'Terms'),
         ]
 
         seen_titles = set()
@@ -94,6 +96,8 @@ class TestSEOAndProductionArchitecture:
         assert 'Allow: /about' in content
         assert 'Allow: /contact' in content
         assert 'Allow: /faq' in content
+        assert 'Allow: /privacy' in content
+        assert 'Allow: /terms' in content
 
         # Check that private endpoints are disallowed
         assert 'Disallow: /dashboard' in content
@@ -103,6 +107,7 @@ class TestSEOAndProductionArchitecture:
         assert 'Disallow: /cards' in content
         assert 'Disallow: /reports' in content
         assert 'Disallow: /settings' in content
+        assert 'Disallow: /admin' in content
         assert 'Disallow: /admin/' in content
         assert 'Disallow: /api/' in content
         assert 'Disallow: /auth/' in content
@@ -110,6 +115,7 @@ class TestSEOAndProductionArchitecture:
         # Check sitemap directive
         assert 'Sitemap: https://' in content
         assert '/sitemap.xml' in content
+        assert 'your-domain.com' not in content
 
     def test_sitemap_xml_validity_and_urls(self, client):
         """Verify /sitemap.xml generates valid XML containing only canonical public URLs."""
@@ -123,15 +129,16 @@ class TestSEOAndProductionArchitecture:
         # Namespace for standard sitemap
         ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
         urls = root.findall('sm:url', ns)
-        assert len(urls) == 8, f"Expected 8 canonical URLs in sitemap, got {len(urls)}"
+        assert len(urls) == 10, f"Expected 10 canonical URLs in sitemap, got {len(urls)}"
 
         locs = [url.find('sm:loc', ns).text for url in urls]
         # Check canonical HTTPS prefix
         for loc in locs:
             assert loc.startswith('https://'), f"Sitemap URL not HTTPS: {loc}"
+            assert 'your-domain.com' not in loc, f"Placeholder domain in sitemap URL: {loc}"
             assert not any(p in loc for p in ['/dashboard', '/admin', '/transactions', '/api']), f"Private route leaked in sitemap: {loc}"
 
-        expected_paths = ['/', '/features', '/how-it-works', '/fraud-detection', '/security', '/about', '/contact', '/faq']
+        expected_paths = ['/', '/features', '/how-it-works', '/fraud-detection', '/security', '/about', '/contact', '/faq', '/privacy', '/terms']
         for path in expected_paths:
             assert any(loc.endswith(path) for loc in locs), f"Missing path in sitemap: {path}"
 
@@ -156,7 +163,7 @@ class TestSEOAndProductionArchitecture:
 
     def test_public_pages_do_not_have_noindex(self, client):
         """Verify public marketing and SEO pages are NOT flagged with noindex."""
-        public_paths = ['/', '/features', '/how-it-works', '/fraud-detection', '/security', '/about', '/contact', '/faq']
+        public_paths = ['/', '/features', '/how-it-works', '/fraud-detection', '/security', '/about', '/contact', '/faq', '/privacy', '/terms']
         for path in public_paths:
             res = client.get(path)
             assert res.status_code == 200
@@ -199,3 +206,59 @@ class TestSEOAndProductionArchitecture:
         # When request is secure, Strict-Transport-Security header must be present
         assert 'Strict-Transport-Security' in res.headers
         assert 'max-age=31536000' in res.headers['Strict-Transport-Security']
+
+    def test_custom_404_page_status_and_content(self, client):
+        """Verify requesting unknown paths yields custom 404 template for web and JSON for API."""
+        # Web HTML request
+        res = client.get('/this-path-definitely-does-not-exist-404')
+        assert res.status_code == 404
+        html = res.data.decode('utf-8')
+        assert '404' in html
+        assert 'Return to Sentinel' in html or 'Sentinel' in html
+        assert 'Traceback (most recent call last)' not in html
+
+        # API / JSON request
+        api_res = client.get('/api/v1/non-existent-resource-endpoint', headers={'Accept': 'application/json'})
+        assert api_res.status_code == 404
+        assert 'application/json' in api_res.content_type
+        api_data = json.loads(api_res.data.decode('utf-8'))
+        assert api_data.get('success') is False or 'error' in api_data
+
+    def test_favicon_and_manifest_endpoints(self, client):
+        """Verify favicon set and site.webmanifest are accessible with proper content types."""
+        # /favicon.ico
+        fav_res = client.get('/favicon.ico')
+        assert fav_res.status_code == 200
+
+        # /site.webmanifest
+        manifest_res = client.get('/site.webmanifest')
+        assert manifest_res.status_code == 200
+        manifest_data = json.loads(manifest_res.data.decode('utf-8'))
+        assert 'Sentinel' in manifest_data.get('name', '')
+        assert len(manifest_data.get('icons', [])) >= 2
+        assert manifest_data.get('display') == 'standalone'
+
+        # Static assets
+        svg_res = client.get('/static/img/favicon.svg')
+        assert svg_res.status_code == 200
+        assert 'image/svg+xml' in svg_res.content_type
+
+        png_res = client.get('/static/img/favicon-32x32.png')
+        assert png_res.status_code == 200
+        assert 'image/png' in png_res.content_type
+
+        apple_res = client.get('/static/img/apple-touch-icon.png')
+        assert apple_res.status_code == 200
+        assert 'image/png' in apple_res.content_type
+
+    def test_landing_page_responsive_assets_and_accessibility(self, client):
+        """Verify landing page includes responsive picture element with WebP/PNG fallbacks and alt attributes."""
+        res = client.get('/')
+        assert res.status_code == 200
+        html = res.data.decode('utf-8')
+        assert 'dashboard-preview.webp' in html
+        assert 'dashboard-preview.png' in html
+        assert 'alt="Sentinel transaction risk dashboard' in html
+        assert 'id="mobileNavToggle"' in html
+        assert 'id="mobileNavDrawer"' in html
+

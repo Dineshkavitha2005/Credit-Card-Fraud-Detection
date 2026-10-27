@@ -223,6 +223,26 @@ class TestDatabaseIntegration(unittest.TestCase):
 
     def test_alerts_and_suspicious_activity(self):
         """Verify Alert and SuspiciousActivity persistence."""
+        user = User(username="alert_user", email="alert_user@example.com")
+        user.set_password("Pass123!")
+        db.session.add(user)
+        db.session.commit()
+
+        transaction = Transaction(
+            user_id=user.id,
+            transaction_id="TXN-ALERT-001",
+            card_number="**** **** **** 1234",
+            card_holder="Alert Test Holder",
+            amount=6000.00,
+            merchant="High Risk Merchant",
+            category="Electronics",
+            is_fraud=True,
+            fraud_score=95.0,
+            status="declined"
+        )
+        db.session.add(transaction)
+        db.session.flush()
+
         alert = Alert(
             transaction_id="TXN-ALERT-001",
             alert_type="High Amount Threshold",

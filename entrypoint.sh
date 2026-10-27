@@ -34,6 +34,15 @@ if flask_env == 'production':
 if 'postgresql' in db_url.lower() or 'postgres' in db_url.lower():
     if db_url.startswith('postgres://'):
         db_url = 'postgresql://' + db_url[len('postgres://'):]
+    if db_url.startswith('postgresql://'):
+        try:
+            import psycopg
+        except ImportError:
+            try:
+                import psycopg2
+                db_url = 'postgresql+psycopg2://' + db_url[len('postgresql://'):]
+            except ImportError:
+                pass
     print('⏳ Waiting for PostgreSQL database readiness...')
     timeout = 60
     start = time.time()

@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In &mdash; Sentinel Security</title>
+    <!-- Early Theme Initialization to Prevent FOUC -->
+    <script>
+        (function() {
+            try {
+                var pref = localStorage.getItem('sentinel_theme') || 'system';
+                var resolved = (pref === 'system')
+                    ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : pref;
+                if (resolved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+                document.documentElement.setAttribute('data-theme-preference', pref);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -39,12 +56,13 @@
             width: 44px;
             height: 44px;
             background: var(--text-primary);
-            color: #FFFFFF;
+            color: var(--text-inverted);
             border-radius: var(--radius-md);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 14px;
+            transition: background 0.2s ease, color 0.2s ease;
         }
 
         .auth-brand-title {
@@ -76,19 +94,6 @@
             margin-top: 24px;
         }
 
-        .demo-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: var(--bg-surface-secondary);
-            border: 1px solid var(--border-subtle);
-            border-radius: 20px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 10px;
-        }
-
         .btn-google {
             display: flex;
             align-items: center;
@@ -96,7 +101,7 @@
             gap: 10px;
             width: 100%;
             background-color: var(--bg-surface-secondary, #1e293b);
-            color: #000000;
+            color: var(--text-primary);
             border: 1px solid var(--border-color, #334155);
             border-radius: var(--radius-md, 6px);
             padding: 10px 16px;
@@ -114,7 +119,7 @@
         .btn-google:active {
             background-color: var(--bg-surface-hover, #334155);
             border-color: var(--border-color-hover, #475569);
-            color: #000000;
+            color: var(--text-primary);
             box-shadow: var(--shadow-sm);
         }
 
@@ -189,28 +194,30 @@
                 <span>or</span>
             </div>
 
-            <form method="POST" action="/login" id="loginForm" onsubmit="handleLoginSubmit(event)">
+            <form method="POST" action="/login" id="loginForm" novalidate onsubmit="return handleLoginSubmit(event)">
                 <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
+                    <label class="form-label" for="username">Username <span style="color:var(--danger);" aria-hidden="true">*</span></label>
                     <div style="position:relative;">
-                        <input type="text" name="username" id="username" class="form-control" placeholder="Enter your username" required autofocus autocomplete="username" style="padding-left:32px;">
-                        <i data-lucide="user" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:14px;height:14px;"></i>
+                        <input type="text" name="username" id="username" class="form-control" placeholder="Enter your username" required autofocus autocomplete="username" style="padding-left:32px;" oninput="clearFieldError('username')">
+                        <i data-lucide="user" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:14px;height:14px;" aria-hidden="true"></i>
                     </div>
+                    <div class="form-field-error" id="username-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;display:none;align-items:center;gap:4px;"></div>
                 </div>
 
                 <div class="form-group" style="margin-bottom:20px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                        <label class="form-label" for="password" style="margin-bottom:0;">Password</label>
+                        <label class="form-label" for="password" style="margin-bottom:0;">Password <span style="color:var(--danger);" aria-hidden="true">*</span></label>
                         <a href="{{ url_for('forgot_password') }}" style="font-size:11px;color:var(--accent);text-decoration:none;font-weight:500;">Forgot password?</a>
                     </div>
                     <div style="position:relative;">
-                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password" style="padding-left:32px;">
-                        <i data-lucide="lock" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:14px;height:14px;"></i>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password" style="padding-left:32px;" oninput="clearFieldError('password')">
+                        <i data-lucide="lock" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);width:14px;height:14px;" aria-hidden="true"></i>
                     </div>
+                    <div class="form-field-error" id="password-error" role="alert" style="display:none;color:var(--danger);font-size:11px;margin-top:4px;display:none;align-items:center;gap:4px;"></div>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="loginSubmitBtn" style="width:100%;">
-                    <i data-lucide="log-in" style="width:14px;height:14px;"></i>
+                    <i data-lucide="log-in" style="width:14px;height:14px;" aria-hidden="true"></i>
                     <span>Sign In</span>
                 </button>
 
@@ -223,10 +230,6 @@
 
         <div class="auth-footer-text">
             <div>Sentinel Security Console &bull; Multi-Factor Ready</div>
-            <div class="demo-pill">
-                <i data-lucide="key" style="width:11px;height:11px;color:var(--accent);"></i>
-                <span>Demo access: <strong>admin</strong> / <strong>admin123</strong></span>
-            </div>
         </div>
     </div>
 
@@ -237,12 +240,60 @@
             Sentinel.initIcons();
         });
 
+        function showFieldError(fieldId, msg) {
+            const input = document.getElementById(fieldId);
+            const err = document.getElementById(fieldId + '-error');
+            if (!input || !err) return;
+            input.setAttribute('aria-invalid', 'true');
+            input.setAttribute('aria-describedby', fieldId + '-error');
+            input.style.borderColor = 'var(--danger)';
+            err.innerHTML = `<i data-lucide="alert-circle" style="width:12px;height:12px;flex-shrink:0;"></i><span>${msg}</span>`;
+            err.style.display = 'flex';
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function clearFieldError(fieldId) {
+            const input = document.getElementById(fieldId);
+            const err = document.getElementById(fieldId + '-error');
+            if (!input || !err) return;
+            input.removeAttribute('aria-invalid');
+            input.removeAttribute('aria-describedby');
+            input.style.borderColor = '';
+            err.innerHTML = '';
+            err.style.display = 'none';
+        }
+
         function handleLoginSubmit(e) {
+            let hasError = false;
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value;
+
+            clearFieldError('username');
+            clearFieldError('password');
+
+            if (!u) {
+                showFieldError('username', 'Username is required.');
+                document.getElementById('username').focus();
+                hasError = true;
+            }
+
+            if (!p) {
+                showFieldError('password', 'Password is required.');
+                if (!hasError) document.getElementById('password').focus();
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                return false;
+            }
+
             const btn = document.getElementById('loginSubmitBtn');
             if (btn) {
                 btn.disabled = true;
                 btn.innerHTML = `<span class="btn-spinner"></span> Authenticating...`;
             }
+            return true;
         }
     </script>
 </body>

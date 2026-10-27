@@ -1,0 +1,107 @@
+{% extends "public_base.html" %}
+
+{% block title %}Privacy Policy — Sentinel Financial Surveillance{% endblock %}
+{% block meta_description %}Review Sentinel's privacy and data protection policies: AES-128 PAN encryption, tokenized card vault, audit logging, and machine learning telemetry safeguards.{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="content-section">
+        <div class="badge-tag">
+            <i data-lucide="shield-check" aria-hidden="true"></i>
+            <span>Data Protection & Privacy</span>
+        </div>
+        <h1>Privacy Policy</h1>
+        <p class="lead">
+            This Privacy Policy outlines how the Sentinel Financial Surveillance platform collects, secures, processes, and retains account, transaction, and operational telemetry data.
+        </p>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem;">
+            <strong>Last Updated:</strong> September 19, 2026 &bull; <strong>Version:</strong> 2.1.0-prod
+        </p>
+
+        <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 2.5rem;">
+            <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                <i data-lucide="info" style="width: 20px; height: 20px; color: var(--accent-indigo); flex-shrink: 0; margin-top: 2px;" aria-hidden="true"></i>
+                <div style="font-size: 0.925rem; color: var(--text-primary); line-height: 1.6;">
+                    <strong>Technical Implementation Notice:</strong> This privacy statement reflects the exact data structures, cryptographic mechanisms, and operational logs implemented in the Sentinel codebase. It must be reviewed and customized by the deployment owner's legal and compliance team prior to public operational launch.
+                </div>
+            </div>
+        </div>
+
+        <h2>1. Information We Collect</h2>
+        <p>Sentinel is architected around principles of data minimization and financial data segregation. We collect only the information necessary to provide real-time transaction surveillance and user authentication:</p>
+        
+        <h3>1.1 Account & Identity Data</h3>
+        <ul>
+            <li><strong>User Credentials:</strong> Username, email address, and cryptographically salted password hashes using industry-standard bcrypt. Plaintext passwords are never stored or logged.</li>
+            <li><strong>Profile Information:</strong> Full name, optional telephone number, and administrative role (e.g., Viewer, Analyst, Admin) governing role-based access control (RBAC).</li>
+            <li><strong>Google OAuth Identity:</strong> When authenticating via Google Sign-In, Sentinel receives your OpenID Connect subject identifier (`sub`), verified email, and name. Sentinel does not access or store Google passwords or personal files.</li>
+        </ul>
+
+        <h3>1.2 Payment & Transaction Telemetry</h3>
+        <ul>
+            <li><strong>Zero Plaintext Card Storage:</strong> Sentinel does not store raw 16-digit Primary Account Numbers (PAN) in plaintext. All card numbers are immediately masked (`**** **** **** 1234`) for analyst displays and encrypted in rest storage using AES-128-CBC Fernet symmetric encryption keys.</li>
+            <li><strong>Transaction Telemetry:</strong> Ingested payment streams include transaction amount, transaction timestamp, derived PCA numerical feature vectors ($V_1$ through $V_{28}$), and resolution markers.</li>
+            <li><strong>Network & Client Context:</strong> Ingested payloads capture client IP address and user-agent string to power velocity heuristics and detect geographical anomalies.</li>
+        </ul>
+
+        <h3>1.3 Cookies & Client Storage</h3>
+        <ul>
+            <li><strong>Session Cookies:</strong> An encrypted, HTTP-only, SameSite=Lax session cookie (`session`) is issued upon login to maintain state. In production environments, cookies require the `Secure` attribute.</li>
+            <li><strong>Local Storage:</strong> Sentinel utilizes `localStorage` exclusively to persist UI preferences, specifically the `sentinel_theme` key (Light/Dark/System). No personal data or credentials are held in local storage.</li>
+        </ul>
+
+        <h3>1.4 Security Audit Logs</h3>
+        <ul>
+            <li>To satisfy security auditing requirements, Sentinel maintains an immutable database record (`audit_logs`) documenting authentication attempts, password modifications, card block/unblock decisions, and administrative role updates along with timestamps and origin IP addresses.</li>
+        </ul>
+
+        <h2>2. How We Use Collected Information</h2>
+        <p>Information processed by Sentinel is utilized solely for:</p>
+        <ul>
+            <li><strong>Real-Time Fraud Scoring:</strong> Projecting transaction parameters through trained machine learning inference models and dynamic heuristic rules to generate fraud probability scores within sub-10ms latency.</li>
+            <li><strong>Automated Anomaly Defense:</strong> Triggering instant alerts and intervention recommendations for high-risk transactions exceeding calibrated risk thresholds.</li>
+            <li><strong>Access Control & Authentication:</strong> Verifying analyst identity, enforcing multi-factor and PKCE OAuth standards, and isolating system administrative capabilities.</li>
+            <li><strong>Audit & Compliance Reporting:</strong> Generating structured CSV and PDF forensic reports for internal compliance officers and payment settlement audits.</li>
+        </ul>
+
+        <h2>3. Third-Party Services & Data Sharing</h2>
+        <p>
+            Sentinel does not sell, rent, monetize, or disclose transaction or user information to third-party ad networks or data brokers. Third-party integrations are limited to:
+        </p>
+        <ul>
+            <li><strong>Google Identity Services:</strong> Used strictly for optional federated OAuth 2.0 authentication when configured by the system administrator.</li>
+            <li><strong>Enterprise Infrastructure:</strong> Database persistence (PostgreSQL/SQLite) and reverse proxy layers (Nginx/Docker) managed directly by the platform deployment owner.</li>
+        </ul>
+
+        <h2>4. Data Retention & Erasure</h2>
+        <p>
+            User accounts and audit logs persist for the duration of the operational engagement. Transaction records and alerts can be exported, archived, or purged by authorized platform administrators in compliance with internal corporate data retention schedules.
+        </p>
+
+        <h2>5. Technical Security Controls</h2>
+        <p>
+            Sentinel implements multi-layered security controls to protect financial intelligence data:
+        </p>
+        <ul>
+            <li><strong>Cryptographic Vault:</strong> AES-128-CBC Fernet encryption for card tokens and salted bcrypt hashing for passwords.</li>
+            <li><strong>Defense-in-Depth Headers:</strong> Strict Transport Security (HSTS), X-Content-Type-Options: nosniff, X-Frame-Options: SAMEORIGIN, and strict private-route `noindex` crawler directives.</li>
+            <li><strong>Network Safeguards:</strong> ProxyFix validation for reverse-proxy architectures, CSRF prevention, and automated rate limiting on sensitive authentication endpoints.</li>
+        </ul>
+
+        <h2>6. Privacy Contacts & Data Requests</h2>
+        <p>
+            For privacy inquiries, audit requests, or data erasure demands regarding this Sentinel installation, please contact the designated platform administrator or data protection officer:
+        </p>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin: 1.5rem 0; font-family: var(--font-mono); font-size: 0.925rem;">
+            <div><strong>Contact:</strong> [Data Protection Officer / Privacy Contact Configured by Owner]</div>
+            <div style="margin-top: 0.5rem;"><strong>Email:</strong> privacy@[your-domain.com] (Configure via environment)</div>
+            <div style="margin-top: 0.5rem;"><strong>Security Desk:</strong> security@[your-domain.com]</div>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/" class="btn-primary">Return to Sentinel</a>
+            <a href="/terms" class="btn-outline" style="margin-left: 1rem;">View Terms of Service</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
