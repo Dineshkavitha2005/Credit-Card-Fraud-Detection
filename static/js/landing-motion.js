@@ -115,7 +115,7 @@
     const navLinks = document.querySelectorAll('.omrix-nav-item');
     if (!navLinks.length) return;
 
-    const sectionIds = ['hero', 'how-it-works', 'features', 'testimonials', 'faq', 'resources'];
+    const sectionIds = ['hero', 'how-it-works', 'features', 'testimonials', 'faq', 'resources', 'contact'];
     const sections = sectionIds
       .map(id => document.getElementById(id))
       .filter(el => el !== null);
@@ -140,6 +140,11 @@
 
       if (!currentSectionId && sections.length > 0 && scrollPos < sections[0].offsetTop) {
         currentSectionId = sections[0].id;
+      }
+
+      const isAtBottom = (window.innerHeight + (window.pageYOffset || document.documentElement.scrollTop)) >= (document.documentElement.scrollHeight - 60);
+      if (isAtBottom && document.getElementById('contact')) {
+        currentSectionId = 'contact';
       }
 
       navLinks.forEach(link => {
@@ -318,6 +323,31 @@
   }
 
   // =========================================================================
+  // 7. Smooth Anchor Navigation with Proper Offsets
+  // =========================================================================
+  function initSmoothAnchors() {
+    const anchors = document.querySelectorAll('.omrix-nav-item, .mobile-drawer-link, a[href^="#"]');
+    anchors.forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (!href || href === '#' || !href.startsWith('#')) return;
+        const target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            block: 'start'
+          });
+          if (window.history && window.history.pushState) {
+            window.history.pushState(null, '', href);
+          }
+        }
+      });
+    });
+  }
+
+
+  // =========================================================================
   // Initialize on DOM Ready
   // =========================================================================
   function init() {
@@ -327,6 +357,7 @@
     initAuraParallax();
     initScrollReveal();
     initTelemetryEffects();
+    initSmoothAnchors();
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }

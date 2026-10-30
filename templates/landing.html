@@ -42,7 +42,7 @@
     <header class="omrix-navbar" id="main-header" role="banner">
         <a href="/" class="brand-link" aria-label="Sentinel Financial Security Home">
             <div class="brand-badge-icon">
-                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
             </div>
             <span class="brand-title">Sentinel</span>
         </a>
@@ -114,7 +114,7 @@
     <div class="mobile-drawer-header">
         <a href="/" class="brand-link">
             <div class="brand-badge-icon">
-                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
             </div>
             <span class="brand-title">Sentinel</span>
         </a>
@@ -328,15 +328,6 @@
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="dashboard-preview-section" aria-label="Sentinel dashboard preview">
-    <div class="omrix-container">
-        <picture>
-            <source srcset="{{ url_for('static', filename='img/dashboard-preview.webp') }}" type="image/webp">
-            <img src="{{ url_for('static', filename='img/dashboard-preview.png') }}" alt="Sentinel transaction risk dashboard showing fraud alerts, inference metrics, and real-time transaction scores" loading="eager" decoding="async">
-        </picture>
     </div>
 </section>
 
@@ -1086,7 +1077,7 @@
             <div class="footer-brand-col">
                 <a href="/" class="brand-link" style="margin-bottom: 12px;">
                     <div class="brand-badge-icon">
-                        <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                        <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
                     </div>
                     <span class="brand-title">Sentinel</span>
                 </a>

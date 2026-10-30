@@ -161,6 +161,10 @@ class TestLandingPageRedesign:
         assert js_res.status_code == 200
         assert 'window.Sentinel' in js_res.data.decode('utf-8')
 
+        logo_res = client.get('/static/img/sentinel-logo.png')
+        assert logo_res.status_code == 200
+        assert 'image/png' in logo_res.content_type
+
     def test_scrolling_animations_and_interactions(self, client):
         """Verify top reading progress bar, back to top button, and scroll reveal hooks."""
         res = client.get('/', follow_redirects=False)
@@ -201,3 +205,20 @@ class TestLandingPageRedesign:
         assert 'initScrollReveal' in js_text
         assert 'IntersectionObserver' in js_text
 
+
+    def test_contact_anchor_and_footer_rendered(self, client):
+        """Verify footer with contact anchor id and Omrix layout is rendered on landing page."""
+        res = client.get('/', follow_redirects=False)
+        assert res.status_code == 200
+        html = res.data.decode('utf-8')
+
+        # Contact navigation links and destination anchor
+        assert 'href="#contact"' in html
+        assert 'id="contact"' in html
+        assert 'omrix-footer' in html
+        assert 'Contact & Company' in html
+        assert 'support@fraudshield.com' in html
+        assert 'security@fraudshield.com' in html
+
+        # Cookie consent banner
+        assert 'cookie-consent-banner' in html

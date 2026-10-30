@@ -62,14 +62,21 @@
         .auth-brand-logo {
             width: 44px;
             height: 44px;
-            background: var(--text-primary);
-            color: var(--text-inverted);
+            background: #020307;
             border-radius: var(--radius-md);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 12px;
-            transition: background 0.2s ease, color 0.2s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .auth-brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .auth-card {
@@ -150,7 +157,7 @@
     <div class="register-box">
         <div class="auth-brand">
             <div class="auth-brand-logo">
-                <i data-lucide="shield" style="width:22px;height:22px;"></i>
+                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
             </div>
             <h1 style="font-size:20px;font-weight:700;letter-spacing:-0.02em;margin:0 0 4px 0;">Sentinel Security</h1>
             <p style="font-size:13px;color:var(--text-secondary);margin:0;">Register for Cryptographic Access</p>

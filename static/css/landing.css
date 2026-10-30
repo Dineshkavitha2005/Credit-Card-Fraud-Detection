@@ -335,17 +335,25 @@ body {
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: var(--text-primary);
-  color: var(--bg-page);
+  background: #020307;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.brand-badge-icon img,
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 [data-theme="dark"] .brand-badge-icon {
-  background: var(--accent-blue);
-  color: #ffffff;
+  background: #020307;
 }
 
 .brand-link:hover .brand-badge-icon {
@@ -2543,7 +2551,9 @@ html {
   scroll-behavior: smooth;
 }
 
-section[id] {
+section[id],
+footer[id],
+#contact {
   scroll-margin-top: 88px;
 }
 
@@ -3071,12 +3081,21 @@ body.scroll-animated .step-card.is-revealed .step-number-tag {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: var(--accent-blue);
-  color: #ffffff;
+  background: #020307;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px var(--accent-blue-glow);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.public-header .brand-logo-icon img,
+.public-footer .brand-logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .public-header .brand-logo-icon i,
@@ -3537,11 +3556,12 @@ main {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: var(--accent-blue);
-  color: #ffffff;
+  background: #020307;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .public-footer .brand-logo-icon i,

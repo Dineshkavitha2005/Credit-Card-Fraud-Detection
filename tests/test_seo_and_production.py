@@ -252,13 +252,11 @@ class TestSEOAndProductionArchitecture:
         assert 'image/png' in apple_res.content_type
 
     def test_landing_page_responsive_assets_and_accessibility(self, client):
-        """Verify landing page includes responsive picture element with WebP/PNG fallbacks and alt attributes."""
+        """Verify landing page includes accessible navigation controls and semantic structure."""
         res = client.get('/')
         assert res.status_code == 200
         html = res.data.decode('utf-8')
-        assert 'dashboard-preview.webp' in html
-        assert 'dashboard-preview.png' in html
-        assert 'alt="Sentinel transaction risk dashboard' in html
         assert 'id="mobileNavToggle"' in html
         assert 'id="mobileNavDrawer"' in html
+        assert 'omrix-navbar' in html
 

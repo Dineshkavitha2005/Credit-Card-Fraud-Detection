@@ -109,7 +109,7 @@
         <div class="header-container">
             <a href="/" class="brand-link" aria-label="Sentinel Home">
                 <div class="brand-logo-icon" aria-hidden="true">
-                    <i data-lucide="shield-check"></i>
+                    <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
                 </div>
                 <span>Sentinel</span>
             </a>
@@ -229,12 +229,13 @@
     </main>
 
     <!-- Public Footer -->
-    <footer class="public-footer" role="contentinfo">
+    {% block footer %}
+    <footer class="public-footer" id="contact" role="contentinfo">
         <div class="footer-container">
             <div class="footer-brand">
                 <a href="/" class="brand-link" aria-label="Sentinel Home">
                     <div class="brand-logo-icon" aria-hidden="true">
-                        <i data-lucide="shield-check"></i>
+                        <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
                     </div>
                     <span>Sentinel</span>
                 </a>
@@ -279,6 +280,9 @@
             <div>Built for high-assurance financial transaction integrity.</div>
         </div>
     </footer>
+    {% endblock %}
+
+    {% block cookie_consent %}{% endblock %}
 
     <script>
         // Mobile Navigation Drawer Toggle
