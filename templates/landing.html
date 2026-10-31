@@ -1,7 +1,8 @@
 {% extends "public_base.html" %}
 
 {% block title %}Sentinel — Real-Time Credit Card Fraud Detection & Financial Surveillance{% endblock %}
-{% block meta_description %}Enterprise real-time credit card fraud detection system. Real-Time Transaction Surveillance with sub-10ms ensemble ML, eliminating chargebacks and protecting merchant revenue.{% endblock %}
+{% block meta_description %}Enterprise real-time credit card fraud detection system. Real-Time Transaction Surveillance
+with sub-10ms ensemble ML, eliminating chargebacks and protecting merchant revenue.{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -42,7 +43,8 @@
     <header class="omrix-navbar" id="main-header" role="banner">
         <a href="/" class="brand-link" aria-label="Sentinel Financial Security Home">
             <div class="brand-badge-icon">
-                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
+                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo"
+                    class="brand-logo-img">
             </div>
             <span class="brand-title">Sentinel</span>
         </a>
@@ -62,31 +64,41 @@
         <div class="omrix-nav-actions">
             <!-- Theme Selector Control -->
             <div class="theme-selector-wrapper" style="position:relative;">
-                <button class="theme-toggle-btn" onclick="Sentinel.toggleThemeMenu(event)" title="Appearance: System" aria-label="Appearance: System" aria-haspopup="menu" aria-expanded="false">
+                <button class="theme-toggle-btn" onclick="Sentinel.toggleThemeMenu(event)" title="Appearance: System"
+                    aria-label="Appearance: System" aria-haspopup="menu" aria-expanded="false">
                     <i data-lucide="monitor" style="width: 16px; height: 16px;"></i>
                 </button>
-                <div class="theme-dropdown-menu" style="display:none;position:absolute;top:44px;right:0;min-width:150px;background:var(--bg-surface-elevated, var(--bg-card, #ffffff));border:1px solid var(--border-medium, var(--border-color, #e4e5e1));border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:220;padding:6px;" role="menu" aria-label="Appearance options">
-                    <div style="padding:4px 10px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border-subtle, var(--border-color, #e4e5e1));margin-bottom:4px;">
+                <div class="theme-dropdown-menu"
+                    style="display:none;position:absolute;top:44px;right:0;min-width:150px;background:var(--bg-surface-elevated, var(--bg-card, #ffffff));border:1px solid var(--border-medium, var(--border-color, #e4e5e1));border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:220;padding:6px;"
+                    role="menu" aria-label="Appearance options">
+                    <div
+                        style="padding:4px 10px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border-subtle, var(--border-color, #e4e5e1));margin-bottom:4px;">
                         Appearance
                     </div>
-                    <button type="button" class="theme-menu-item" data-theme-choice="system" onclick="Sentinel.setTheme('system')" role="menuitemradio" aria-checked="true">
+                    <button type="button" class="theme-menu-item" data-theme-choice="system"
+                        onclick="Sentinel.setTheme('system')" role="menuitemradio" aria-checked="true">
                         <i data-lucide="monitor" style="width:14px;height:14px;"></i>
                         <span>System</span>
-                        <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;"></i>
+                        <i data-lucide="check" class="theme-check-icon"
+                            style="width:13px;height:13px;margin-left:auto;"></i>
                     </button>
-                    <button type="button" class="theme-menu-item" data-theme-choice="light" onclick="Sentinel.setTheme('light')" role="menuitemradio" aria-checked="false">
+                    <button type="button" class="theme-menu-item" data-theme-choice="light"
+                        onclick="Sentinel.setTheme('light')" role="menuitemradio" aria-checked="false">
                         <i data-lucide="sun" style="width:14px;height:14px;"></i>
                         <span>Light</span>
-                        <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;display:none;"></i>
+                        <i data-lucide="check" class="theme-check-icon"
+                            style="width:13px;height:13px;margin-left:auto;display:none;"></i>
                     </button>
-                    <button type="button" class="theme-menu-item" data-theme-choice="dark" onclick="Sentinel.setTheme('dark')" role="menuitemradio" aria-checked="false">
+                    <button type="button" class="theme-menu-item" data-theme-choice="dark"
+                        onclick="Sentinel.setTheme('dark')" role="menuitemradio" aria-checked="false">
                         <i data-lucide="moon" style="width:14px;height:14px;"></i>
                         <span>Dark</span>
-                        <i data-lucide="check" class="theme-check-icon" style="width:13px;height:13px;margin-left:auto;display:none;"></i>
+                        <i data-lucide="check" class="theme-check-icon"
+                            style="width:13px;height:13px;margin-left:auto;display:none;"></i>
                     </button>
                 </div>
             </div>
-            
+
             {% if current_user.is_authenticated %}
             <a href="/dashboard" class="btn-pill-cta">
                 <i data-lucide="layout-dashboard"></i>
@@ -101,7 +113,8 @@
             {% endif %}
 
             <!-- Mobile Hamburger Button -->
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu" onclick="toggleMobileNav(true)">
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu"
+                onclick="toggleMobileNav(true)">
                 <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
             </button>
         </div>
@@ -114,7 +127,8 @@
     <div class="mobile-drawer-header">
         <a href="/" class="brand-link">
             <div class="brand-badge-icon">
-                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
+                <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo"
+                    class="brand-logo-img">
             </div>
             <span class="brand-title">Sentinel</span>
         </a>
@@ -131,14 +145,16 @@
         <a href="#resources" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Resources</a>
         <a href="#contact" class="mobile-drawer-link" onclick="toggleMobileNav(false)">Contact</a>
     </nav>
-    <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
+    <div
+        style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 10px;">
         {% if current_user.is_authenticated %}
         <a href="/dashboard" class="btn-pill-cta" style="justify-content: center; width: 100%;">
             <i data-lucide="layout-dashboard"></i>
             <span>Open Sentinel Console</span>
         </a>
         {% else %}
-        <a href="/login" class="nav-sign-in" style="text-align: center; border: 1px solid var(--border-medium);">Sign In</a>
+        <a href="/login" class="nav-sign-in" style="text-align: center; border: 1px solid var(--border-medium);">Sign
+            In</a>
         <a href="/register" class="btn-pill-cta" style="justify-content: center; width: 100%;">
             <span>Start Free Trial</span>
             <i data-lucide="arrow-right"></i>
@@ -163,14 +179,13 @@
 
             <!-- Main Heading -->
             <h1 class="hero-title">
-                Stop Card Fraud.<br>
-                <span class="hero-title-accent">Settle Smarter.</span><br>
-                Scale Further.
+                Stop Card Fraud. <span class="hero-title-accent">Settle Smarter.</span> Scale Further.
             </h1>
 
             <!-- Subtitle -->
             <p class="hero-subtext">
-                Sentinel connects your payment rails, evaluates credit card transactions in sub-10ms with ensemble ML, and eliminates chargebacks before settlement.
+                Sentinel connects your payment rails, evaluates credit card transactions in sub-10ms with ensemble ML,
+                and eliminates chargebacks before settlement.
             </p>
 
             <!-- Dual Action CTAs -->
@@ -230,10 +245,14 @@
                             <span class="cockpit-pill">MODEL: RF-XGB ENSEMBLE</span>
                         </div>
                         <div class="cockpit-actions-strip">
-                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 4px;">Simulate Swipe:</span>
-                            <button type="button" class="sim-scenario-btn active" id="sim-btn-normal" onclick="simulateScenario('normal')">Normal Checkout</button>
-                            <button type="button" class="sim-scenario-btn" id="sim-btn-stolen" onclick="simulateScenario('stolen')">Stolen Card Attack</button>
-                            <button type="button" class="sim-scenario-btn" id="sim-btn-velocity" onclick="simulateScenario('velocity')">Velocity Flood</button>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 4px;">Simulate
+                                Swipe:</span>
+                            <button type="button" class="sim-scenario-btn active" id="sim-btn-normal"
+                                onclick="simulateScenario('normal')">Normal Checkout</button>
+                            <button type="button" class="sim-scenario-btn" id="sim-btn-stolen"
+                                onclick="simulateScenario('stolen')">Stolen Card Attack</button>
+                            <button type="button" class="sim-scenario-btn" id="sim-btn-velocity"
+                                onclick="simulateScenario('velocity')">Velocity Flood</button>
                         </div>
                     </div>
 
@@ -287,7 +306,8 @@
                             <div class="risk-dial-container">
                                 <svg class="dial-svg" viewBox="0 0 120 120">
                                     <circle class="dial-circle-bg" cx="60" cy="60" r="50"></circle>
-                                    <circle class="dial-circle-fill" id="dial-indicator" cx="60" cy="60" r="50"></circle>
+                                    <circle class="dial-circle-fill" id="dial-indicator" cx="60" cy="60" r="50">
+                                    </circle>
                                 </svg>
                                 <div class="dial-center-content">
                                     <div class="dial-score-num" id="risk-score-display">04</div>
@@ -301,7 +321,8 @@
                             </div>
 
                             <p class="risk-reasons-list" id="risk-rationale">
-                                Historical cardholder match. Geo-distance is consistent. Zero anomaly triggers across 30 behavioral markers.
+                                Historical cardholder match. Geo-distance is consistent. Zero anomaly triggers across 30
+                                behavioral markers.
                             </p>
                         </div>
                     </div>
@@ -374,7 +395,8 @@
         </div>
         <h2 class="section-title">From swipe to prevention in three steps.</h2>
         <p class="section-subtitle">
-            Any team—technical or not—can deploy, orchestrate, and scale enterprise-grade fraud surveillance without writing complex ML infrastructure.
+            Any team—technical or not—can deploy, orchestrate, and scale enterprise-grade fraud surveillance without
+            writing complex ML infrastructure.
         </p>
 
         <div class="steps-cards-grid">
@@ -386,7 +408,8 @@
                 </div>
                 <h3 class="step-card-title">Connect Your Payment Stack</h3>
                 <p class="step-card-desc">
-                    Link payment gateways in seconds. Zero PAN exposure via hardware-backed AES-256 tokenization vault. Authenticate once and begin streaming card authorizations immediately.
+                    Link payment gateways in seconds. Zero PAN exposure via hardware-backed AES-256 tokenization vault.
+                    Authenticate once and begin streaming card authorizations immediately.
                 </p>
                 <ul class="step-features-list">
                     <li class="step-feature-item">
@@ -412,7 +435,8 @@
                 </div>
                 <h3 class="step-card-title">Real-Time AI Risk Scoring</h3>
                 <p class="step-card-desc">
-                    Every transaction is analyzed in parallel by dual Random Forest and Deep Neural classifiers, evaluating 30+ behavioral features, device velocity, and consortium intelligence.
+                    Every transaction is analyzed in parallel by dual Random Forest and Deep Neural classifiers,
+                    evaluating 30+ behavioral features, device velocity, and consortium intelligence.
                 </p>
                 <ul class="step-features-list">
                     <li class="step-feature-item">
@@ -438,7 +462,8 @@
                 </div>
                 <h3 class="step-card-title">Automate & Enforce Actions</h3>
                 <p class="step-card-desc">
-                    Execute instant policy actions without customer friction. Automatically approve genuine buyers, trigger dynamic 3D-Secure challenges for medium risk, and auto-decline stolen cards.
+                    Execute instant policy actions without customer friction. Automatically approve genuine buyers,
+                    trigger dynamic 3D-Secure challenges for medium risk, and auto-decline stolen cards.
                 </p>
                 <ul class="step-features-list">
                     <li class="step-feature-item">
@@ -470,7 +495,8 @@
         </div>
         <h2 class="section-title">Built for speed. Designed for scale.</h2>
         <p class="section-subtitle">
-            Every neural layer, heuristic rule, and forensic log in Sentinel is engineered to reduce chargeback friction, eliminate manual reviews, and protect your merchant reputation.
+            Every neural layer, heuristic rule, and forensic log in Sentinel is engineered to reduce chargeback
+            friction, eliminate manual reviews, and protect your merchant reputation.
         </p>
 
         <div class="bento-grid">
@@ -481,7 +507,8 @@
                 </div>
                 <h3 class="bento-card-title">AI-Powered Fraud Intelligence</h3>
                 <p class="bento-card-desc">
-                    Sentinel continuously learns transaction patterns across global merchant networks, catching novel synthetic identities, BIN attacks, and automated card testing before human reviewers even notice.
+                    Sentinel continuously learns transaction patterns across global merchant networks, catching novel
+                    synthetic identities, BIN attacks, and automated card testing before human reviewers even notice.
                 </p>
                 <div class="bento-visual-panel">
                     <div class="radar-scanner-box">
@@ -491,7 +518,8 @@
                         <div class="radar-sweep-arm"></div>
                         <div class="radar-blip" style="top: 25px; left: 65%;"></div>
                         <div class="radar-blip" style="bottom: 30px; left: 30%;"></div>
-                        <div style="position: absolute; bottom: 8px; right: 12px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">
+                        <div
+                            style="position: absolute; bottom: 8px; right: 12px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">
                             REAL-TIME ANOMALY DETECTOR // SYNTHETIC ID IDENTIFIED
                         </div>
                     </div>
@@ -505,9 +533,11 @@
                 </div>
                 <h3 class="bento-card-title">Real-Time Telemetry Stream</h3>
                 <p class="bento-card-desc">
-                    Sub-10ms transaction feed with risk indicators, geographical radar, and instant cardholder velocity telemetry.
+                    Sub-10ms transaction feed with risk indicators, geographical radar, and instant cardholder velocity
+                    telemetry.
                 </p>
-                <div class="bento-visual-panel" style="font-family: var(--font-mono); font-size: 0.76rem; display: flex; flex-direction: column; gap: 8px;">
+                <div class="bento-visual-panel"
+                    style="font-family: var(--font-mono); font-size: 0.76rem; display: flex; flex-direction: column; gap: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="color: var(--status-success);">● APPROVED</span>
                         <span style="color: var(--text-muted);">$89.00 • US</span>
@@ -530,11 +560,13 @@
                 </div>
                 <h3 class="bento-card-title">Visual Rule & Threshold Engine</h3>
                 <p class="bento-card-desc">
-                    Build and manage risk policies visually. Set conditional if/else branches, custom velocity caps, and regional geofences without writing code.
+                    Build and manage risk policies visually. Set conditional if/else branches, custom velocity caps, and
+                    regional geofences without writing code.
                 </p>
                 <div class="bento-visual-panel code-rule-snippet">
                     <div><span class="code-keyword">IF</span> <span class="code-var">amount</span> &gt; $1,000</div>
-                    <div><span class="code-keyword">AND</span> <span class="code-var">velocity</span> &gt; 3_per_hour</div>
+                    <div><span class="code-keyword">AND</span> <span class="code-var">velocity</span> &gt; 3_per_hour
+                    </div>
                     <div><span class="code-keyword">THEN</span> <span class="code-action">TRIGGER_3D_SECURE</span></div>
                 </div>
             </div>
@@ -546,15 +578,21 @@
                 </div>
                 <h3 class="bento-card-title">50+ Native Integrations</h3>
                 <p class="bento-card-desc">
-                    Connect your entire payment stack seamlessly: Stripe, Adyen, Braintree, Visa CyberSource, Square, and standard banking ISO 8583 rails.
+                    Connect your entire payment stack seamlessly: Stripe, Adyen, Braintree, Visa CyberSource, Square,
+                    and standard banking ISO 8583 rails.
                 </p>
                 <div class="bento-visual-panel">
                     <div class="integrations-badges-row">
-                        <span class="int-badge"><i data-lucide="check" style="width: 12px; color: var(--status-success);"></i> Stripe</span>
-                        <span class="int-badge"><i data-lucide="check" style="width: 12px; color: var(--status-success);"></i> Adyen</span>
-                        <span class="int-badge"><i data-lucide="check" style="width: 12px; color: var(--status-success);"></i> Visa</span>
-                        <span class="int-badge"><i data-lucide="check" style="width: 12px; color: var(--status-success);"></i> Plaid</span>
-                        <span class="int-badge"><i data-lucide="check" style="width: 12px; color: var(--status-success);"></i> CyberSource</span>
+                        <span class="int-badge"><i data-lucide="check"
+                                style="width: 12px; color: var(--status-success);"></i> Stripe</span>
+                        <span class="int-badge"><i data-lucide="check"
+                                style="width: 12px; color: var(--status-success);"></i> Adyen</span>
+                        <span class="int-badge"><i data-lucide="check"
+                                style="width: 12px; color: var(--status-success);"></i> Visa</span>
+                        <span class="int-badge"><i data-lucide="check"
+                                style="width: 12px; color: var(--status-success);"></i> Plaid</span>
+                        <span class="int-badge"><i data-lucide="check"
+                                style="width: 12px; color: var(--status-success);"></i> CyberSource</span>
                     </div>
                 </div>
             </div>
@@ -566,14 +604,17 @@
                 </div>
                 <h3 class="bento-card-title">Collaborative Workstation</h3>
                 <p class="bento-card-desc">
-                    Investigate flagged transactions in real time with shared team dossiers, case notes, chargeback dispute evidence, and audit logs.
+                    Investigate flagged transactions in real time with shared team dossiers, case notes, chargeback
+                    dispute evidence, and audit logs.
                 </p>
-                <div class="bento-visual-panel" style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="bento-visual-panel"
+                    style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="user-mini-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">JM</div>
                         <span style="font-size: 0.78rem; font-weight: 600;">Case #8491 Resolved</span>
                     </div>
-                    <span class="cockpit-pill" style="font-size: 0.65rem; color: var(--status-success);">EVIDENCE SAVED</span>
+                    <span class="cockpit-pill" style="font-size: 0.65rem; color: var(--status-success);">EVIDENCE
+                        SAVED</span>
                 </div>
             </div>
 
@@ -584,9 +625,11 @@
                 </div>
                 <h3 class="bento-card-title">Enterprise-Grade Security & PCI-DSS Level 1</h3>
                 <p class="bento-card-desc">
-                    End-to-end encrypted card vaulting, masked PAN display (•••• •••• •••• 1234), role-based RBAC permissions, and immutable audit logging. Built with zero-knowledge architecture.
+                    End-to-end encrypted card vaulting, masked PAN display (•••• •••• •••• 1234), role-based RBAC
+                    permissions, and immutable audit logging. Built with zero-knowledge architecture.
                 </p>
-                <div class="bento-visual-panel" style="display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 12px;">
+                <div class="bento-visual-panel"
+                    style="display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 12px;">
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700;">
                         <i data-lucide="lock" style="width: 16px; color: var(--accent-blue);"></i>
                         <span>PCI-DSS Level 1 Certified</span>
@@ -619,10 +662,12 @@
         <div class="featured-quote-card">
             <i data-lucide="quote" class="quote-icon-top"></i>
             <p class="featured-quote-text">
-                "We automated 84% of our fraud review operations in 30 days. Our chargeback rate dropped to 0.02% while checkout conversions improved significantly."
+                "We automated 84% of our fraud review operations in 30 days. Our chargeback rate dropped to 0.02% while
+                checkout conversions improved significantly."
             </p>
             <div class="featured-author-box">
-                <div class="user-mini-avatar" style="width: 48px; height: 48px; font-size: 1.1rem; background: var(--text-primary); color: var(--bg-page);">
+                <div class="user-mini-avatar"
+                    style="width: 48px; height: 48px; font-size: 1.1rem; background: var(--text-primary); color: var(--bg-page);">
                     JM
                 </div>
                 <div style="text-align: left;">
@@ -638,10 +683,12 @@
             <div class="testimonial-item-card">
                 <div>
                     <div class="testimonial-rating-stars">
-                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i
+                            data-lucide="star"></i><i data-lucide="star"></i>
                     </div>
                     <p class="testimonial-body-quote">
-                        "Our false decline rate plummeted by 65%. Legitimate customers never face friction, while coordinated card-testing rings are blocked instantly."
+                        "Our false decline rate plummeted by 65%. Legitimate customers never face friction, while
+                        coordinated card-testing rings are blocked instantly."
                     </p>
                 </div>
                 <div class="testimonial-user-row">
@@ -657,10 +704,12 @@
             <div class="testimonial-item-card">
                 <div>
                     <div class="testimonial-rating-stars">
-                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i
+                            data-lucide="star"></i><i data-lucide="star"></i>
                     </div>
                     <p class="testimonial-body-quote">
-                        "Sentinel gives our risk committee 100% auditable transparency. The sub-10ms response time is unparalleled in the payment security industry."
+                        "Sentinel gives our risk committee 100% auditable transparency. The sub-10ms response time is
+                        unparalleled in the payment security industry."
                     </p>
                 </div>
                 <div class="testimonial-user-row">
@@ -676,10 +725,12 @@
             <div class="testimonial-item-card">
                 <div>
                     <div class="testimonial-rating-stars">
-                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i
+                            data-lucide="star"></i><i data-lucide="star"></i>
                     </div>
                     <p class="testimonial-body-quote">
-                        "The visual rule builder allows our ops team to deploy velocity rules in seconds during holiday sales peaks without waiting for engineering sprints."
+                        "The visual rule builder allows our ops team to deploy velocity rules in seconds during holiday
+                        sales peaks without waiting for engineering sprints."
                     </p>
                 </div>
                 <div class="testimonial-user-row">
@@ -695,10 +746,12 @@
             <div class="testimonial-item-card">
                 <div>
                     <div class="testimonial-rating-stars">
-                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+                        <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i
+                            data-lucide="star"></i><i data-lucide="star"></i>
                     </div>
                     <p class="testimonial-body-quote">
-                        "Integration took under an afternoon. The webhooks are rock solid, and the automated audit trail passed our external compliance audit seamlessly."
+                        "Integration took under an afternoon. The webhooks are rock solid, and the automated audit trail
+                        passed our external compliance audit seamlessly."
                     </p>
                 </div>
                 <div class="testimonial-user-row">
@@ -788,7 +841,9 @@
                     </button>
                     <div class="accordion-panel">
                         <div class="accordion-content-inner">
-                            Sentinel runs optimized C-compiled tree ensembles and pre-warmed ONNX runtime kernels in memory close to payment edge points. Feature engineering runs in parallel with tokenization, allowing comprehensive 30+ feature inference in under 4.1 milliseconds.
+                            Sentinel runs optimized C-compiled tree ensembles and pre-warmed ONNX runtime kernels in
+                            memory close to payment edge points. Feature engineering runs in parallel with tokenization,
+                            allowing comprehensive 30+ feature inference in under 4.1 milliseconds.
                         </div>
                     </div>
                 </div>
@@ -801,7 +856,9 @@
                     </button>
                     <div class="accordion-panel">
                         <div class="accordion-content-inner">
-                            No. Sentinel uses dual-threshold calibration. Legitimate customers pass through with zero latency or friction. Only high-risk transactions with strong synthetic or velocity anomaly signals are stepped up to 3DS or blocked, reducing false declines by up to 65%.
+                            No. Sentinel uses dual-threshold calibration. Legitimate customers pass through with zero
+                            latency or friction. Only high-risk transactions with strong synthetic or velocity anomaly
+                            signals are stepped up to 3DS or blocked, reducing false declines by up to 65%.
                         </div>
                     </div>
                 </div>
@@ -814,7 +871,9 @@
                     </button>
                     <div class="accordion-panel">
                         <div class="accordion-content-inner">
-                            Yes. We are SOC 2 Type II certified and adhere strictly to PCI-DSS Level 1 specifications. Raw Primary Account Numbers (PANs) are vaulted using hardware-grade AES-256-GCM encryption with field-level tokenization.
+                            Yes. We are SOC 2 Type II certified and adhere strictly to PCI-DSS Level 1 specifications.
+                            Raw Primary Account Numbers (PANs) are vaulted using hardware-grade AES-256-GCM encryption
+                            with field-level tokenization.
                         </div>
                     </div>
                 </div>
@@ -827,7 +886,9 @@
                     </button>
                     <div class="accordion-panel">
                         <div class="accordion-content-inner">
-                            Yes. Sentinel supports a Sandbox Backtesting Mode. You can upload an anonymized CSV of past authorizations or stream synthetic transactions to compare Sentinel's detection rate against your legacy system.
+                            Yes. Sentinel supports a Sandbox Backtesting Mode. You can upload an anonymized CSV of past
+                            authorizations or stream synthetic transactions to compare Sentinel's detection rate against
+                            your legacy system.
                         </div>
                     </div>
                 </div>
@@ -840,7 +901,9 @@
                     </button>
                     <div class="accordion-panel">
                         <div class="accordion-content-inner">
-                            Sentinel features continuous unsupervised drift detection. When new card testing tactics or distributed proxy attacks emerge across our merchant network, our models update anomaly boundaries without requiring code changes.
+                            Sentinel features continuous unsupervised drift detection. When new card testing tactics or
+                            distributed proxy attacks emerge across our merchant network, our models update anomaly
+                            boundaries without requiring code changes.
                         </div>
                     </div>
                 </div>
@@ -853,7 +916,9 @@
                     </button>
                     <div class="accordion-panel">
                         <div class="accordion-content-inner">
-                            Sentinel features fail-safe fallback policies (Fail-Open or Fail-Closed based on your preference), dual active-active regions, and 99.99% SLA uptime guarantees with automatic retry on network drops.
+                            Sentinel features fail-safe fallback policies (Fail-Open or Fail-Closed based on your
+                            preference), dual active-active regions, and 99.99% SLA uptime guarantees with automatic
+                            retry on network drops.
                         </div>
                     </div>
                 </div>
@@ -873,7 +938,8 @@
         </div>
         <h2 class="section-title">Learn, build, and grow with Sentinel.</h2>
         <p class="section-subtitle">
-            Guides, playbooks, and research papers to help your risk and security teams stay ahead of modern financial threats.
+            Guides, playbooks, and research papers to help your risk and security teams stay ahead of modern financial
+            threats.
         </p>
 
         <div class="resources-grid">
@@ -889,7 +955,8 @@
                     </div>
                     <h3 class="resource-card-title">Stopping Account Takeover & Card-Testing Attacks in 2026</h3>
                     <p class="resource-card-summary">
-                        Discover modern botnet tactics used for distributed card validation and how behavioral ML stops velocity bursts without customer friction.
+                        Discover modern botnet tactics used for distributed card validation and how behavioral ML stops
+                        velocity bursts without customer friction.
                     </p>
                     <div class="resource-read-link">
                         <span>Read article</span>
@@ -900,7 +967,8 @@
 
             <!-- Article 2 -->
             <a href="/how-it-works" class="resource-card">
-                <div class="resource-card-banner" style="background: linear-gradient(135deg, rgba(122, 100, 250, 0.1) 0%, rgba(54, 117, 255, 0.15) 100%);">
+                <div class="resource-card-banner"
+                    style="background: linear-gradient(135deg, rgba(122, 100, 250, 0.1) 0%, rgba(54, 117, 255, 0.15) 100%);">
                     <i data-lucide="git-branch" class="resource-banner-icon" style="color: #7a64fa;"></i>
                 </div>
                 <div class="resource-card-body">
@@ -910,7 +978,8 @@
                     </div>
                     <h3 class="resource-card-title">Why Heuristics Alone Fail: Shifting to Ensemble Risk Scoring</h3>
                     <p class="resource-card-summary">
-                        Why static if/else thresholds generate unacceptable false positive spikes and how ensemble ML achieves sub-10ms precision.
+                        Why static if/else thresholds generate unacceptable false positive spikes and how ensemble ML
+                        achieves sub-10ms precision.
                     </p>
                     <div class="resource-read-link">
                         <span>Read article</span>
@@ -921,7 +990,8 @@
 
             <!-- Article 3 -->
             <a href="/security" class="resource-card">
-                <div class="resource-card-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(54, 117, 255, 0.12) 100%);">
+                <div class="resource-card-banner"
+                    style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(54, 117, 255, 0.12) 100%);">
                     <i data-lucide="shield-alert" class="resource-banner-icon" style="color: #10b981;"></i>
                 </div>
                 <div class="resource-card-body">
@@ -931,7 +1001,8 @@
                     </div>
                     <h3 class="resource-card-title">Zero-Knowledge Card Vaulting: Achieving PCI-DSS Level 1</h3>
                     <p class="resource-card-summary">
-                        Architectural walkthrough of cryptographic card vaulting, PAN hashing, and meeting global compliance mandates effortlessly.
+                        Architectural walkthrough of cryptographic card vaulting, PAN hashing, and meeting global
+                        compliance mandates effortlessly.
                     </p>
                     <div class="resource-read-link">
                         <span>Read article</span>
@@ -955,7 +1026,8 @@
             </div>
             <h2 class="cta-banner-title">Your revenue deserves bulletproof protection.</h2>
             <p class="cta-banner-subtext">
-                Join thousands of payment processors, fintechs, and merchants already using Sentinel to eliminate fraud and scale fearlessly.
+                Join thousands of payment processors, fintechs, and merchants already using Sentinel to eliminate fraud
+                and scale fearlessly.
             </p>
             <div class="hero-cta-group">
                 {% if current_user.is_authenticated %}
@@ -1004,14 +1076,16 @@
 <!-- ==============================================================================
      INTERACTIVE DEMO BOOKING MODAL
      ============================================================================== -->
-<div class="demo-modal-backdrop" id="demo-modal-backdrop" onclick="closeDemoModal(event)" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+<div class="demo-modal-backdrop" id="demo-modal-backdrop" onclick="closeDemoModal(event)" role="dialog"
+    aria-modal="true" aria-labelledby="modal-heading">
     <div class="demo-modal-card" onclick="event.stopPropagation()">
         <button class="modal-close-btn" onclick="closeDemoModal()" aria-label="Close Modal">
             <i data-lucide="x" style="width: 20px; height: 20px;"></i>
         </button>
         <div id="modal-form-content">
             <h3 class="modal-title" id="modal-heading">Book a Live Architecture Demo</h3>
-            <p class="modal-subtitle">Experience Sentinel's sub-10ms inference and rule builder with a fraud engineering specialist.</p>
+            <p class="modal-subtitle">Experience Sentinel's sub-10ms inference and rule builder with a fraud engineering
+                specialist.</p>
             <form class="modal-form" onsubmit="handleDemoSubmit(event)">
                 <div class="form-group-wrap">
                     <label for="demo-name">Full Name</label>
@@ -1055,12 +1129,15 @@
             </form>
         </div>
         <div id="modal-success-content" style="display: none; text-align: center; padding: 24px 0;">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--status-success-bg); color: var(--status-success); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <div
+                style="width: 56px; height: 56px; border-radius: 50%; background: var(--status-success-bg); color: var(--status-success); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
                 <i data-lucide="check-circle" style="width: 28px; height: 28px;"></i>
             </div>
             <h3 class="modal-title">Demo Request Confirmed!</h3>
-            <p class="modal-subtitle">Our payment security team will contact you within 2 business hours with direct calendar access.</p>
-            <button type="button" class="btn-hero-primary" onclick="closeDemoModal()" style="margin: 0 auto;">Close</button>
+            <p class="modal-subtitle">Our payment security team will contact you within 2 business hours with direct
+                calendar access.</p>
+            <button type="button" class="btn-hero-primary" onclick="closeDemoModal()"
+                style="margin: 0 auto;">Close</button>
         </div>
     </div>
 </div>
@@ -1077,12 +1154,14 @@
             <div class="footer-brand-col">
                 <a href="/" class="brand-link" style="margin-bottom: 12px;">
                     <div class="brand-badge-icon">
-                        <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo" class="brand-logo-img">
+                        <img src="{{ url_for('static', filename='img/sentinel-logo.png') }}" alt="Sentinel Logo"
+                            class="brand-logo-img">
                     </div>
                     <span class="brand-title">Sentinel</span>
                 </a>
                 <p class="footer-brand-desc">
-                    The real-time financial intelligence and fraud prevention platform built for modern commerce. Sub-10ms scoring, zero false positives.
+                    The real-time financial intelligence and fraud prevention platform built for modern commerce.
+                    Sub-10ms scoring, zero false positives.
                 </p>
             </div>
 
@@ -1112,10 +1191,14 @@
             <div>
                 <h4 class="footer-col-title">Contact & Company</h4>
                 <ul class="footer-links-list">
-                    <li class="footer-link-item"><a href="mailto:support@fraudshield.com">support@fraudshield.com</a></li>
-                    <li class="footer-link-item"><a href="mailto:security@fraudshield.com">security@fraudshield.com</a></li>
+                    <li class="footer-link-item"><a href="mailto:support@fraudshield.com">support@fraudshield.com</a>
+                    </li>
+                    <li class="footer-link-item"><a href="mailto:security@fraudshield.com">security@fraudshield.com</a>
+                    </li>
                     <li class="footer-link-item"><a href="/about">About Sentinel</a></li>
-                    <li class="footer-link-item"><a href="https://github.com/Dineshkavitha2005/Credit-Card-Fraud-Detection" target="_blank" rel="noopener">GitHub Repository</a></li>
+                    <li class="footer-link-item"><a
+                            href="https://github.com/Dineshkavitha2005/Credit-Card-Fraud-Detection" target="_blank"
+                            rel="noopener">GitHub Repository</a></li>
                 </ul>
             </div>
 
@@ -1144,19 +1227,23 @@
 <!-- ==============================================================================
      GDPR COOKIE CONSENT BANNER
      ============================================================================== -->
-<div class="cookie-consent-banner" id="cookie-consent-banner" role="region" aria-label="Cookie Consent" aria-live="polite" style="display: none;">
+<div class="cookie-consent-banner" id="cookie-consent-banner" role="region" aria-label="Cookie Consent"
+    aria-live="polite" style="display: none;">
     <div class="cookie-consent-inner">
         <div class="cookie-consent-text">
             <i data-lucide="cookie" style="width: 20px; height: 20px; flex-shrink: 0; color: var(--accent-blue);"></i>
             <p>
-                We use cookies to improve your experience, analyze traffic, and personalize content. By continuing, you agree to our
+                We use cookies to improve your experience, analyze traffic, and personalize content. By continuing, you
+                agree to our
                 <a href="/cookies" style="color: var(--accent-blue); text-decoration: underline;">Cookie Policy</a> and
                 <a href="/privacy" style="color: var(--accent-blue); text-decoration: underline;">Privacy Policy</a>.
             </p>
         </div>
         <div class="cookie-consent-actions">
-            <button type="button" class="cookie-btn-secondary" onclick="setCookieConsent('essential')" aria-label="Accept essential cookies only">Essential Only</button>
-            <button type="button" class="cookie-btn-primary" onclick="setCookieConsent('all')" aria-label="Accept all cookies">Accept All</button>
+            <button type="button" class="cookie-btn-secondary" onclick="setCookieConsent('essential')"
+                aria-label="Accept essential cookies only">Essential Only</button>
+            <button type="button" class="cookie-btn-primary" onclick="setCookieConsent('all')"
+                aria-label="Accept all cookies">Accept All</button>
         </div>
     </div>
 </div>
@@ -1164,209 +1251,209 @@
 
 {% block extra_scripts %}
 <script>
-// ==============================================================================
-// SENTINEL INTERACTIVE LANDING FUNCTIONS
-// ==============================================================================
+    // ==============================================================================
+    // SENTINEL INTERACTIVE LANDING FUNCTIONS
+    // ==============================================================================
 
-// 1. Interactive Scenario Simulator
-const scenarios = {
-  normal: {
-    pan: '•••• •••• •••• 4829',
-    amount: '$42.50 USD',
-    merchant: 'Apple Store Fifth Ave (5732)',
-    geo: 'New York, US (Residential)',
-    velocity: '1 purchase / Normal',
-    device: 'MacBook Pro M3 (Known)',
-    score: '04',
-    offset: 300, // low risk on dial
-    color: '#10b981',
-    decision: 'APPROVED // LOW RISK',
-    isBlocked: false,
-    icon: 'check',
-    rationale: 'Historical cardholder match. Geo-distance is consistent. Zero anomaly triggers across 30 behavioral markers.'
-  },
-  stolen: {
-    pan: '•••• •••• •••• 9104',
-    amount: '$2,850.00 USD',
-    merchant: 'CryptoExchange International (6051)',
-    geo: 'Lagos, NG (Commercial VPN / TOR)',
-    velocity: 'Card used 4,000 miles from home',
-    device: 'Headless Chrome Linux (Unmatched)',
-    score: '96',
-    offset: 14, // high risk on dial
-    color: '#ef4444',
-    decision: 'BLOCKED // CRITICAL RISK',
-    isBlocked: true,
-    icon: 'alert-triangle',
-    rationale: 'High-risk MCC code, IP/Billing geofence divergence, device fingerprint mismatch, and synthetic identity signature detected.'
-  },
-  velocity: {
-    pan: '•••• •••• •••• 3141',
-    amount: '$19.99 USD (x 12 in 90s)',
-    merchant: 'Digital Gaming Steam Keys (5816)',
-    geo: 'Frankfurt, DE (Datacenter IP)',
-    velocity: '12 attempts in 90 seconds (SURGE)',
-    device: 'Automated Bot Script (Headless)',
-    score: '89',
-    offset: 35, // high risk on dial
-    color: '#ef4444',
-    decision: 'BLOCKED // CARD TESTING BOT',
-    isBlocked: true,
-    icon: 'shield-alert',
-    rationale: 'Automated micro-transaction probe detected. Exceeded cardholder velocity ceiling (12 tx / 90s). Card frozen automatically.'
-  }
-};
+    // 1. Interactive Scenario Simulator
+    const scenarios = {
+        normal: {
+            pan: '•••• •••• •••• 4829',
+            amount: '$42.50 USD',
+            merchant: 'Apple Store Fifth Ave (5732)',
+            geo: 'New York, US (Residential)',
+            velocity: '1 purchase / Normal',
+            device: 'MacBook Pro M3 (Known)',
+            score: '04',
+            offset: 300, // low risk on dial
+            color: '#10b981',
+            decision: 'APPROVED // LOW RISK',
+            isBlocked: false,
+            icon: 'check',
+            rationale: 'Historical cardholder match. Geo-distance is consistent. Zero anomaly triggers across 30 behavioral markers.'
+        },
+        stolen: {
+            pan: '•••• •••• •••• 9104',
+            amount: '$2,850.00 USD',
+            merchant: 'CryptoExchange International (6051)',
+            geo: 'Lagos, NG (Commercial VPN / TOR)',
+            velocity: 'Card used 4,000 miles from home',
+            device: 'Headless Chrome Linux (Unmatched)',
+            score: '96',
+            offset: 14, // high risk on dial
+            color: '#ef4444',
+            decision: 'BLOCKED // CRITICAL RISK',
+            isBlocked: true,
+            icon: 'alert-triangle',
+            rationale: 'High-risk MCC code, IP/Billing geofence divergence, device fingerprint mismatch, and synthetic identity signature detected.'
+        },
+        velocity: {
+            pan: '•••• •••• •••• 3141',
+            amount: '$19.99 USD (x 12 in 90s)',
+            merchant: 'Digital Gaming Steam Keys (5816)',
+            geo: 'Frankfurt, DE (Datacenter IP)',
+            velocity: '12 attempts in 90 seconds (SURGE)',
+            device: 'Automated Bot Script (Headless)',
+            score: '89',
+            offset: 35, // high risk on dial
+            color: '#ef4444',
+            decision: 'BLOCKED // CARD TESTING BOT',
+            isBlocked: true,
+            icon: 'shield-alert',
+            rationale: 'Automated micro-transaction probe detected. Exceeded cardholder velocity ceiling (12 tx / 90s). Card frozen automatically.'
+        }
+    };
 
-function simulateScenario(key) {
-  const data = scenarios[key];
-  if (!data) return;
+    function simulateScenario(key) {
+        const data = scenarios[key];
+        if (!data) return;
 
-  // Toggle active button
-  document.querySelectorAll('.sim-scenario-btn').forEach(btn => btn.classList.remove('active'));
-  const activeBtn = document.getElementById('sim-btn-' + key);
-  if (activeBtn) activeBtn.classList.add('active');
+        // Toggle active button
+        document.querySelectorAll('.sim-scenario-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById('sim-btn-' + key);
+        if (activeBtn) activeBtn.classList.add('active');
 
-  // Update text values
-  document.getElementById('tx-pan').textContent = data.pan;
-  document.getElementById('tx-amount').textContent = data.amount;
-  document.getElementById('tx-merchant').textContent = data.merchant;
-  document.getElementById('tx-geo').textContent = data.geo;
-  document.getElementById('tx-velocity').textContent = data.velocity;
-  document.getElementById('tx-device').textContent = data.device;
-  document.getElementById('risk-score-display').textContent = data.score;
-  document.getElementById('risk-rationale').textContent = data.rationale;
+        // Update text values
+        document.getElementById('tx-pan').textContent = data.pan;
+        document.getElementById('tx-amount').textContent = data.amount;
+        document.getElementById('tx-merchant').textContent = data.merchant;
+        document.getElementById('tx-geo').textContent = data.geo;
+        document.getElementById('tx-velocity').textContent = data.velocity;
+        document.getElementById('tx-device').textContent = data.device;
+        document.getElementById('risk-score-display').textContent = data.score;
+        document.getElementById('risk-rationale').textContent = data.rationale;
 
-  // Update dial
-  const dial = document.getElementById('dial-indicator');
-  if (dial) {
-    dial.style.strokeDashoffset = data.offset;
-    dial.style.stroke = data.color;
-  }
+        // Update dial
+        const dial = document.getElementById('dial-indicator');
+        if (dial) {
+            dial.style.strokeDashoffset = data.offset;
+            dial.style.stroke = data.color;
+        }
 
-  // Update decision badge
-  const badge = document.getElementById('decision-badge');
-  const decisionText = document.getElementById('decision-text');
-  if (badge && decisionText) {
-    if (data.isBlocked) {
-      badge.classList.add('blocked');
-    } else {
-      badge.classList.remove('blocked');
+        // Update decision badge
+        const badge = document.getElementById('decision-badge');
+        const decisionText = document.getElementById('decision-text');
+        if (badge && decisionText) {
+            if (data.isBlocked) {
+                badge.classList.add('blocked');
+            } else {
+                badge.classList.remove('blocked');
+            }
+            decisionText.textContent = data.decision;
+        }
+
+        // Re-hydrate Lucide icons for changed badge icon
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
     }
-    decisionText.textContent = data.decision;
-  }
-
-  // Re-hydrate Lucide icons for changed badge icon
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-}
 
 
-// 3. Interactive Accordion (FAQ)
-function toggleFaq(btn) {
-  const item = btn.closest('.accordion-item');
-  const isActive = item.classList.contains('active');
+    // 3. Interactive Accordion (FAQ)
+    function toggleFaq(btn) {
+        const item = btn.closest('.accordion-item');
+        const isActive = item.classList.contains('active');
 
-  // Close all items
-  document.querySelectorAll('.accordion-item').forEach(el => {
-    el.classList.remove('active');
-    el.querySelector('.accordion-trigger').setAttribute('aria-expanded', 'false');
-  });
-
-  // Toggle current
-  if (!isActive) {
-    item.classList.add('active');
-    btn.setAttribute('aria-expanded', 'true');
-  }
-}
-
-// 4. Mobile Navigation Drawer
-function toggleMobileNav(show) {
-  const drawer = document.getElementById('mobileNavDrawer');
-  const backdrop = document.getElementById('mobile-nav-backdrop');
-  if (show) {
-    drawer.classList.add('open');
-    backdrop.classList.add('open');
-    drawer.setAttribute('aria-hidden', 'false');
-    backdrop.setAttribute('aria-hidden', 'false');
-  } else {
-    drawer.classList.remove('open');
-    backdrop.classList.remove('open');
-    drawer.setAttribute('aria-hidden', 'true');
-    backdrop.setAttribute('aria-hidden', 'true');
-  }
-}
-
-// 5. Demo Modal Handlers
-function openDemoModal() {
-  const modal = document.getElementById('demo-modal-backdrop');
-  if (modal) {
-    modal.classList.add('open');
-    document.getElementById('modal-form-content').style.display = 'block';
-    document.getElementById('modal-success-content').style.display = 'none';
-  }
-}
-
-function closeDemoModal(event) {
-  if (event && event.target !== event.currentTarget) return;
-  const modal = document.getElementById('demo-modal-backdrop');
-  if (modal) {
-    modal.classList.remove('open');
-  }
-}
-
-function handleDemoSubmit(e) {
-  e.preventDefault();
-  document.getElementById('modal-form-content').style.display = 'none';
-  document.getElementById('modal-success-content').style.display = 'block';
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-}
-
-// 6. Cookie Consent Logic
-function setCookieConsent(level) {
-  try {
-    localStorage.setItem('sentinel_cookie_consent', level);
-    localStorage.setItem('sentinel_cookie_consent_ts', Date.now());
-  } catch(e) {}
-  const banner = document.getElementById('cookie-consent-banner');
-  if (banner) {
-    banner.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    banner.style.opacity = '0';
-    banner.style.transform = 'translateY(20px)';
-    setTimeout(() => { banner.style.display = 'none'; }, 420);
-  }
-}
-
-function initCookieConsent() {
-  let consent = null;
-  try { consent = localStorage.getItem('sentinel_cookie_consent'); } catch(e) {}
-  if (!consent) {
-    const banner = document.getElementById('cookie-consent-banner');
-    if (banner) {
-      banner.style.display = 'flex';
-      // Slight delay so browser paints it first, then animate in
-      requestAnimationFrame(() => {
-        banner.style.opacity = '0';
-        banner.style.transform = 'translateY(20px)';
-        banner.style.transition = 'opacity 0.5s ease 0.8s, transform 0.5s ease 0.8s';
-        requestAnimationFrame(() => {
-          banner.style.opacity = '1';
-          banner.style.transform = 'translateY(0)';
+        // Close all items
+        document.querySelectorAll('.accordion-item').forEach(el => {
+            el.classList.remove('active');
+            el.querySelector('.accordion-trigger').setAttribute('aria-expanded', 'false');
         });
-      });
-    }
-  }
-}
 
-// Initialize on DOM load
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-  initCookieConsent();
-});
+        // Toggle current
+        if (!isActive) {
+            item.classList.add('active');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    // 4. Mobile Navigation Drawer
+    function toggleMobileNav(show) {
+        const drawer = document.getElementById('mobileNavDrawer');
+        const backdrop = document.getElementById('mobile-nav-backdrop');
+        if (show) {
+            drawer.classList.add('open');
+            backdrop.classList.add('open');
+            drawer.setAttribute('aria-hidden', 'false');
+            backdrop.setAttribute('aria-hidden', 'false');
+        } else {
+            drawer.classList.remove('open');
+            backdrop.classList.remove('open');
+            drawer.setAttribute('aria-hidden', 'true');
+            backdrop.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    // 5. Demo Modal Handlers
+    function openDemoModal() {
+        const modal = document.getElementById('demo-modal-backdrop');
+        if (modal) {
+            modal.classList.add('open');
+            document.getElementById('modal-form-content').style.display = 'block';
+            document.getElementById('modal-success-content').style.display = 'none';
+        }
+    }
+
+    function closeDemoModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        const modal = document.getElementById('demo-modal-backdrop');
+        if (modal) {
+            modal.classList.remove('open');
+        }
+    }
+
+    function handleDemoSubmit(e) {
+        e.preventDefault();
+        document.getElementById('modal-form-content').style.display = 'none';
+        document.getElementById('modal-success-content').style.display = 'block';
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }
+
+    // 6. Cookie Consent Logic
+    function setCookieConsent(level) {
+        try {
+            localStorage.setItem('sentinel_cookie_consent', level);
+            localStorage.setItem('sentinel_cookie_consent_ts', Date.now());
+        } catch (e) { }
+        const banner = document.getElementById('cookie-consent-banner');
+        if (banner) {
+            banner.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(20px)';
+            setTimeout(() => { banner.style.display = 'none'; }, 420);
+        }
+    }
+
+    function initCookieConsent() {
+        let consent = null;
+        try { consent = localStorage.getItem('sentinel_cookie_consent'); } catch (e) { }
+        if (!consent) {
+            const banner = document.getElementById('cookie-consent-banner');
+            if (banner) {
+                banner.style.display = 'flex';
+                // Slight delay so browser paints it first, then animate in
+                requestAnimationFrame(() => {
+                    banner.style.opacity = '0';
+                    banner.style.transform = 'translateY(20px)';
+                    banner.style.transition = 'opacity 0.5s ease 0.8s, transform 0.5s ease 0.8s';
+                    requestAnimationFrame(() => {
+                        banner.style.opacity = '1';
+                        banner.style.transform = 'translateY(0)';
+                    });
+                });
+            }
+        }
+    }
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+        initCookieConsent();
+    });
 </script>
 <script src="/static/js/landing-motion.js"></script>
 {% endblock %}
