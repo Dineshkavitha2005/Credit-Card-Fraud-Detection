@@ -11,10 +11,10 @@ def test_login_page_fixes(client):
     assert 'demo-pill' not in html
     assert 'admin123' not in html
 
-    # 2. Verify logo is styled with text-inverted for high contrast in all themes
+    # 2. Verify logo is styled and displays the Sentinel logo asset
     assert '.auth-brand-logo {' in html
-    assert 'color: var(--text-inverted);' in html
-    assert 'data-lucide="shield"' in html
+    assert 'sentinel-logo.png' in html
+    assert 'alt="Sentinel Logo"' in html
 
     # 3. Verify Google sign-in button text is visible and styled with text-primary
     assert '.btn-google {' in html
@@ -28,7 +28,8 @@ def test_register_page_fixes(client):
     html = res.data.decode('utf-8')
 
     assert '.auth-brand-logo {' in html
-    assert 'color: var(--text-inverted);' in html
+    assert 'sentinel-logo.png' in html
+    assert 'alt="Sentinel Logo"' in html
     assert '.btn-google {' in html
     assert 'color: var(--text-primary);' in html
     assert 'Continue with Google' in html
