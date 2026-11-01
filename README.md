@@ -65,7 +65,7 @@ Credit-Card-Fraud-Detection/
 ├── docker-compose.yml            # Local development Docker stack
 ├── docker-compose.prod.yml       # Production TLS-terminated Docker stack
 ├── entrypoint.sh                 # Database migration & startup entrypoint
-├── app.py                        # Root convenience launcher (`python app.py`)
+├── run.py                        # Root convenience launcher (`python run.py`)
 ├── wsgi.py                       # Root WSGI alias
 ├── requirements.txt              # Root requirements file
 ├── pytest.ini                    # Pytest test discovery configuration
@@ -108,7 +108,7 @@ pip install -r requirements.txt
 #### 2. Run the Application
 You can run directly from the root:
 ```bash
-python app.py
+python run.py
 ```
 Or run directly from the backend directory:
 ```bash

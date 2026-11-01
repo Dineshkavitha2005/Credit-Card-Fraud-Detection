@@ -20,4 +20,4 @@ echo "   Password: admin123"
 echo ""
 echo "⚠️  IMPORTANT: Change the admin password after first login!"
 echo ""
-python app.py
+python run.py
