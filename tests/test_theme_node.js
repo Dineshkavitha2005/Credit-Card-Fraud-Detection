@@ -112,7 +112,10 @@ function createMockEnvironment(initialStorage = {}, initialOSDark = false) {
 }
 
 function loadSentinelInEnv(env) {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'static', 'js', 'sentinel.js'), 'utf8');
+  const frontendJs = path.join(__dirname, '..', 'frontend', 'static', 'js', 'sentinel.js');
+  const legacyJs = path.join(__dirname, '..', 'static', 'js', 'sentinel.js');
+  const jsPath = fs.existsSync(frontendJs) ? frontendJs : legacyJs;
+  const code = fs.readFileSync(jsPath, 'utf8');
   const fn = new Function('window', 'document', 'localStorage', `${code}; return window.Sentinel;`);
   return fn(env.window, env.document, env.localStorage);
 }

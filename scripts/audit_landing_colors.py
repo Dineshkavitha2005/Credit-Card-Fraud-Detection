@@ -16,11 +16,17 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+def resolve_target(rel_frontend, rel_root):
+    f_path = BASE_DIR / rel_frontend
+    if f_path.exists():
+        return f_path
+    return BASE_DIR / rel_root
+
 TARGET_FILES = [
-    BASE_DIR / "static" / "css" / "landing.css",
-    BASE_DIR / "templates" / "landing.html",
-    BASE_DIR / "templates" / "public_base.html",
-    BASE_DIR / "static" / "js" / "landing-motion.js"
+    resolve_target(Path("frontend") / "static" / "css" / "landing.css", Path("static") / "css" / "landing.css"),
+    resolve_target(Path("frontend") / "templates" / "landing.html", Path("templates") / "landing.html"),
+    resolve_target(Path("frontend") / "templates" / "public_base.html", Path("templates") / "public_base.html"),
+    resolve_target(Path("frontend") / "static" / "js" / "landing-motion.js", Path("static") / "js" / "landing-motion.js")
 ]
 
 ALLOWED_HEX = {

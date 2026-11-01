@@ -62,9 +62,28 @@ def create_app(config_class=None):
             from app.config import DevelopmentConfig
             config_class = DevelopmentConfig
 
-    root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    template_folder = os.path.join(root_path, 'templates')
-    static_folder = os.path.join(root_path, 'static')
+    current_dir = os.path.abspath(os.path.dirname(__file__))
+    project_root = None
+    for candidate in [
+        os.path.abspath(os.path.join(current_dir, '..', '..')),
+        os.path.abspath(os.path.join(current_dir, '..')),
+        os.getcwd()
+    ]:
+        if os.path.isdir(os.path.join(candidate, 'frontend')):
+            project_root = candidate
+            break
+    if project_root is None:
+        project_root = os.path.abspath(os.path.join(current_dir, '..'))
+
+    frontend_dir = os.path.join(project_root, 'frontend')
+    if os.path.isdir(frontend_dir):
+        template_folder = os.path.join(frontend_dir, 'templates')
+        static_folder = os.path.join(frontend_dir, 'static')
+    else:
+        template_folder = os.path.join(project_root, 'templates')
+        static_folder = os.path.join(project_root, 'static')
+
+
 
     app = Flask(
         __name__,

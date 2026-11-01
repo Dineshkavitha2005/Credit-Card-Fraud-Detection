@@ -10,6 +10,7 @@ Validates:
 7. Admin pages inherit the unified theme controls
 """
 
+import os
 import pytest
 
 
@@ -98,7 +99,8 @@ class TestThemeSystemIntegration:
 
     def test_sentinel_css_theme_definitions(self):
         """Verify sentinel.css includes light and dark theme tokens and reduced motion."""
-        with open('static/css/sentinel.css', 'r', encoding='utf-8') as f:
+        css_file = 'frontend/static/css/sentinel.css' if os.path.exists('frontend/static/css/sentinel.css') else 'static/css/sentinel.css'
+        with open(css_file, 'r', encoding='utf-8') as f:
             css = f.read()
 
         assert '[data-theme="light"]' in css
@@ -113,7 +115,8 @@ class TestThemeSystemIntegration:
 
     def test_landing_css_theme_definitions(self):
         """Verify landing.css includes light and dark theme tokens and reduced motion."""
-        with open('static/css/landing.css', 'r', encoding='utf-8') as f:
+        css_file = 'frontend/static/css/landing.css' if os.path.exists('frontend/static/css/landing.css') else 'static/css/landing.css'
+        with open(css_file, 'r', encoding='utf-8') as f:
             css = f.read()
 
         assert '[data-theme="light"]' in css

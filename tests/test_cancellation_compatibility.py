@@ -10,8 +10,8 @@ import subprocess
 import pytest
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-STATIC_JS_DIR = os.path.join(ROOT_DIR, 'static', 'js')
-TEMPLATES_DIR = os.path.join(ROOT_DIR, 'templates')
+STATIC_JS_DIR = os.path.join(ROOT_DIR, 'frontend', 'static', 'js') if os.path.isdir(os.path.join(ROOT_DIR, 'frontend', 'static', 'js')) else os.path.join(ROOT_DIR, 'static', 'js')
+TEMPLATES_DIR = os.path.join(ROOT_DIR, 'frontend', 'templates') if os.path.isdir(os.path.join(ROOT_DIR, 'frontend', 'templates')) else os.path.join(ROOT_DIR, 'templates')
 
 
 class TestSentinelCancellationCompatibility:

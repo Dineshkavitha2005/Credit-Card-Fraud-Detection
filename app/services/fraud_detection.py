@@ -31,6 +31,21 @@ def sanitize_numpy_types(obj):
     return obj
 
 
+def resolve_ml_artifact(filename):
+    """Resolve path to ML artifact across root, backend/ml, or relative paths."""
+    candidates = [
+        filename,
+        os.path.join(os.path.dirname(__file__), '..', '..', 'backend', 'ml', filename),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'ml', filename),
+        os.path.join(os.path.dirname(__file__), '..', '..', filename),
+        os.path.join(os.path.dirname(__file__), filename),
+    ]
+    for c in candidates:
+        abs_c = os.path.abspath(c)
+        if os.path.exists(abs_c):
+            return abs_c
+    return filename
+
 class FraudDetectionEngine:
     """ML-powered fraud detection engine with deterministic feature engineering, scoring, and explainability"""
 
@@ -47,7 +62,7 @@ class FraudDetectionEngine:
         self.high_risk_categories = ['Electronics', 'Gift Cards', 'Cryptocurrency', 'Wire Transfer']
         
         # Preprocessor instance
-        self.preprocessor = TransactionPreprocessor.load_config('preprocessing_config.json')
+        self.preprocessor = TransactionPreprocessor.load_config(resolve_ml_artifact('preprocessing_config.json'))
 
         # Load ML model artifacts
         self.model = None
@@ -58,16 +73,21 @@ class FraudDetectionEngine:
         self.classification_threshold = 0.25
         
         try:
-            if os.path.exists('fraud_model.pkl') and os.path.exists('scaler.pkl'):
-                self.model = joblib.load('fraud_model.pkl')
-                self.scaler = joblib.load('scaler.pkl')
-                if os.path.exists('features.pkl'):
-                    self.feature_names = joblib.load('features.pkl')
+            model_path = resolve_ml_artifact('fraud_model.pkl')
+            scaler_path = resolve_ml_artifact('scaler.pkl')
+            features_path = resolve_ml_artifact('features.pkl')
+            meta_path = resolve_ml_artifact('model_metadata.json')
+
+            if os.path.exists(model_path) and os.path.exists(scaler_path):
+                self.model = joblib.load(model_path)
+                self.scaler = joblib.load(scaler_path)
+                if os.path.exists(features_path):
+                    self.feature_names = joblib.load(features_path)
                 else:
                     self.feature_names = self.preprocessor.feature_names
                 
-                if os.path.exists('model_metadata.json'):
-                    with open('model_metadata.json', 'r') as f:
+                if os.path.exists(meta_path):
+                    with open(meta_path, 'r') as f:
                         self.model_metadata = json.load(f)
                         self.model_version = self.model_metadata.get('model_version', 'v2.1.0')
                         self.classification_threshold = float(self.model_metadata.get('classification_threshold', 0.25))

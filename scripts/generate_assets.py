@@ -8,8 +8,9 @@ import shutil
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-STATIC_IMG = os.path.join(ROOT_DIR, 'static', 'img')
-APP_STATIC_IMG = os.path.join(ROOT_DIR, 'app', 'static', 'img')
+STATIC_IMG = os.path.join(ROOT_DIR, 'frontend', 'static', 'img')
+LEGACY_STATIC_IMG = os.path.join(ROOT_DIR, 'static', 'img')
+APP_STATIC_IMG = os.path.join(ROOT_DIR, 'backend', 'app', 'static', 'img')
 
 os.makedirs(STATIC_IMG, exist_ok=True)
 os.makedirs(APP_STATIC_IMG, exist_ok=True)
@@ -194,7 +195,7 @@ dash_img.save(os.path.join(STATIC_IMG, 'dashboard-preview.webp'), format='WEBP',
 # Sync all files to app/static/img
 for fname in os.listdir(STATIC_IMG):
     s_path = os.path.join(STATIC_IMG, fname)
-    if os.path.isfile(s_path):
+    if os.path.isfile(s_path) and os.path.exists(APP_STATIC_IMG):
         shutil.copy2(s_path, os.path.join(APP_STATIC_IMG, fname))
 
 print("Asset generation complete!")

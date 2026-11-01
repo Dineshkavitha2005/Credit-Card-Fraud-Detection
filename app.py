@@ -4,10 +4,17 @@ Refactored into a modular architecture under app/
 """
 
 import sys
+import os
+
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 if hasattr(sys.stderr, 'reconfigure'):
     sys.stderr.reconfigure(encoding='utf-8')
+
+# Ensure backend directory is in python module search path
+BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'backend'))
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
 
 from app import (
     app, create_app, db, init_db, get_db, migrate_database_security,

@@ -42,7 +42,10 @@ global.window.addEventListener = (event, fn) => {
 };
 
 // Load sentinel.js code
-const sentinelCode = fs.readFileSync(path.join(__dirname, '..', 'static', 'js', 'sentinel.js'), 'utf8');
+const frontendJs = path.join(__dirname, '..', 'frontend', 'static', 'js', 'sentinel.js');
+const legacyJs = path.join(__dirname, '..', 'static', 'js', 'sentinel.js');
+const jsPath = fs.existsSync(frontendJs) ? frontendJs : legacyJs;
+const sentinelCode = fs.readFileSync(jsPath, 'utf8');
 eval(sentinelCode);
 
 const Sentinel = global.window.Sentinel;

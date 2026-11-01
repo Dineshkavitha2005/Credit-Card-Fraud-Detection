@@ -2,12 +2,18 @@ import os
 import re
 import pytest
 
+def _get_css_path():
+    frontend_css = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'static', 'css', 'sentinel.css'))
+    if os.path.exists(frontend_css):
+        return frontend_css
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'sentinel.css'))
+
 class TestResponsiveCompatibility:
     """Regression test suite verifying cross-browser and responsive CSS constraints."""
 
     def test_css_sentinel_main_flexbox_constraints(self):
         """Ensure .sentinel-main has min-width: 0 and max-width to prevent flexbox unconstrained overflow."""
-        css_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'sentinel.css'))
+        css_path = _get_css_path()
         assert os.path.exists(css_path), f"CSS file missing: {css_path}"
         
         with open(css_path, 'r', encoding='utf-8') as f:
@@ -26,7 +32,7 @@ class TestResponsiveCompatibility:
 
     def test_css_table_container_overflow_handling(self):
         """Ensure .data-table-container has horizontal scroll capability for wide tables."""
-        css_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'sentinel.css'))
+        css_path = _get_css_path()
         with open(css_path, 'r', encoding='utf-8') as f:
             css = f.read()
 
@@ -40,7 +46,7 @@ class TestResponsiveCompatibility:
 
     def test_css_mobile_media_queries_exist(self):
         """Verify responsive breakpoints for tablet (768px) and mobile (<= 560px) are configured."""
-        css_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'sentinel.css'))
+        css_path = _get_css_path()
         with open(css_path, 'r', encoding='utf-8') as f:
             css = f.read()
 
@@ -53,7 +59,7 @@ class TestResponsiveCompatibility:
 
     def test_css_mobile_topbar_overflow_prevention(self):
         """Verify mobile topbar compacts status pill and breadcrumbs on ultra-compact viewports."""
-        css_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'css', 'sentinel.css'))
+        css_path = _get_css_path()
         with open(css_path, 'r', encoding='utf-8') as f:
             css = f.read()
 
