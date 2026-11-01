@@ -2,5 +2,7 @@
 Transaction Preprocessor Module
 Re-exported from ml.preprocessor
 """
-from ml.preprocessor import *  # noqa: F401, F403
-
+try:
+    from backend.ml.preprocessor import *  # noqa: F401, F403
+except ImportError:
+    from ml.preprocessor import *  # noqa: F401, F403
