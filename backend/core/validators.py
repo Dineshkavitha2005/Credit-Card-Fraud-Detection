@@ -7,9 +7,12 @@ import math
 from werkzeug.utils import secure_filename
 from markupsafe import escape
 try:
-    from errors import BadRequestError, UnprocessableEntityError, ValidationError
-except ImportError:
-    from backend.core.errors import BadRequestError, UnprocessableEntityError, ValidationError
+    from .errors import BadRequestError, UnprocessableEntityError, ValidationError
+except (ImportError, ValueError):
+    try:
+        from errors import BadRequestError, UnprocessableEntityError, ValidationError
+    except ImportError:
+        from backend.core.errors import BadRequestError, UnprocessableEntityError, ValidationError
 
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_.-]{3,50}$")

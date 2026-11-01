@@ -21,9 +21,12 @@ from sklearn.metrics import (
 )
 
 try:
-    from preprocessor import TransactionPreprocessor
-except ImportError:
-    from backend.ml.preprocessor import TransactionPreprocessor
+    from .preprocessor import TransactionPreprocessor
+except (ImportError, ValueError):
+    try:
+        from preprocessor import TransactionPreprocessor
+    except ImportError:
+        from backend.ml.preprocessor import TransactionPreprocessor
 
 def prepare_training_dataset(df):
     """

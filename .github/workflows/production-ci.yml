@@ -45,6 +45,7 @@ jobs:
         env:
           FLASK_ENV: testing
           TESTING: 1
+          PYTHONPATH: backend:.
           TEST_SECRET_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           CARD_ENCRYPTION_KEY: TKe6O7Aqn_ukF0xUAFJ9i7xCtGjEwshAHmQ39u1x3Js=
           TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_fraud_db

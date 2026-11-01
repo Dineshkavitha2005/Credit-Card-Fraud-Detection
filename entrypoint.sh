@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# Ensure backend directory is in python search path
+export PYTHONPATH="/app/backend:${PYTHONPATH:-.}"
+
 echo "=========================================================="
 echo "🛡️  Credit Card Fraud Detection System - Starting Up"
 echo "=========================================================="

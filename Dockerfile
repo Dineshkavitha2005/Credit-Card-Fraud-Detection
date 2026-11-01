@@ -17,6 +17,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONFAULTHANDLER=1 \
     FLASK_ENV=production \
     PORT=5000 \
+    PYTHONPATH="/app/backend:/app:${PYTHONPATH}" \
     PATH="/home/appuser/.local/bin:$PATH"
 
 # Install minimal OS dependencies and healthcheck utility (curl)
