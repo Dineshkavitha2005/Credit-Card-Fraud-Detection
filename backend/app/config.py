@@ -1,8 +1,17 @@
 import os
 from pathlib import Path
 
-env_path = Path(__file__).resolve().parent.parent / '.env'
-if env_path.exists():
+env_path = None
+for candidate in [
+    Path(__file__).resolve().parent.parent.parent / '.env',
+    Path(__file__).resolve().parent.parent / '.env',
+    Path.cwd() / '.env'
+]:
+    if candidate.exists():
+        env_path = candidate
+        break
+
+if env_path and env_path.exists():
     try:
         from dotenv import load_dotenv
         load_dotenv(dotenv_path=env_path, override=True)

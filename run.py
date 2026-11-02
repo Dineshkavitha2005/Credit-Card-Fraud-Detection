@@ -14,6 +14,19 @@ BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'backend')
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
+# Load .env from root or backend if available
+for env_candidate in [
+    os.path.join(os.path.dirname(__file__), '.env'),
+    os.path.join(BACKEND_DIR, '.env')
+]:
+    if os.path.exists(env_candidate):
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(env_candidate, override=False)
+            break
+        except Exception:
+            pass
+
 from app import app, init_db
 
 if __name__ == '__main__':

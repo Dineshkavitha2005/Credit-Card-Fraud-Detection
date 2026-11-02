@@ -13,6 +13,19 @@ if BACKEND_DIR not in sys.path:
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+# Load .env from backend or root if available
+for env_candidate in [
+    os.path.join(BACKEND_DIR, '.env'),
+    os.path.join(PROJECT_ROOT, '.env')
+]:
+    if os.path.exists(env_candidate):
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(env_candidate, override=False)
+            break
+        except Exception:
+            pass
+
 from app import app, init_db
 
 def main():
